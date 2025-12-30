@@ -4,11 +4,15 @@ import 'package:wordclock/model/grid_def.dart';
 class LetterGrid extends StatelessWidget {
   final GridDefinition grid;
   final Set<int> activeIndices;
+  final Color activeColor;
+  final Color inactiveColor;
 
   const LetterGrid({
     super.key,
     required this.grid,
     required this.activeIndices,
+    this.activeColor = Colors.white,
+    this.inactiveColor = const Color.fromRGBO(255, 255, 255, 0.15),
   });
 
   @override
@@ -50,11 +54,9 @@ class LetterGrid extends StatelessWidget {
                     fontFamily: 'monospace', // Default mono, can be changed
                     fontSize: height * 0.6, // Scale font with cell height
                     fontWeight: isActive ? FontWeight.w900 : FontWeight.w300,
-                    color: isActive 
-                        ? Colors.white.withOpacity(0.95) 
-                        : Colors.white.withOpacity(0.1),
-                    shadows: isActive ? [
-                       const BoxShadow(color: Colors.white, blurRadius: 8, spreadRadius: 1)
+                    color: isActive ? activeColor : inactiveColor,
+                    shadows: isActive && activeColor.opacity > 0.5 ? [
+                       BoxShadow(color: activeColor, blurRadius: 8, spreadRadius: 1)
                     ] : [],
                   ),
                   child: Text(char),
