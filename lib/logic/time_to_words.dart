@@ -1,15 +1,15 @@
 import 'package:wordclock/model/word_type.dart';
 
 class TimeToWords {
-  /// Converts [time] into a set of [WordType]s representing the phrase.
+  /// Converts [time] into a List of [WordType]s representing the phrase.
   /// 
   /// Logic mimics the classic Word Clock:
   /// - Times are rounded to the nearest 5 minutes.
   /// - "Minutes past Hour" for 0-30.
   /// - "Minutes to (Hour + 1)" for 35-59.
   /// - "O'Clock" is used for the exact hour.
-  static Set<WordType> convert(DateTime time) {
-    Set<WordType> activeWords = {WordType.it, WordType.isVerb};
+  static List<WordType> convert(DateTime time) {
+    List<WordType> activeWords = [WordType.it, WordType.isVerb];
     
     // Round down to nearest 5 minutes
     int minute = time.minute;
