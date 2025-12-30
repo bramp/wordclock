@@ -69,16 +69,18 @@ void main() {
       expect(words, isNot(contains(WordType.fiveMinutes)));
     });
 
-    test('Rounding: 10:03 -> 10:05', () {
+    test('Rounding: 10:03 -> 10:00', () {
       final time = DateTime(2023, 1, 1, 10, 3);
       final words = TimeToWords.convert(time);
-      expect(words, containsAll([WordType.fiveMinutes, WordType.past, WordType.ten]));
+      // Floor(3) = 0 -> Ten OClock
+      expect(words, containsAll([WordType.ten, WordType.oclock]));
     });
     
-    test('Rounding: 10:58 -> 11:00', () { // Rollover
+    test('Rounding: 10:58 -> 10:55', () {
       final time = DateTime(2023, 1, 1, 10, 58);
       final words = TimeToWords.convert(time);
-      expect(words, containsAll([WordType.eleven, WordType.oclock]));
+      // Floor(58) = 55 -> Five To Eleven
+      expect(words, containsAll([WordType.fiveMinutes, WordType.to, WordType.eleven]));
     });
   });
 }

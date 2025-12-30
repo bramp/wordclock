@@ -1,6 +1,6 @@
 # WordClock
 
-A minimal, aesthetic word clock application built with Flutter. Inspired by Qlocktwo.
+A minimal, aesthetic word clock application built with Flutter. Inspired by [QLOCKTWO](https://www.qlocktwo.com/).
 
 Features:
 - **Time to Words**: Converts current time into a grid of lighted words (e.g., "IT IS TWENTY FIVE TO TEN").

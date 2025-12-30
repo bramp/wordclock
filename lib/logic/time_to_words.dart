@@ -11,33 +11,14 @@ class TimeToWords {
   static Set<WordType> convert(DateTime time) {
     Set<WordType> activeWords = {WordType.it, WordType.isVerb};
     
-    // Round to nearest 5 minutes
+    // Round down to nearest 5 minutes
     int minute = time.minute;
     int hour = time.hour;
     
-    // Rounding logic: 
-    // 0-2 -> 0
-    // 3-7 -> 5
-    // ...
+    // Rounding logic: Always floor
     int remainder = minute % 5;
-    if (remainder > 2) {
-      minute += (5 - remainder);
-    } else {
-      minute -= remainder;
-    }
-    
-    // Handle rollover (e.g., 60 minutes -> 0 minutes, next hour)
-    if (minute == 60) {
-      minute = 0;
-      hour += 1;
-    }
-    
-    // Normalize hour to 1-12
-    // If hour becomes > 12 or < 1
-    // DateTime.hour is 0-23.
-    // 0 -> 12, 13 -> 1, etc.
-    
-    
+    minute -= remainder;
+
     // Decide on Preposition and Minute Word
     if (minute == 0) {
        activeWords.add(WordType.oclock);
