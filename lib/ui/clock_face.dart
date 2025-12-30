@@ -1,14 +1,20 @@
 import 'dart:async';
-
 import 'package:flutter/material.dart';
 import 'package:wordclock/logic/time_to_words.dart';
 import 'package:wordclock/model/grid_def.dart';
 import 'package:wordclock/ui/letter_grid.dart';
+import 'package:wordclock/settings/settings_controller.dart';
+import 'package:wordclock/ui/settings_page.dart';
 
 class ClockFace extends StatefulWidget {
   final GridDefinition grid;
+  final SettingsController settingsController;
 
-  const ClockFace({super.key, this.grid = GridDefinition.english11x10});
+  const ClockFace({
+    super.key,
+    this.grid = GridDefinition.english11x10,
+    required this.settingsController,
+  });
 
   @override
   State<ClockFace> createState() => _ClockFaceState();
@@ -19,6 +25,7 @@ class _ClockFaceState extends State<ClockFace> {
   DateTime _now = DateTime.now();
   final Set<int> _activeIndices = {};
   int _remainder = 0;
+  final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
 
   @override
   void initState() {
@@ -59,67 +66,90 @@ class _ClockFaceState extends State<ClockFace> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: Colors.black, // Default background
-      body: Stack(
-        children: [
-          // Background: Solid Black (Faceplate)
-          Positioned.fill(
-            child: Container(color: Colors.black),
-          ),
-          
-          Center(
-            child: Stack(
-              children: [
-                // Layer 1: Inactive Elements (Unlit Letters & Dots)
-                _ClockLayout(
-                  grid: widget.grid,
-                  remainder: 0, 
-                  showDots: true, // Show dots in inactive layer
-                  forceAllDots: true, // Show ALL dots as inactive placeholders
-                  dotColor: const Color.fromRGBO(255, 255, 255, 0.15),
-                  child: LetterGrid(
-                    grid: widget.grid,
-                    activeIndices: const {},
-                    inactiveColor: const Color(0xFF333333),
-                    activeColor: Colors.transparent,
-                  ),
-                ),
-                
-                // Layer 2: Active Elements (Lit Letters + Dots) -> Masked
-                ShaderMask(
-                  shaderCallback: (bounds) {
-                    return const LinearGradient(
-                      begin: Alignment.topLeft,
-                      end: Alignment.bottomRight,
-                      colors: [
-                        Color(0xFFFF00CC), // Purple
-                        Color(0xFF333399), // Dark Blue
-                        Color(0xFF00CCFF), // Light Blue
-                      ],
-                      stops: [0.0, 0.5, 1.0],
-                    ).createShader(bounds);
-                  },
-                  blendMode: BlendMode.srcIn,
-                  child: _ClockLayout(
-                    grid: widget.grid,
-                    remainder: _remainder,
-                    showDots: true,
-                    forceAllDots: false,
-                    dotColor: Colors.white,
-                    child: LetterGrid(
+    // Listen to settings changes to rebuild UI when theme changes
+    return ListenableBuilder(
+      listenable: widget.settingsController,
+      builder: (context, child) {
+        final settings = widget.settingsController.settings;
+
+        return Scaffold(
+          key: _scaffoldKey,
+          backgroundColor: settings.backgroundColor,
+          endDrawer: SettingsPanel(controller: widget.settingsController),
+          drawerScrimColor: Colors.black.withOpacity(0.3),
+          body: Stack(
+            children: [
+              // Background: Faceplate color (usually matches scaffold)
+              Positioned.fill(
+                child: Container(color: settings.backgroundColor),
+              ),
+              
+              Center(
+                child: Stack(
+                  children: [
+                    // Layer 1: Inactive Elements
+                    _ClockLayout(
                       grid: widget.grid,
-                      activeIndices: _activeIndices,
-                      activeColor: Colors.white,
-                      inactiveColor: Colors.transparent,
+                      remainder: 0, 
+                      showDots: settings.showMinuteDots,
+                      forceAllDots: true, // Always show placeholder dots if dots are enabled
+                      dotColor: settings.inactiveColor,
+                      child: LetterGrid(
+                        grid: widget.grid,
+                        activeIndices: const {},
+                        inactiveColor: const Color(0xFF333333), // Keep letters dark grey for readability? Or use inactiveColor? 
+                        // User liked grey unlit letters.
+                        // Let's use a standard dark grey for unlit letters, 
+                        // separate from 'inactiveColor' which we defined for dots?
+                        // Actually, settings.inactiveColor (15% white) might be too light on black?
+                        // Let's stick to 0xFF333333 for unlit letters as it looked good.
+                        activeColor: Colors.transparent,
+                      ),
                     ),
-                  ),
+                    
+                    // Layer 2: Active Elements
+                    ShaderMask(
+                      shaderCallback: (bounds) {
+                        return LinearGradient(
+                          begin: Alignment.topLeft,
+                          end: Alignment.bottomRight,
+                          colors: settings.activeGradientColors,
+                        ).createShader(bounds);
+                      },
+                      blendMode: BlendMode.srcIn,
+                      child: _ClockLayout(
+                        grid: widget.grid,
+                        remainder: _remainder,
+                        showDots: settings.showMinuteDots,
+                        forceAllDots: false,
+                        dotColor: Colors.white,
+                        child: LetterGrid(
+                          grid: widget.grid,
+                          activeIndices: _activeIndices,
+                          activeColor: Colors.white,
+                          inactiveColor: Colors.transparent,
+                        ),
+                      ),
+                    ),
+                  ],
                 ),
-              ],
-            ),
+              ),
+              
+              // Settings Button (Bottom Right)
+              Positioned(
+                bottom: 16,
+                right: 16,
+                child: IconButton(
+                  icon: Icon(Icons.settings, color: Colors.white.withOpacity(0.3)),
+                  onPressed: () {
+                    _scaffoldKey.currentState?.openEndDrawer();
+                  },
+                ),
+              ),
+            ],
           ),
-        ],
-      ),
+        );
+      },
     );
   }
 }

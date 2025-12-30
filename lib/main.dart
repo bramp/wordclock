@@ -1,24 +1,37 @@
 import 'package:flutter/material.dart';
+import 'package:wordclock/settings/settings_controller.dart';
 import 'package:wordclock/ui/clock_face.dart';
 
 void main() {
-  runApp(const MyApp());
+  final settingsController = SettingsController();
+  runApp(MyApp(settingsController: settingsController));
 }
 
 class MyApp extends StatelessWidget {
-  const MyApp({super.key});
+  final SettingsController settingsController;
+
+  const MyApp({super.key, required this.settingsController});
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      title: 'WordClock',
-      theme: ThemeData(
-        colorScheme: ColorScheme.fromSeed(seedColor: Colors.blue, brightness: Brightness.dark),
-        useMaterial3: true,
-        fontFamily: 'Courier', // Fallback
-      ),
-      home: const ClockFace(),
-      debugShowCheckedModeBanner: false,
+    return ListenableBuilder(
+      listenable: settingsController,
+      builder: (context, child) {
+        return MaterialApp(
+          title: 'WordClock',
+          theme: ThemeData(
+            colorScheme: ColorScheme.fromSeed(
+              seedColor: settingsController.settings.activeGradientColors.first,
+              brightness: Brightness.dark,
+            ),
+            useMaterial3: true,
+            fontFamily: 'Courier', 
+            scaffoldBackgroundColor: settingsController.settings.backgroundColor,
+          ),
+          home: ClockFace(settingsController: settingsController),
+          // debugShowCheckedModeBanner: false,
+        );
+      },
     );
   }
 }
