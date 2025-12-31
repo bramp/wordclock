@@ -54,21 +54,34 @@ class _ClockFaceState extends State<ClockFace> {
     
     final newIndices = <int>{};
     
-    // Track usage count for words with multiple occurrences (like FIVE)
-    final Map<String, int> wordUsage = {};
+    int lastEndIndex = -1;
     
     for (final wordStr in words) {
        final definitions = widget.grid.mapping[wordStr];
        if (definitions != null && definitions.isNotEmpty) {
-         // Determine which occurrence to use
-         int usage = wordUsage[wordStr] ?? 0;
-         if (usage >= definitions.length) {
-           usage = definitions.length - 1; 
+         List<int>? chosenDef;
+         
+         // Try to find a definition that starts strictly after the last word ended
+         for (final def in definitions) {
+           if (def.first > lastEndIndex) {
+             chosenDef = def;
+             break;
+           }
          }
          
-         newIndices.addAll(definitions[usage]);
+         // Fallback: If we couldn't find one after the last index, 
+         // use the last known definition (likely the one furthest down the board).
+         // This handles edge cases or strange layouts, but ideally shouldn't be hit 
+         // for standard recursive layouts.
+         if (chosenDef == null) {
+           chosenDef = definitions.last;
+         }
          
-         wordUsage[wordStr] = usage + 1;
+         newIndices.addAll(chosenDef);
+         
+         // Update lastEndIndex to the end of this word
+         // We use the max index of the word, assuming contiguous
+         lastEndIndex = chosenDef.last;
        }
     }
     
