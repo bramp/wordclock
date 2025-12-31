@@ -1,12 +1,11 @@
-class TimeToWords {
-  /// Converts [time] into a space-separated String representing the phrase.
-  ///
-  /// Logic mimics the classic Word Clock:
-  /// - Times are rounded to the nearest 5 minutes.
-  /// - "Minutes past Hour" for 0-30.
-  /// - "Minutes to (Hour + 1)" for 35-59.
-  /// - "O'Clock" is used for the exact hour.
-  static String convert(DateTime time) {
+abstract class TimeToWords {
+  /// Converts a [DateTime] object into a human-readable string representation of time.
+  String convert(DateTime time);
+}
+
+class EnglishTimeToWords implements TimeToWords {
+  @override
+  String convert(DateTime time) {
     // Round down to nearest 5 minutes
     int minute = time.minute;
     int hour = time.hour;

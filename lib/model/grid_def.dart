@@ -1,8 +1,11 @@
+import 'package:wordclock/logic/time_to_words.dart';
+
 class GridDefinition {
   final int width;
   final int height;
   final String letters;
   final List<String> vocabulary; // The words hidden in the grid
+  final TimeToWords timeConverter;
 
   // Cache the mapping
   late final Map<String, List<List<int>>> mapping = _generateMapping();
@@ -12,6 +15,7 @@ class GridDefinition {
     required this.height,
     required this.letters,
     required this.vocabulary,
+    required this.timeConverter,
   });
 
   Map<String, List<List<int>>> _generateMapping() {
@@ -79,5 +83,6 @@ class GridDefinition {
       "TWELVE",
       "OCLOCK",
     ],
+    timeConverter: EnglishTimeToWords(),
   );
 }

@@ -1,6 +1,6 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
-import 'package:wordclock/logic/time_to_words.dart';
+
 import 'package:wordclock/model/grid_def.dart';
 import 'package:wordclock/ui/letter_grid.dart';
 import 'package:wordclock/settings/settings_controller.dart';
@@ -49,7 +49,7 @@ class _ClockFaceState extends State<ClockFace> {
 
     _lastTime = now;
 
-    final phrase = TimeToWords.convert(now);
+    final phrase = widget.grid.timeConverter.convert(now);
     final words = phrase.split(' ');
 
     final newIndices = <int>{};

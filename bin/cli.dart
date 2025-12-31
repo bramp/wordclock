@@ -28,7 +28,8 @@ void main(List<String> args) {
   );
 
   // 2. Logic: Time -> Phrase string
-  final phrase = TimeToWords.convert(now);
+  final converter = EnglishTimeToWords();
+  final phrase = converter.convert(now);
   print('Phrase: "$phrase"');
 
   // 3. Logic: Phrase -> Indices

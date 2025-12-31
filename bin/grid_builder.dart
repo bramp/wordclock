@@ -73,11 +73,13 @@ Graph _buildDependencyGraph() {
   // Cache to check if a node has been created in the graph
   // We use the graph keys as the definitive set of existing nodes.
 
+  final converter = EnglishTimeToWords();
+
   // Scan 24 Hours
   for (int h = 0; h < 24; h++) {
     for (int m = 0; m < 60; m++) {
       final time = DateTime(2025, 1, 1, h, m);
-      final phrase = TimeToWords.convert(time);
+      final phrase = converter.convert(time);
       final rawWords = phrase.split(' ');
 
       Node? prevNode;
