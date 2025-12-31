@@ -2,87 +2,73 @@
 import 'dart:collection';
 import 'dart:math';
 import 'package:wordclock/logic/time_to_words.dart';
-import 'package:wordclock/model/word_type.dart';
+// Note: We don't need WordType anymore, just Strings.
 
 /// SMART GRID GENERATOR
 /// 
 /// 1. Scans Logic to find all used Words.
-/// 2. Builds a Dependency Graph (A -> B if "A" comes before "B" in a phrase).
-/// 3. Topologically Sorts the Graph to find the optimal global order.
+/// 2. Builds a Dependency Graph.
+/// 3. Topologically Sorts.
 /// 4. Generates the Grid.
 void main() {
   const int gridWidth = 11;
-  const int gridHeight = 10; // Try to fit in 10, or auto-expand
+  const int gridHeight = 10;
   
   // 1. SCAN & BUILD GRAPH
   final graph = _buildDependencyGraph();
   
   // 2. TOPOLOGICAL SORT
-  // This gives us the linear order of words that satisfies ALL phrases.
-  List<WordType> sortedMetadata;
+  List<String> sortedMetadata;
   try {
      sortedMetadata = _topologicalSort(graph);
   } catch (e) {
-    print('ERROR: Cycle detected in word logic! Phrases cannot be linearized.');
-    print(e);
+    print('ERROR: Cycle detected! $e');
     return;
   }
 
-  print('// Optimized Order found: ${sortedMetadata.map((e) => e.name).toList()}');
+  print('// Optimized Order found: $sortedMetadata');
 
   // 3. GENERATE GRID
   _generateGrid(gridWidth, sortedMetadata);
 }
 
 
-typedef Graph = Map<WordType, Set<WordType>>;
+typedef Graph = Map<String, Set<String>>;
 
 Graph _buildDependencyGraph() {
   final Graph graph = {};
-  
-  // Initialize nodes
-  for (var w in WordType.values) {
-    graph[w] = {};
-  }
-  
+  final Set<String> allWords = {};
+
   // Scan 24 Hours
   for (int h = 0; h < 24; h++) {
     for (int m = 0; m < 60; m++) {
       final time = DateTime(2025, 1, 1, h, m);
-      final List<WordType> phrase = TimeToWords.convert(time);
+      final phrase = TimeToWords.convert(time);
+      final words = phrase.split(' ');
       
-      // Add edges A -> B
-      for (int i = 0; i < phrase.length - 1; i++) {
-        final current = phrase[i];
-        final next = phrase[i + 1];
+      allWords.addAll(words);
+      
+      // Add edges
+      for (int i = 0; i < words.length - 1; i++) {
+        final current = words[i];
+        final next = words[i + 1];
         
-        // Add edge
+        if (!graph.containsKey(current)) graph[current] = {};
         graph[current]!.add(next);
+      }
+      // Ensure last word is in graph too
+      if (words.isNotEmpty) {
+        if (!graph.containsKey(words.last)) graph[words.last] = {};
       }
     }
   }
   
-  // Remove unused nodes (words that never appear)
-  final usedWords = <WordType>{};
-  graph.forEach((node, edges) {
-    if (edges.isNotEmpty) usedWords.add(node);
-    for (var neighbor in edges) {
-        usedWords.add(neighbor);
-    }
-  });
-  
-  // Clean graph
-  final Graph cleanedGraph = {};
-  for (var w in usedWords) {
-    cleanedGraph[w] = graph[w] ?? {};
-  }
-  
-  return cleanedGraph;
+  return graph;
 }
 
-List<WordType> _topologicalSort(Graph graph) {
+List<String> _topologicalSort(Graph graph) {
   // Kahn's Algorithm
-  final Map<WordType, int> inDegree = {};
+  final Map<String, int> inDegree = {};
   for (var node in graph.keys) {
     inDegree[node] = 0;
   }
@@ -93,16 +79,17 @@ List<WordType> _topologicalSort(Graph graph) {
     }
   }
   
-  final Queue<WordType> queue = Queue();
+  final Queue<String> queue = Queue();
   inDegree.forEach((node, degree) {
     if (degree == 0) queue.add(node);
   });
   
-  final List<WordType> result = [];
+  // Sort queue initially for deterministic output?
+  // queue is not sortable easily, but we can process in alphabetical order if tied?
+  
+  final List<String> result = [];
   
   while (queue.isNotEmpty) {
-    // Heuristic: If multiple nodes available, pick the one with longest word length? 
-    // Or specific priority? For now: FIFO.
     final current = queue.removeFirst();
     result.add(current);
     
@@ -117,22 +104,19 @@ List<WordType> _topologicalSort(Graph graph) {
   }
   
   if (result.length != graph.length) {
-    throw Exception("Graph has a cycle! Result: $result vs Graph: ${graph.keys}");
+    throw Exception("Graph sequence cycle detected. $result");
   }
   
   return result;
 }
 
-void _generateGrid(int width, List<WordType> sortedVocab) {
+void _generateGrid(int width, List<String> sortedVocab) {
   final buffer = StringBuffer();
-  final Map<WordType, List<int>> mapping = {};
   
   int currentIndex = 0;
   String currentRow = "";
   
-  for (final wordEnum in sortedVocab) {
-    String wordStr = _enumToString(wordEnum);
-    
+  for (final wordStr in sortedVocab) {
     // Check fit
     if (currentRow.length + wordStr.length > width) {
       // Pad
@@ -148,10 +132,6 @@ void _generateGrid(int width, List<WordType> sortedVocab) {
        return;
     }
     
-    // Map
-    final indices = List.generate(wordStr.length, (i) => currentIndex + i);
-    mapping[wordEnum] = indices;
-    
     currentRow += wordStr;
     currentIndex += wordStr.length;
   }
@@ -166,31 +146,19 @@ void _generateGrid(int width, List<WordType> sortedVocab) {
   final gridString = buffer.toString();
   final height = gridString.length ~/ width;
   
-  print('\n/// AUTOMATICALLY GENERATED FROM DEPENDENCY GRAPH');
-  print('static const graph${width}x$height = GridDefinition(');
-  print('  width: $width,');
-  print('  height: $height,');
-  print('  letters:');
+  print('\n/// AUTOMATICALLY GENERATED PREVIEW');
+  print('// Grid Dimensions: ${width}x$height');
+  // Formatted preview
   for (int i = 0; i < height; i++) {
-    print("    '${gridString.substring(i * width, (i + 1) * width)}'");
+     print("    '${gridString.substring(i * width, (i + 1) * width)}'");
   }
-  print("    ,");
-  print('  mapping: {');
-  for (final entry in mapping.entries) {
-    print('    WordType.${entry.key.name}: ${entry.value},');
+  
+  print('\n// Copy this into your GridDefinition vocabulary:');
+  print('vocabulary: const [');
+  for (final word in sortedVocab) {
+    print('  "$word",');
   }
-  print('  },');
-  print(');');
-}
-
-String _enumToString(WordType type) {
-  switch (type) {
-    case WordType.isVerb: return "IS";
-    case WordType.fiveMinutes: return "FIVE";
-    case WordType.tenMinutes: return "TEN";
-    case WordType.oclock: return "OCLOCK";
-    default: return type.name.toUpperCase();
-  }
+  print('],');
 }
 
 String _generatePadding(int length) {

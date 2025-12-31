@@ -25,17 +25,29 @@ void main(List<String> args) {
 
   print('Time: ${now.hour.toString().padLeft(2, '0')}:${now.minute.toString().padLeft(2, '0')}');
 
-  // 2. Logic: Time -> Words
-  final activeWords = TimeToWords.convert(now);
+  // 2. Logic: Time -> Phrase string
+  final phrase = TimeToWords.convert(now);
+  print('Phrase: "$phrase"');
   
-  // 3. Logic: Words -> Indices
+  // 3. Logic: Phrase -> Indices
+  // Parse string back to words
+  final words = phrase.split(' ');
+  
   final grid = GridDefinition.english11x10;
   final Set<int> activeIndices = {};
   
-  for (final word in activeWords) {
-    final indices = grid.mapping[word];
-    if (indices != null) {
-      activeIndices.addAll(indices);
+  // Track usage for ambiguity resolution
+  final Map<String, int> wordUsage = {};
+
+  for (final wordStr in words) {
+    final definitions = grid.mapping[wordStr];
+    if (definitions != null && definitions.isNotEmpty) {
+      int usage = wordUsage[wordStr] ?? 0;
+      if (usage >= definitions.length) {
+         usage = definitions.length - 1; 
+      }
+      activeIndices.addAll(definitions[usage]);
+      wordUsage[wordStr] = usage + 1;
     }
   }
 
@@ -59,6 +71,7 @@ void _printGrid(GridDefinition grid, Set<int> activeIndices) {
   for (int y = 0; y < grid.height; y++) {
     buffer.write('| ');
     for (int x = 0; x < grid.width; x++) {
+      if (index >= grid.letters.length) break; 
       final char = grid.letters[index];
       final isActive = activeIndices.contains(index);
       
