@@ -44,6 +44,7 @@ class GridDefinition {
     return result;
   }
   
+  // The original qlocktwo grid. Here for reference, we should use our own grid.
   static final english11x10 = GridDefinition(
     width: 11,
     height: 10,

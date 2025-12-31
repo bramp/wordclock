@@ -6,4 +6,7 @@
 - [x] Style unlit letters more visibly (outline or grey) instead of nearly invisible.
 - [ ] Optimize Web load time (investigate font loading, renderer, etc.).
 - [x] Implement a Settings Page (color schemes, logic toggles?).
-- [ ] Create a script/tool to generate new clock faces/grids from configuration.
+- [x] Create a script/tool to generate new clock faces/grids from configuration.
+- [ ] Add integration tests.
+- [ ] Create animating backgrounds (like a plasma effect)
+- [ ] Add a debug mode, where we can set the time, or make the time tick extremely fast (one minute each second)
