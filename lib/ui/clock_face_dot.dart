@@ -8,6 +8,9 @@ class ClockFaceDot extends StatelessWidget {
   final double? left;
   final double? right;
 
+  // Toggle for expensive glow effects
+  static const bool enableGlow = true;
+
   const ClockFaceDot({
     super.key,
     required this.color,
@@ -31,23 +34,16 @@ class ClockFaceDot extends StatelessWidget {
       left: left,
       right: right,
       child: AnimatedContainer(
-        duration: const Duration(milliseconds: 500),
+        duration: const Duration(milliseconds: 1000),
         curve: Curves.easeInOut,
         width: 12,
         height: 12,
         decoration: BoxDecoration(
           color: effectiveColor,
           shape: BoxShape.circle,
-          // Only show shadow if color is opaque/white (active state)
-          // Inactive dots (grey) usually don't glow.
-          // Shadows removed for performance/smoothness
-          // TODO: Re-enable shadows when performance is improved.
-          /*
-          boxShadow: isActive && color == Colors.white
+          boxShadow: enableGlow && isActive && color == Colors.white
               ? [BoxShadow(color: color, blurRadius: 8, spreadRadius: 1)]
               : [],
-          */
-          boxShadow: const [],
         ),
       ),
     );

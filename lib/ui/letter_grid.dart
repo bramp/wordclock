@@ -7,6 +7,9 @@ class LetterGrid extends StatelessWidget {
   final Color activeColor;
   final Color inactiveColor;
 
+  // Toggle for expensive glow effects
+  static const bool enableGlow = true;
+
   const LetterGrid({
     super.key,
     required this.grid,
@@ -48,26 +51,19 @@ class LetterGrid extends StatelessWidget {
               // Should the following be it's own widget? Which could look ~identical to clock_face_dot.
               return Center(
                 child: AnimatedDefaultTextStyle(
-                  duration: const Duration(milliseconds: 500),
+                  duration: const Duration(milliseconds: 1000),
                   curve: Curves.easeInOut,
                   style: TextStyle(
                     fontFamily: 'monospace', // Default mono, can be changed
                     fontSize: height * 0.6, // Scale font with cell height
                     fontWeight: isActive ? FontWeight.w900 : FontWeight.w300,
                     color: isActive ? activeColor : inactiveColor,
-                    // TODO: Re-enable shadows when performance is improved.
-                    /*
-                    shadows: isActive && activeColor.a > 0.5
+                    shadows: isActive && enableGlow
                         ? [
-                            BoxShadow(
-                              color: activeColor,
-                              blurRadius: 8,
-                              spreadRadius: 1,
-                            ),
+                            Shadow(color: activeColor, blurRadius: 10),
+                            Shadow(color: activeColor, blurRadius: 20),
                           ]
                         : [],
-                    */
-                    shadows: [],
                   ),
                   child: Text(char),
                 ),

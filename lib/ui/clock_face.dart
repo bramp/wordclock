@@ -61,6 +61,48 @@ class _ClockFaceState extends State<ClockFace> {
     super.dispose();
   }
 
+  // Cache the grids to prevent rebuilding 110 widgets every second
+  Widget? _cachedInactiveGrid;
+  Widget? _cachedActiveGrid;
+  Set<int>? _lastActiveIndices;
+
+  void _updateCachedGrids(SettingsController settings, Set<int> activeIndices) {
+    if (_cachedActiveGrid == null ||
+        _cachedInactiveGrid == null ||
+        !setEquals(_lastActiveIndices, activeIndices)) {
+      _cachedInactiveGrid = LetterGrid(
+        grid: widget.grid,
+        activeIndices: const {},
+        inactiveColor: const Color(0xFF333333),
+        activeColor: Colors.transparent,
+      );
+
+      _cachedActiveGrid = LetterGrid(
+        grid: widget.grid,
+        activeIndices: activeIndices,
+        activeColor: Colors.white,
+        inactiveColor: Colors.white.withValues(alpha: 0),
+      );
+
+      _lastActiveIndices = activeIndices;
+    }
+  }
+
+  @override
+  void didUpdateWidget(ClockFace oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    // Invalidate cache if settings or grid config changed passed from parent
+    _cachedActiveGrid = null;
+    _cachedInactiveGrid = null;
+  }
+
+  // Helper for set equality
+  bool setEquals<T>(Set<T>? a, Set<T>? b) {
+    if (a == null) return b == null;
+    if (b == null || a.length != b.length) return false;
+    return a.containsAll(b);
+  }
+
   @override
   Widget build(BuildContext context) {
     // Listen to settings changes to rebuild UI when theme changes
@@ -73,6 +115,13 @@ class _ClockFaceState extends State<ClockFace> {
 
         // Recalculate grid if time changed
         _recalculateIndices(now);
+
+        // Update cache if needed
+        // Note: We always use the LATEST settings here.
+        // If settings changed but indices didn't, we MUST rebuild.
+        // But detecting settings change inside StreamBuilder is hard without listening.
+        // Fortunately, if Settings change, `main.dart` rebuilds `ClockFace`, calling `didUpdateWidget`, clearing cache.
+        _updateCachedGrids(widget.settingsController, _activeIndices);
 
         return Scaffold(
           key: _scaffoldKey, // TODO Do we need a GlobalKey? Document why
@@ -97,12 +146,7 @@ class _ClockFaceState extends State<ClockFace> {
                         showDots: settings.showMinuteDots,
                         forceAllDots: true, // Always show placeholder dots
                         dotColor: settings.inactiveColor,
-                        child: LetterGrid(
-                          grid: widget.grid,
-                          activeIndices: const {},
-                          inactiveColor: const Color(0xFF333333),
-                          activeColor: Colors.transparent,
-                        ),
+                        child: _cachedInactiveGrid!,
                       ),
                     ),
 
@@ -123,12 +167,7 @@ class _ClockFaceState extends State<ClockFace> {
                           showDots: settings.showMinuteDots,
                           forceAllDots: false,
                           dotColor: Colors.white,
-                          child: LetterGrid(
-                            grid: widget.grid,
-                            activeIndices: _activeIndices,
-                            activeColor: Colors.white,
-                            inactiveColor: Colors.white.withValues(alpha: 0),
-                          ),
+                          child: _cachedActiveGrid!,
                         ),
                       ),
                     ),
