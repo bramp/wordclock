@@ -1,17 +1,18 @@
 import 'dart:async';
+
 import 'package:flutter/material.dart';
 
-import 'package:wordclock/model/grid_def.dart';
+import 'package:wordclock/model/word_grid.dart';
 import 'package:wordclock/ui/letter_grid.dart';
 import 'package:wordclock/settings/settings_controller.dart';
 import 'package:wordclock/ui/settings_page.dart';
 
 class ClockFace extends StatefulWidget {
-  final GridDefinition grid;
+  final WordGrid grid;
   final SettingsController settingsController;
 
-  ClockFace({super.key, GridDefinition? grid, required this.settingsController})
-    : grid = grid ?? GridDefinition.english11x10;
+  ClockFace({super.key, WordGrid? grid, required this.settingsController})
+    : grid = grid ?? WordGrid.english11x10;
 
   @override
   State<ClockFace> createState() => _ClockFaceState();
@@ -48,42 +49,7 @@ class _ClockFaceState extends State<ClockFace> {
     }
 
     _lastTime = now;
-
-    final phrase = widget.grid.timeConverter.convert(now);
-    final words = phrase.split(' ');
-
-    final newIndices = <int>{};
-
-    int lastEndIndex = -1;
-
-    for (final wordStr in words) {
-      final definitions = widget.grid.mapping[wordStr];
-      if (definitions != null && definitions.isNotEmpty) {
-        List<int>? chosenDef;
-
-        // Try to find a definition that starts strictly after the last word ended
-        for (final def in definitions) {
-          if (def.first > lastEndIndex) {
-            chosenDef = def;
-            break;
-          }
-        }
-
-        // Fallback: If we couldn't find one after the last index,
-        // use the last known definition (likely the one furthest down the board).
-        // This handles edge cases or strange layouts, but ideally shouldn't be hit
-        // for standard recursive layouts.
-        chosenDef ??= definitions.last;
-
-        newIndices.addAll(chosenDef);
-
-        // Update lastEndIndex to the end of this word
-        // We use the max index of the word, assuming contiguous
-        lastEndIndex = chosenDef.last;
-      }
-    }
-
-    _activeIndices = newIndices;
+    _activeIndices = widget.grid.getIndices(now);
     _remainder = now.minute % 5;
   }
 
@@ -192,7 +158,7 @@ class _ClockFaceState extends State<ClockFace> {
 }
 
 class _ClockLayout extends StatelessWidget {
-  final GridDefinition grid;
+  final WordGrid grid;
   final Widget child;
   final int remainder;
   final bool showDots;

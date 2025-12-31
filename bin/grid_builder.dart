@@ -302,7 +302,7 @@ void _generateGrid(
 
   print('\n/// AUTOMATICALLY GENERATED PREVIEW');
   print('/// Seed: ${seed ?? "Deterministic (0)"}');
-  print('static final english${width}x$height = GridDefinition(');
+  print('static final english${width}x$height = WordGrid(');
   print('  width: $width,');
   print('  height: $height,');
   print('  letters:');
@@ -311,11 +311,8 @@ void _generateGrid(
   }
 
   print('    ,');
-  print('  vocabulary: const [');
-  for (final node in orderedResult) {
-    print('    "${node.word}",');
-  }
-  print('  ],');
+  // TODO This should actually be based on the converter actually used.
+  print('    timeConverter: EnglishTimeToWords(),');
   print(');');
 }
 

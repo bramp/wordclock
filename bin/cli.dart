@@ -1,7 +1,7 @@
 // ignore_for_file: avoid_print
 import 'dart:io';
-import 'package:wordclock/logic/time_to_words.dart';
-import 'package:wordclock/model/grid_def.dart';
+
+import 'package:wordclock/model/word_grid.dart';
 
 void main(List<String> args) {
   // 1. Determine Time
@@ -27,38 +27,18 @@ void main(List<String> args) {
     'Time: ${now.hour.toString().padLeft(2, '0')}:${now.minute.toString().padLeft(2, '0')}',
   );
 
-  // 2. Logic: Time -> Phrase string
-  final converter = EnglishTimeToWords();
-  final phrase = converter.convert(now);
+  // 2. Logic: Time to Indices
+  final grid = WordGrid.english11x10;
+  final activeIndices = grid.getIndices(now);
+
+  final phrase = grid.timeConverter.convert(now);
   print('Phrase: "$phrase"');
-
-  // 3. Logic: Phrase -> Indices
-  // Parse string back to words
-  final words = phrase.split(' ');
-
-  final grid = GridDefinition.english11x10;
-  final Set<int> activeIndices = {};
-
-  // Track usage for ambiguity resolution
-  final Map<String, int> wordUsage = {};
-
-  for (final wordStr in words) {
-    final definitions = grid.mapping[wordStr];
-    if (definitions != null && definitions.isNotEmpty) {
-      int usage = wordUsage[wordStr] ?? 0;
-      if (usage >= definitions.length) {
-        usage = definitions.length - 1;
-      }
-      activeIndices.addAll(definitions[usage]);
-      wordUsage[wordStr] = usage + 1;
-    }
-  }
 
   // 4. Render
   _printGrid(grid, activeIndices);
 }
 
-void _printGrid(GridDefinition grid, Set<int> activeIndices) {
+void _printGrid(WordGrid grid, Set<int> activeIndices) {
   // ANSI Colors
   const String reset = '\x1B[0m';
   const String bold = '\x1B[1m';

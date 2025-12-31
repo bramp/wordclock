@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:wordclock/model/grid_def.dart';
+import 'package:wordclock/model/word_grid.dart';
 
 class LetterGrid extends StatelessWidget {
-  final GridDefinition grid;
+  final WordGrid grid;
   final Set<int> activeIndices;
   final Color activeColor;
   final Color inactiveColor;
