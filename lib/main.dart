@@ -4,13 +4,13 @@ import 'package:wordclock/ui/clock_face.dart';
 
 void main() {
   final settingsController = SettingsController();
-  runApp(MyApp(settingsController: settingsController));
+  runApp(WordClockApp(settingsController: settingsController));
 }
 
-class MyApp extends StatelessWidget {
+class WordClockApp extends StatelessWidget {
   final SettingsController settingsController;
 
-  const MyApp({super.key, required this.settingsController});
+  const WordClockApp({super.key, required this.settingsController});
 
   @override
   Widget build(BuildContext context) {
@@ -30,7 +30,6 @@ class MyApp extends StatelessWidget {
                 settingsController.settings.backgroundColor,
           ),
           home: ClockFace(settingsController: settingsController),
-          // debugShowCheckedModeBanner: false,
         );
       },
     );

@@ -8,7 +8,9 @@ void main() {
     final settingsController = SettingsController();
 
     // Build our app and trigger a frame.
-    await tester.pumpWidget(MyApp(settingsController: settingsController));
+    await tester.pumpWidget(
+      WordClockApp(settingsController: settingsController),
+    );
 
     // Verify that the ClockFace is present
     expect(find.byType(ClockFace), findsOneWidget);
