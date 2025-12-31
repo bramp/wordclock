@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 
 import 'package:wordclock/model/word_grid.dart';
+import 'package:wordclock/ui/clock_face_dot.dart';
 import 'package:wordclock/ui/letter_grid.dart';
 import 'package:wordclock/settings/settings_controller.dart';
 import 'package:wordclock/ui/settings_page.dart';
@@ -93,8 +94,7 @@ class _ClockFaceState extends State<ClockFace> {
                         grid: widget.grid,
                         remainder: 0,
                         showDots: settings.showMinuteDots,
-                        forceAllDots:
-                            true, // Always show placeholder dots if dots are enabled
+                        forceAllDots: true, // Always show placeholder dots
                         dotColor: settings.inactiveColor,
                         child: LetterGrid(
                           grid: widget.grid,
@@ -120,7 +120,6 @@ class _ClockFaceState extends State<ClockFace> {
                           grid: widget.grid,
                           remainder: _remainder,
                           showDots: settings.showMinuteDots,
-                          forceAllDots: false,
                           dotColor: Colors.white,
                           child: LetterGrid(
                             grid: widget.grid,
@@ -162,6 +161,9 @@ class _ClockLayout extends StatelessWidget {
   final Widget child;
   final int remainder;
   final bool showDots;
+
+  /// If true, lights up all 4 dots regardless of the [remainder].
+  /// This is used for the inactive/background layer to show the "placeholder" dots.
   final bool forceAllDots;
   final Color dotColor;
 
@@ -190,82 +192,36 @@ class _ClockLayout extends StatelessWidget {
 
             if (showDots) ...[
               // 1 minute: Top Left
-              Positioned(
+              ClockFaceDot(
                 top: 0,
                 left: 0,
-                child: _Dot(
-                  color: dotColor,
-                  isActive: forceAllDots || remainder >= 1,
-                ),
+                color: dotColor,
+                isActive: forceAllDots || remainder >= 1,
               ),
               // 2 minutes: Top Right
-              Positioned(
+              ClockFaceDot(
                 top: 0,
                 right: 0,
-                child: _Dot(
-                  color: dotColor,
-                  isActive: forceAllDots || remainder >= 2,
-                ),
+                color: dotColor,
+                isActive: forceAllDots || remainder >= 2,
               ),
               // 3 minutes: Bottom Right
-              Positioned(
+              ClockFaceDot(
                 bottom: 0,
                 right: 0,
-                child: _Dot(
-                  color: dotColor,
-                  isActive: forceAllDots || remainder >= 3,
-                ),
+                color: dotColor,
+                isActive: forceAllDots || remainder >= 3,
               ),
               // 4 minutes: Bottom Left
-              Positioned(
+              ClockFaceDot(
                 bottom: 0,
                 left: 0,
-                child: _Dot(
-                  color: dotColor,
-                  isActive: forceAllDots || remainder >= 4,
-                ),
+                color: dotColor,
+                isActive: forceAllDots || remainder >= 4,
               ),
             ],
           ],
         ),
-      ),
-    );
-  }
-}
-
-// TODO Should this be it's own file?
-// TODO This should animate in the same way that letter_grid does. Can we share/reuse code to ensure consistency?
-class _Dot extends StatelessWidget {
-  final Color color;
-  final bool isActive;
-
-  const _Dot({required this.color, required this.isActive});
-
-  @override
-  Widget build(BuildContext context) {
-    // Determine the effective color to display
-    // If active, use the passed color.
-    // If inactive, fade to transparent version of that color.
-    final effectiveColor = isActive ? color : color.withValues(alpha: 0.0);
-
-    return AnimatedContainer(
-      duration: const Duration(milliseconds: 500),
-      curve: Curves.easeInOut,
-      width: 12,
-      height: 12,
-      decoration: BoxDecoration(
-        color: effectiveColor,
-        shape: BoxShape.circle,
-        // Only show shadow if color is opaque/white (active state)
-        // Inactive dots (grey) usually don't glow.
-        // Shadows removed for performance/smoothness
-        // TODO: Re-enable shadows when performance is improved.
-        /*
-        boxShadow: isActive && color == Colors.white
-            ? [BoxShadow(color: color, blurRadius: 8, spreadRadius: 1)]
-            : [],
-        */
-        boxShadow: [],
       ),
     );
   }
