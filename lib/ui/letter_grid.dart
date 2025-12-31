@@ -45,7 +45,7 @@ class LetterGrid extends StatelessWidget {
             itemBuilder: (context, index) {
               final isActive = activeIndices.contains(index);
               final char = grid.letters[index];
-
+              // Should the following be it's own widget? Which could look ~identical to clock_face_dot.
               return Center(
                 child: AnimatedDefaultTextStyle(
                   duration: const Duration(milliseconds: 500),
@@ -55,6 +55,8 @@ class LetterGrid extends StatelessWidget {
                     fontSize: height * 0.6, // Scale font with cell height
                     fontWeight: isActive ? FontWeight.w900 : FontWeight.w300,
                     color: isActive ? activeColor : inactiveColor,
+                    // TODO: Re-enable shadows when performance is improved.
+                    /*
                     shadows: isActive && activeColor.a > 0.5
                         ? [
                             BoxShadow(
@@ -64,6 +66,8 @@ class LetterGrid extends StatelessWidget {
                             ),
                           ]
                         : [],
+                    */
+                    shadows: [],
                   ),
                   child: Text(char),
                 ),

@@ -122,42 +122,46 @@ class _ClockFaceState extends State<ClockFace> {
                 child: Stack(
                   children: [
                     // Layer 1: Inactive Elements
-                    _ClockLayout(
-                      grid: widget.grid,
-                      remainder: 0,
-                      showDots: settings.showMinuteDots,
-                      forceAllDots:
-                          true, // Always show placeholder dots if dots are enabled
-                      dotColor: settings.inactiveColor,
-                      child: LetterGrid(
+                    RepaintBoundary(
+                      child: _ClockLayout(
                         grid: widget.grid,
-                        activeIndices: const {},
-                        inactiveColor: const Color(0xFF333333),
-                        activeColor: Colors.transparent,
+                        remainder: 0,
+                        showDots: settings.showMinuteDots,
+                        forceAllDots:
+                            true, // Always show placeholder dots if dots are enabled
+                        dotColor: settings.inactiveColor,
+                        child: LetterGrid(
+                          grid: widget.grid,
+                          activeIndices: const {},
+                          inactiveColor: const Color(0xFF333333),
+                          activeColor: Colors.transparent,
+                        ),
                       ),
                     ),
 
                     // Layer 2: Active Elements
-                    ShaderMask(
-                      shaderCallback: (bounds) {
-                        return LinearGradient(
-                          begin: Alignment.topLeft,
-                          end: Alignment.bottomRight,
-                          colors: settings.activeGradientColors,
-                        ).createShader(bounds);
-                      },
-                      blendMode: BlendMode.srcIn,
-                      child: _ClockLayout(
-                        grid: widget.grid,
-                        remainder: _remainder,
-                        showDots: settings.showMinuteDots,
-                        forceAllDots: false,
-                        dotColor: Colors.white,
-                        child: LetterGrid(
+                    RepaintBoundary(
+                      child: ShaderMask(
+                        shaderCallback: (bounds) {
+                          return LinearGradient(
+                            begin: Alignment.topLeft,
+                            end: Alignment.bottomRight,
+                            colors: settings.activeGradientColors,
+                          ).createShader(bounds);
+                        },
+                        blendMode: BlendMode.srcIn,
+                        child: _ClockLayout(
                           grid: widget.grid,
-                          activeIndices: _activeIndices,
-                          activeColor: Colors.white,
-                          inactiveColor: Colors.transparent,
+                          remainder: _remainder,
+                          showDots: settings.showMinuteDots,
+                          forceAllDots: false,
+                          dotColor: Colors.white,
+                          child: LetterGrid(
+                            grid: widget.grid,
+                            activeIndices: _activeIndices,
+                            activeColor: Colors.white,
+                            inactiveColor: Colors.white.withValues(alpha: 0),
+                          ),
                         ),
                       ),
                     ),
@@ -220,17 +224,41 @@ class _ClockLayout extends StatelessWidget {
 
             if (showDots) ...[
               // 1 minute: Top Left
-              if (forceAllDots || remainder >= 1)
-                Positioned(top: 0, left: 0, child: _Dot(color: dotColor)),
+              Positioned(
+                top: 0,
+                left: 0,
+                child: _Dot(
+                  color: dotColor,
+                  isActive: forceAllDots || remainder >= 1,
+                ),
+              ),
               // 2 minutes: Top Right
-              if (forceAllDots || remainder >= 2)
-                Positioned(top: 0, right: 0, child: _Dot(color: dotColor)),
+              Positioned(
+                top: 0,
+                right: 0,
+                child: _Dot(
+                  color: dotColor,
+                  isActive: forceAllDots || remainder >= 2,
+                ),
+              ),
               // 3 minutes: Bottom Right
-              if (forceAllDots || remainder >= 3)
-                Positioned(bottom: 0, right: 0, child: _Dot(color: dotColor)),
+              Positioned(
+                bottom: 0,
+                right: 0,
+                child: _Dot(
+                  color: dotColor,
+                  isActive: forceAllDots || remainder >= 3,
+                ),
+              ),
               // 4 minutes: Bottom Left
-              if (forceAllDots || remainder >= 4)
-                Positioned(bottom: 0, left: 0, child: _Dot(color: dotColor)),
+              Positioned(
+                bottom: 0,
+                left: 0,
+                child: _Dot(
+                  color: dotColor,
+                  isActive: forceAllDots || remainder >= 4,
+                ),
+              ),
             ],
           ],
         ),
@@ -243,21 +271,35 @@ class _ClockLayout extends StatelessWidget {
 // TODO This should animate in the same way that letter_grid does. Can we share/reuse code to ensure consistency?
 class _Dot extends StatelessWidget {
   final Color color;
-  const _Dot({required this.color});
+  final bool isActive;
+
+  const _Dot({required this.color, required this.isActive});
 
   @override
   Widget build(BuildContext context) {
-    return Container(
+    // Determine the effective color to display
+    // If active, use the passed color.
+    // If inactive, fade to transparent version of that color.
+    final effectiveColor = isActive ? color : color.withValues(alpha: 0.0);
+
+    return AnimatedContainer(
+      duration: const Duration(milliseconds: 500),
+      curve: Curves.easeInOut,
       width: 12,
       height: 12,
       decoration: BoxDecoration(
-        color: color,
+        color: effectiveColor,
         shape: BoxShape.circle,
         // Only show shadow if color is opaque/white (active state)
         // Inactive dots (grey) usually don't glow.
-        boxShadow: color == Colors.white
+        // Shadows removed for performance/smoothness
+        // TODO: Re-enable shadows when performance is improved.
+        /*
+        boxShadow: isActive && color == Colors.white
             ? [BoxShadow(color: color, blurRadius: 8, spreadRadius: 1)]
             : [],
+        */
+        boxShadow: [],
       ),
     );
   }
