@@ -1,16 +1,13 @@
-import 'package:wordclock/model/word_type.dart';
 
 class TimeToWords {
-  /// Converts [time] into a List of [WordType]s representing the phrase.
+  /// Converts [time] into a space-separated String representing the phrase.
   /// 
   /// Logic mimics the classic Word Clock:
   /// - Times are rounded to the nearest 5 minutes.
   /// - "Minutes past Hour" for 0-30.
   /// - "Minutes to (Hour + 1)" for 35-59.
   /// - "O'Clock" is used for the exact hour.
-  static List<WordType> convert(DateTime time) {
-    List<WordType> activeWords = [WordType.it, WordType.isVerb];
-    
+  static String convert(DateTime time) {
     // Round down to nearest 5 minutes
     int minute = time.minute;
     int hour = time.hour;
@@ -19,72 +16,84 @@ class TimeToWords {
     int remainder = minute % 5;
     minute -= remainder;
 
-    // Decide on Preposition and Minute Word
+    // Phrase components
+    // Format: IT IS [MINUTES] [PAST/TO] [HOUR] [OCLOCK]
+    List<String> parts = ["IT", "IS"];
+    List<String> minuteParts = [];
+    String? relation; // PAST or TO
+    String? hourStr;
+    String? suffix;
+
+    // 1. Determine Minutes & Relation
     if (minute == 0) {
-       activeWords.add(WordType.oclock);
+       suffix = "OCLOCK";
     } else if (minute == 5) {
-       activeWords.add(WordType.fiveMinutes);
-       activeWords.add(WordType.past);
+       minuteParts = ["FIVE"];
+       relation = "PAST";
     } else if (minute == 10) {
-       activeWords.add(WordType.tenMinutes);
-       activeWords.add(WordType.past);
+       minuteParts = ["TEN"];
+       relation = "PAST";
     } else if (minute == 15) {
-       activeWords.add(WordType.quarter);
-       activeWords.add(WordType.past);
+       minuteParts = ["QUARTER"];
+       relation = "PAST";
     } else if (minute == 20) {
-       activeWords.add(WordType.twenty);
-       activeWords.add(WordType.past);
+       minuteParts = ["TWENTY"];
+       relation = "PAST";
     } else if (minute == 25) {
-       activeWords.add(WordType.twenty);
-       activeWords.add(WordType.fiveMinutes);
-       activeWords.add(WordType.past);
+       minuteParts = ["TWENTY", "FIVE"];
+       relation = "PAST";
     } else if (minute == 30) {
-       activeWords.add(WordType.half);
-       activeWords.add(WordType.past);
+       minuteParts = ["HALF"];
+       relation = "PAST";
     } else if (minute == 35) {
        // 25 to next hour
-       activeWords.add(WordType.twenty);
-       activeWords.add(WordType.fiveMinutes);
-       activeWords.add(WordType.to);
+       minuteParts = ["TWENTY", "FIVE"];
+       relation = "TO";
        hour += 1;
     } else if (minute == 40) {
-       activeWords.add(WordType.twenty);
-       activeWords.add(WordType.to);
+       minuteParts = ["TWENTY"];
+       relation = "TO";
        hour += 1;
     } else if (minute == 45) {
-       activeWords.add(WordType.quarter);
-       activeWords.add(WordType.to);
+       minuteParts = ["QUARTER"];
+       relation = "TO";
        hour += 1;
     } else if (minute == 50) {
-       activeWords.add(WordType.tenMinutes);
-       activeWords.add(WordType.to);
+       minuteParts = ["TEN"];
+       relation = "TO";
        hour += 1;
     } else if (minute == 55) {
-       activeWords.add(WordType.fiveMinutes);
-       activeWords.add(WordType.to);
+       minuteParts = ["FIVE"];
+       relation = "TO";
        hour += 1;
     }
     
-    // Determine Hour Word
+    // 2. Determine Hour
     // Normalize hour (0-23) to (1-12)
     int displayHour = hour % 12;
     if (displayHour == 0) displayHour = 12;
     
     switch (displayHour) {
-      case 1: activeWords.add(WordType.one); break;
-      case 2: activeWords.add(WordType.two); break;
-      case 3: activeWords.add(WordType.three); break;
-      case 4: activeWords.add(WordType.four); break;
-      case 5: activeWords.add(WordType.five); break;
-      case 6: activeWords.add(WordType.six); break;
-      case 7: activeWords.add(WordType.seven); break;
-      case 8: activeWords.add(WordType.eight); break;
-      case 9: activeWords.add(WordType.nine); break;
-      case 10: activeWords.add(WordType.ten); break;
-      case 11: activeWords.add(WordType.eleven); break;
-      case 12: activeWords.add(WordType.twelve); break;
+      case 1: hourStr = "ONE"; break;
+      case 2: hourStr = "TWO"; break;
+      case 3: hourStr = "THREE"; break;
+      case 4: hourStr = "FOUR"; break;
+      case 5: hourStr = "FIVE"; break;
+      case 6: hourStr = "SIX"; break;
+      case 7: hourStr = "SEVEN"; break;
+      case 8: hourStr = "EIGHT"; break;
+      case 9: hourStr = "NINE"; break;
+      case 10: hourStr = "TEN"; break;
+      case 11: hourStr = "ELEVEN"; break;
+      case 12: hourStr = "TWELVE"; break;
     }
+    
+    // 3. Assemble
+    parts.addAll(minuteParts);
+    if (relation != null) parts.add(relation);
+    if (hourStr != null) parts.add(hourStr);
+    if (suffix != null) parts.add(suffix);
 
-    return activeWords;
+    return parts.join(" ");
   }
 }
