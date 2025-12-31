@@ -9,4 +9,6 @@
 - [x] Create a script/tool to generate new clock faces/grids from configuration.
 - [ ] Add integration tests.
 - [ ] Create animating backgrounds (like a plasma effect)
-- [ ] Add a debug mode, where we can set the time, or make the time tick extremely fast (one minute each second)
+- [x] Add a debug mode, where we can set the time, or make the time tick extremely fast (one minute each second)
+- [ ] Can we ensure all tests pass, and test is always formatted/linted before commit. Perhaps a pre-commit hook?
+- [ ] 21:45 doesn't work

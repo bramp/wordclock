@@ -22,59 +22,58 @@ class ClockFace extends StatefulWidget {
 
 class _ClockFaceState extends State<ClockFace> {
   late Timer _timer;
-  DateTime _now = DateTime.now();
-  final Set<int> _activeIndices = {};
+  
+  // State for caching calculations
+  DateTime? _lastTime;
+  Set<int> _activeIndices = {};
   int _remainder = 0;
+  
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
 
   @override
   void initState() {
     super.initState();
-    _updateTime();
-    // Update every second to ensure we catch minute changes promptly
+    // Update every second
     _timer = Timer.periodic(const Duration(seconds: 1), (timer) {
-      _updateTime();
+      if (!mounted) return;
+      // Trigger rebuild to update UI
+      setState(() {});
     });
   }
   
-  void _updateTime() {
-    final now = DateTime.now();
-    if (_now.minute != now.minute || _activeIndices.isEmpty) {
-      setState(() {
-        _now = now;
-        
-        final phrase = TimeToWords.convert(_now);
-        final words = phrase.split(' ');
-        
-        _activeIndices.clear();
-        
-        // Track usage count for words with multiple occurrences (like FIVE)
-        final Map<String, int> wordUsage = {};
-        
-        for (final wordStr in words) {
-           final definitions = widget.grid.mapping[wordStr];
-           if (definitions != null && definitions.isNotEmpty) {
-             // Determine which occurrence to use
-             int usage = wordUsage[wordStr] ?? 0;
-             if (usage >= definitions.length) {
-               // We ran out of definitions! 
-               // Fallback: Use the last one? Or the first?
-               // User said "Lighting the first one seems reasonable" if ambiguous.
-               // But here we have specific multiple occurrences.
-               // If we need a 3rd FIVE but only have 2, reuse the last one?
-               usage = definitions.length - 1; 
-             }
-             
-             _activeIndices.addAll(definitions[usage]);
-             
-             wordUsage[wordStr] = usage + 1;
-           }
-        }
-        
-        // Calculate remainder minutes (0-4)
-        _remainder = _now.minute % 5;
-      });
+  void _recalculateIndices(DateTime now) {
+    if (_lastTime != null && _lastTime!.minute == now.minute && _lastTime!.hour == now.hour && _activeIndices.isNotEmpty) {
+      // No change in time that affects words.
+      return;
     }
+
+    _lastTime = now;
+    
+    final phrase = TimeToWords.convert(now);
+    final words = phrase.split(' ');
+    
+    final newIndices = <int>{};
+    
+    // Track usage count for words with multiple occurrences (like FIVE)
+    final Map<String, int> wordUsage = {};
+    
+    for (final wordStr in words) {
+       final definitions = widget.grid.mapping[wordStr];
+       if (definitions != null && definitions.isNotEmpty) {
+         // Determine which occurrence to use
+         int usage = wordUsage[wordStr] ?? 0;
+         if (usage >= definitions.length) {
+           usage = definitions.length - 1; 
+         }
+         
+         newIndices.addAll(definitions[usage]);
+         
+         wordUsage[wordStr] = usage + 1;
+       }
+    }
+    
+    _activeIndices = newIndices;
+    _remainder = now.minute % 5;
   }
 
   @override
@@ -90,6 +89,11 @@ class _ClockFaceState extends State<ClockFace> {
       listenable: widget.settingsController,
       builder: (context, child) {
         final settings = widget.settingsController.settings;
+        // Use the clock provided by settings
+        final now = widget.settingsController.clock.now();
+        
+        // Recalculate grid if time changed
+        _recalculateIndices(now);
 
         return Scaffold(
           key: _scaffoldKey, // TODO Do we need a GlobalKey? Document why
@@ -116,12 +120,7 @@ class _ClockFaceState extends State<ClockFace> {
                       child: LetterGrid(
                         grid: widget.grid,
                         activeIndices: const {},
-                        inactiveColor: const Color(0xFF333333), // Keep letters dark grey for readability? Or use inactiveColor? 
-                        // User liked grey unlit letters.
-                        // Let's use a standard dark grey for unlit letters, 
-                        // separate from 'inactiveColor' which we defined for dots?
-                        // Actually, settings.inactiveColor (15% white) might be too light on black?
-                        // Let's stick to 0xFF333333 for unlit letters as it looked good.
+                        inactiveColor: const Color(0xFF333333), 
                         activeColor: Colors.transparent,
                       ),
                     ),
@@ -172,6 +171,7 @@ class _ClockFaceState extends State<ClockFace> {
     );
   }
 }
+
 
 class _ClockLayout extends StatelessWidget {
   final GridDefinition grid;

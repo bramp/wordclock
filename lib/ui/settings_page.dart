@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:wordclock/settings/settings_controller.dart';
 
@@ -83,6 +84,58 @@ class SettingsPanel extends StatelessWidget {
                         title: Text('WordClock v1.0', style: TextStyle(color: Colors.grey)),
                         subtitle: Text('Built with Flutter', style: TextStyle(color: Colors.grey)),
                       ),
+                      
+                      if (kDebugMode) ...[
+                        const SizedBox(height: 24),
+                        const _SectionHeader(title: 'Debug'),
+                        SwitchListTile(
+                          contentPadding: EdgeInsets.zero,
+                          title: const Text('Fast Tick Mode', style: TextStyle(color: Colors.white)),
+                          subtitle: const Text('1 minute per second', style: TextStyle(color: Colors.grey, fontSize: 12)),
+                          value: controller.isFastTickMode,
+                          activeColor: Colors.redAccent,
+                          onChanged: (value) => controller.setFastTickMode(value),
+                        ),
+                        ListTile(
+                          contentPadding: EdgeInsets.zero,
+                          title: const Text('Set Time', style: TextStyle(color: Colors.white)),
+                          subtitle: Text(
+                            controller.isManualTime
+                              ? '${controller.clock.now().hour.toString().padLeft(2, '0')}:${controller.clock.now().minute.toString().padLeft(2, '0')}'
+                              : 'System Time', 
+                            style: const TextStyle(color: Colors.grey)
+                          ),
+                          trailing: const Icon(Icons.access_time, color: Colors.grey),
+                          onTap: () async {
+                            final now = controller.clock.now();
+                            final time = await showTimePicker(
+                              context: context,
+                              initialTime: TimeOfDay.fromDateTime(now),
+                            );
+                            
+                            if (time != null && context.mounted) {
+                              final newTime = DateTime(
+                                now.year,
+                                now.month,
+                                now.day,
+                                time.hour,
+                                time.minute,
+                              );
+                              controller.setManualTime(newTime);
+                            }
+                          },
+                        ),
+                        if (controller.isManualTime)
+                          ListTile(
+                            contentPadding: EdgeInsets.zero,
+                            title: const Text('Reset to System Time', style: TextStyle(color: Colors.redAccent)),
+                            leading: const Icon(Icons.restore, color: Colors.redAccent),
+                            onTap: () {
+                              controller.setManualTime(null);
+                              controller.setFastTickMode(false);
+                            },
+                          ),
+                      ],
                     ],
                   ),
                 ),
