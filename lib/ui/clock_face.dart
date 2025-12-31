@@ -12,9 +12,9 @@ class ClockFace extends StatefulWidget {
 
   const ClockFace({
     super.key,
-    this.grid = GridDefinition.english11x10,
+    GridDefinition? grid,
     required this.settingsController,
-  });
+  }) : grid = grid ?? GridDefinition.english11x10;
 
   @override
   State<ClockFace> createState() => _ClockFaceState();
@@ -42,17 +42,36 @@ class _ClockFaceState extends State<ClockFace> {
     if (_now.minute != now.minute || _activeIndices.isEmpty) {
       setState(() {
         _now = now;
-        final words = TimeToWords.convert(_now);
+        
+        final phrase = TimeToWords.convert(_now);
+        final words = phrase.split(' ');
+        
         _activeIndices.clear();
-        for (final word in words) {
-          final indices = widget.grid.mapping[word];
-          if (indices != null) {
-            _activeIndices.addAll(indices);
-          }
+        
+        // Track usage count for words with multiple occurrences (like FIVE)
+        final Map<String, int> wordUsage = {};
+        
+        for (final wordStr in words) {
+           final definitions = widget.grid.mapping[wordStr];
+           if (definitions != null && definitions.isNotEmpty) {
+             // Determine which occurrence to use
+             int usage = wordUsage[wordStr] ?? 0;
+             if (usage >= definitions.length) {
+               // We ran out of definitions! 
+               // Fallback: Use the last one? Or the first?
+               // User said "Lighting the first one seems reasonable" if ambiguous.
+               // But here we have specific multiple occurrences.
+               // If we need a 3rd FIVE but only have 2, reuse the last one?
+               usage = definitions.length - 1; 
+             }
+             
+             _activeIndices.addAll(definitions[usage]);
+             
+             wordUsage[wordStr] = usage + 1;
+           }
         }
         
         // Calculate remainder minutes (0-4)
-        // We floor'd the time logic, so remainder is just minute % 5.
         _remainder = _now.minute % 5;
       });
     }
@@ -73,7 +92,7 @@ class _ClockFaceState extends State<ClockFace> {
         final settings = widget.settingsController.settings;
 
         return Scaffold(
-          key: _scaffoldKey,
+          key: _scaffoldKey, // TODO Do we need a GlobalKey? Document why
           backgroundColor: settings.backgroundColor,
           endDrawer: SettingsPanel(controller: widget.settingsController),
           drawerScrimColor: Colors.black.withOpacity(0.3),
@@ -207,6 +226,8 @@ class _ClockLayout extends StatelessWidget {
   }
 }
 
+// TODO Should this be it's own file?
+// TODO This should animate in the same way that letter_grid does. Can we share/reuse code to ensure consistency?
 class _Dot extends StatelessWidget {
   final Color color;
   const _Dot({required this.color});
