@@ -304,7 +304,6 @@ void _generateGrid(
   print('/// Seed: ${seed ?? "Deterministic (0)"}');
   print('static final english${width}x$height = WordGrid(');
   print('  width: $width,');
-  print('  height: $height,');
   print('  letters:');
   for (int i = 0; i < height; i++) {
     print("    '${gridString.substring(i * width, (i + 1) * width)}'");

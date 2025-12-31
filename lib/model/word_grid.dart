@@ -2,16 +2,19 @@ import 'package:wordclock/logic/time_to_words.dart';
 
 class WordGrid {
   final int width;
-  final int height;
   final String letters;
   final TimeToWords timeConverter;
 
   WordGrid({
     required this.width,
-    required this.height,
     required this.letters,
     required this.timeConverter,
-  });
+  }) : assert(
+         letters.length % width == 0,
+         "Grid letters must fit perfectly into width",
+       );
+
+  int get height => letters.length ~/ width;
 
   /// Calculates the set of indices to light up for the given [time].
   Set<int> getIndices(DateTime time) {
@@ -49,7 +52,6 @@ class WordGrid {
   // The original qlocktwo grid. Here for reference, we should use our own grid.
   static final english11x10 = WordGrid(
     width: 11,
-    height: 10,
     letters:
         "ITLISASTIME"
         "ACQUARTERDC"
