@@ -25,8 +25,9 @@ class MyApp extends StatelessWidget {
               brightness: Brightness.dark,
             ),
             useMaterial3: true,
-            fontFamily: 'Courier', 
-            scaffoldBackgroundColor: settingsController.settings.backgroundColor,
+            fontFamily: 'Courier',
+            scaffoldBackgroundColor:
+                settingsController.settings.backgroundColor,
           ),
           home: ClockFace(settingsController: settingsController),
           // debugShowCheckedModeBanner: false,

@@ -6,7 +6,7 @@ import 'package:wordclock/ui/clock_face.dart';
 void main() {
   testWidgets('WordClock app smoke test', (WidgetTester tester) async {
     final settingsController = SettingsController();
-    
+
     // Build our app and trigger a frame.
     await tester.pumpWidget(MyApp(settingsController: settingsController));
 

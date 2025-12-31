@@ -10,11 +10,8 @@ class ClockFace extends StatefulWidget {
   final GridDefinition grid;
   final SettingsController settingsController;
 
-  const ClockFace({
-    super.key,
-    GridDefinition? grid,
-    required this.settingsController,
-  }) : grid = grid ?? GridDefinition.english11x10;
+  ClockFace({super.key, GridDefinition? grid, required this.settingsController})
+    : grid = grid ?? GridDefinition.english11x10;
 
   @override
   State<ClockFace> createState() => _ClockFaceState();
@@ -22,12 +19,12 @@ class ClockFace extends StatefulWidget {
 
 class _ClockFaceState extends State<ClockFace> {
   late Timer _timer;
-  
+
   // State for caching calculations
   DateTime? _lastTime;
   Set<int> _activeIndices = {};
   int _remainder = 0;
-  
+
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
 
   @override
@@ -40,51 +37,52 @@ class _ClockFaceState extends State<ClockFace> {
       setState(() {});
     });
   }
-  
+
   void _recalculateIndices(DateTime now) {
-    if (_lastTime != null && _lastTime!.minute == now.minute && _lastTime!.hour == now.hour && _activeIndices.isNotEmpty) {
+    if (_lastTime != null &&
+        _lastTime!.minute == now.minute &&
+        _lastTime!.hour == now.hour &&
+        _activeIndices.isNotEmpty) {
       // No change in time that affects words.
       return;
     }
 
     _lastTime = now;
-    
+
     final phrase = TimeToWords.convert(now);
     final words = phrase.split(' ');
-    
+
     final newIndices = <int>{};
-    
+
     int lastEndIndex = -1;
-    
+
     for (final wordStr in words) {
-       final definitions = widget.grid.mapping[wordStr];
-       if (definitions != null && definitions.isNotEmpty) {
-         List<int>? chosenDef;
-         
-         // Try to find a definition that starts strictly after the last word ended
-         for (final def in definitions) {
-           if (def.first > lastEndIndex) {
-             chosenDef = def;
-             break;
-           }
-         }
-         
-         // Fallback: If we couldn't find one after the last index, 
-         // use the last known definition (likely the one furthest down the board).
-         // This handles edge cases or strange layouts, but ideally shouldn't be hit 
-         // for standard recursive layouts.
-         if (chosenDef == null) {
-           chosenDef = definitions.last;
-         }
-         
-         newIndices.addAll(chosenDef);
-         
-         // Update lastEndIndex to the end of this word
-         // We use the max index of the word, assuming contiguous
-         lastEndIndex = chosenDef.last;
-       }
+      final definitions = widget.grid.mapping[wordStr];
+      if (definitions != null && definitions.isNotEmpty) {
+        List<int>? chosenDef;
+
+        // Try to find a definition that starts strictly after the last word ended
+        for (final def in definitions) {
+          if (def.first > lastEndIndex) {
+            chosenDef = def;
+            break;
+          }
+        }
+
+        // Fallback: If we couldn't find one after the last index,
+        // use the last known definition (likely the one furthest down the board).
+        // This handles edge cases or strange layouts, but ideally shouldn't be hit
+        // for standard recursive layouts.
+        chosenDef ??= definitions.last;
+
+        newIndices.addAll(chosenDef);
+
+        // Update lastEndIndex to the end of this word
+        // We use the max index of the word, assuming contiguous
+        lastEndIndex = chosenDef.last;
+      }
     }
-    
+
     _activeIndices = newIndices;
     _remainder = now.minute % 5;
   }
@@ -104,7 +102,7 @@ class _ClockFaceState extends State<ClockFace> {
         final settings = widget.settingsController.settings;
         // Use the clock provided by settings
         final now = widget.settingsController.clock.now();
-        
+
         // Recalculate grid if time changed
         _recalculateIndices(now);
 
@@ -112,32 +110,33 @@ class _ClockFaceState extends State<ClockFace> {
           key: _scaffoldKey, // TODO Do we need a GlobalKey? Document why
           backgroundColor: settings.backgroundColor,
           endDrawer: SettingsPanel(controller: widget.settingsController),
-          drawerScrimColor: Colors.black.withOpacity(0.3),
+          drawerScrimColor: Colors.black.withValues(alpha: 0.3),
           body: Stack(
             children: [
               // Background: Faceplate color (usually matches scaffold)
               Positioned.fill(
                 child: Container(color: settings.backgroundColor),
               ),
-              
+
               Center(
                 child: Stack(
                   children: [
                     // Layer 1: Inactive Elements
                     _ClockLayout(
                       grid: widget.grid,
-                      remainder: 0, 
+                      remainder: 0,
                       showDots: settings.showMinuteDots,
-                      forceAllDots: true, // Always show placeholder dots if dots are enabled
+                      forceAllDots:
+                          true, // Always show placeholder dots if dots are enabled
                       dotColor: settings.inactiveColor,
                       child: LetterGrid(
                         grid: widget.grid,
                         activeIndices: const {},
-                        inactiveColor: const Color(0xFF333333), 
+                        inactiveColor: const Color(0xFF333333),
                         activeColor: Colors.transparent,
                       ),
                     ),
-                    
+
                     // Layer 2: Active Elements
                     ShaderMask(
                       shaderCallback: (bounds) {
@@ -165,13 +164,16 @@ class _ClockFaceState extends State<ClockFace> {
                   ],
                 ),
               ),
-              
+
               // Settings Button (Bottom Right)
               Positioned(
                 bottom: 16,
                 right: 16,
                 child: IconButton(
-                  icon: Icon(Icons.settings, color: Colors.white.withOpacity(0.3)),
+                  icon: Icon(
+                    Icons.settings,
+                    color: Colors.white.withValues(alpha: 0.3),
+                  ),
                   onPressed: () {
                     _scaffoldKey.currentState?.openEndDrawer();
                   },
@@ -184,7 +186,6 @@ class _ClockFaceState extends State<ClockFace> {
     );
   }
 }
-
 
 class _ClockLayout extends StatelessWidget {
   final GridDefinition grid;
@@ -208,30 +209,29 @@ class _ClockLayout extends StatelessWidget {
     return AspectRatio(
       aspectRatio: grid.width / grid.height,
       child: Padding(
-        padding: const EdgeInsets.all(20.0), // Outer margin to prevent dot shadow cropping
+        padding: const EdgeInsets.all(
+          20.0,
+        ), // Outer margin to prevent dot shadow cropping
         child: Stack(
           children: [
             // The Grid (Inset)
             // Push grid in so dots fit in corners
-            Padding(
-              padding: const EdgeInsets.all(24.0), 
-              child: child,
-            ),
-            
+            Padding(padding: const EdgeInsets.all(24.0), child: child),
+
             if (showDots) ...[
-               // 1 minute: Top Left
-               if (forceAllDots || remainder >= 1)
-                 Positioned(top: 0, left: 0, child: _Dot(color: dotColor)),
-               // 2 minutes: Top Right
-               if (forceAllDots || remainder >= 2)
-                 Positioned(top: 0, right: 0, child: _Dot(color: dotColor)),
-               // 3 minutes: Bottom Right
-               if (forceAllDots || remainder >= 3)
-                 Positioned(bottom: 0, right: 0, child: _Dot(color: dotColor)),
-               // 4 minutes: Bottom Left
-               if (forceAllDots || remainder >= 4)
-                 Positioned(bottom: 0, left: 0, child: _Dot(color: dotColor)),
-            ]
+              // 1 minute: Top Left
+              if (forceAllDots || remainder >= 1)
+                Positioned(top: 0, left: 0, child: _Dot(color: dotColor)),
+              // 2 minutes: Top Right
+              if (forceAllDots || remainder >= 2)
+                Positioned(top: 0, right: 0, child: _Dot(color: dotColor)),
+              // 3 minutes: Bottom Right
+              if (forceAllDots || remainder >= 3)
+                Positioned(bottom: 0, right: 0, child: _Dot(color: dotColor)),
+              // 4 minutes: Bottom Left
+              if (forceAllDots || remainder >= 4)
+                Positioned(bottom: 0, left: 0, child: _Dot(color: dotColor)),
+            ],
           ],
         ),
       ),
@@ -255,9 +255,9 @@ class _Dot extends StatelessWidget {
         shape: BoxShape.circle,
         // Only show shadow if color is opaque/white (active state)
         // Inactive dots (grey) usually don't glow.
-        boxShadow: color == Colors.white ? [
-           BoxShadow(color: color, blurRadius: 8, spreadRadius: 1)
-        ] : [],
+        boxShadow: color == Colors.white
+            ? [BoxShadow(color: color, blurRadius: 8, spreadRadius: 1)]
+            : [],
       ),
     );
   }

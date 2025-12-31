@@ -39,3 +39,19 @@ The build artifacts will be in `build/web/`.
 flutter build apk
 ```
 The APK will be in `build/app/outputs/flutter-apk/app-release.apk`.
+
+## Development Setup
+
+### Pre-commit Hooks
+This project uses [pre-commit](https://pre-commit.com/) to ensure code quality.
+
+1. Install `pre-commit` (e.g., via Homebrew on MacOS):
+   ```bash
+   brew install pre-commit
+   ```
+2. Install the hooks:
+   ```bash
+   pre-commit install
+   ```
+
+Now, every time you commit, the hooks (formatting, analysis, testing) will run automatically.

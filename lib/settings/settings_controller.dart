@@ -24,7 +24,7 @@ class ThemeSettings {
     inactiveColor: Color.fromRGBO(255, 255, 255, 0.15),
     backgroundColor: Colors.black,
   );
-  
+
   static const warmTheme = ThemeSettings(
     activeGradientColors: [
       Color(0xFFFF512F), // Orange
@@ -33,7 +33,7 @@ class ThemeSettings {
     inactiveColor: Color.fromRGBO(255, 200, 200, 0.15),
     backgroundColor: Color(0xFF1A0505),
   );
-  
+
   static const matrixTheme = ThemeSettings(
     activeGradientColors: [
       Color(0xFF00FF00), // Bright Green
@@ -44,43 +44,41 @@ class ThemeSettings {
   );
 }
 
-
-
 class SettingsController extends ChangeNotifier {
   ThemeSettings _currentSettings = ThemeSettings.defaultTheme;
-  
+
   // The active clock instance.
   // We use AdjustableClock which allows shifting time and changing speed.
   // By default, it aligns with system time.
   final AdjustableClock _clock = AdjustableClock();
-  
+
   // Track state simply to report to UI (though clock handles logic)
   bool _isManualTime = false;
-  
+
   SettingsController(); // Constructor doesn't need init logic anymore
-  
+
   ThemeSettings get settings => _currentSettings;
-  
+
   /// Returns the clock instance.
   Clock get clock => _clock;
-  
-  bool get isFastTickMode => _isFastTickMode; 
+
+  bool get isFastTickMode => _isFastTickMode;
   bool _isFastTickMode = false;
-  
+
   bool get isManualTime => _isManualTime;
 
   void updateTheme(ThemeSettings newSettings) {
     _currentSettings = newSettings;
     notifyListeners();
   }
-  
+
   void setFastTickMode(bool enabled) {
     if (_isFastTickMode == enabled) return;
     _isFastTickMode = enabled;
     _clock.setRate(enabled ? 60.0 : 1.0);
     notifyListeners();
   }
-  
+
   void setManualTime(DateTime? time) {
     if (time != null) {
       _isManualTime = true;
@@ -94,6 +92,3 @@ class SettingsController extends ChangeNotifier {
     notifyListeners();
   }
 }
-
-
-

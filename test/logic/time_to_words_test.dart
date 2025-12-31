@@ -50,11 +50,11 @@ void main() {
       final words = TimeToWords.convert(time);
       expect(words, "IT IS TWELVE OCLOCK");
     });
-    
+
     test('00:00 is TWELVE OCLOCK', () {
-       final time = DateTime(2023, 1, 1, 0, 0);
-       final words = TimeToWords.convert(time);
-       expect(words, "IT IS TWELVE OCLOCK");
+      final time = DateTime(2023, 1, 1, 0, 0);
+      final words = TimeToWords.convert(time);
+      expect(words, "IT IS TWELVE OCLOCK");
     });
 
     test('Rounding: 10:02 -> 10:00', () {
@@ -69,7 +69,7 @@ void main() {
       // Floor(3) = 0 -> Ten OClock
       expect(words, "IT IS TEN OCLOCK");
     });
-    
+
     test('Rounding: 10:58 -> 10:55', () {
       final time = DateTime(2023, 1, 1, 10, 58);
       final words = TimeToWords.convert(time);

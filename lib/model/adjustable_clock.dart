@@ -7,9 +7,9 @@ class AdjustableClock extends Clock {
   double _rate;
 
   AdjustableClock([DateTime? startTime])
-      : _startTime = startTime ?? DateTime.now(),
-        _anchorTime = DateTime.now(),
-        _rate = 1.0;
+    : _startTime = startTime ?? DateTime.now(),
+      _anchorTime = DateTime.now(),
+      _rate = 1.0;
 
   @override
   DateTime now() {
@@ -28,16 +28,18 @@ class AdjustableClock extends Clock {
   /// 1.0 is normal speed. 60.0 is 1 minute per second.
   void setRate(double rate) {
     if (_rate == rate) return;
-    
+
     // Capture the current virtual time to use as the new start time
     // so the clock doesn't jump wildly when changing rate.
     _startTime = now();
     _anchorTime = DateTime.now();
     _rate = rate;
   }
-  
+
   /// Helper to determine if we are effectively using system time.
-  bool get isSystemTime => _rate == 1.0 && _startTime.difference(_anchorTime).inMilliseconds.abs() < 100; 
+  bool get isSystemTime =>
+      _rate == 1.0 &&
+      _startTime.difference(_anchorTime).inMilliseconds.abs() < 100;
   // Note: Detecting "system time" accurately after drifting is hard with this model unless we keep a flag.
   // The SettingsController can track the "mode".
 }

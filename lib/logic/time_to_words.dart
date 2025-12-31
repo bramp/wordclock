@@ -1,7 +1,6 @@
-
 class TimeToWords {
   /// Converts [time] into a space-separated String representing the phrase.
-  /// 
+  ///
   /// Logic mimics the classic Word Clock:
   /// - Times are rounded to the nearest 5 minutes.
   /// - "Minutes past Hour" for 0-30.
@@ -11,7 +10,7 @@ class TimeToWords {
     // Round down to nearest 5 minutes
     int minute = time.minute;
     int hour = time.hour;
-    
+
     // Rounding logic: Always floor
     int remainder = minute % 5;
     minute -= remainder;
@@ -26,68 +25,92 @@ class TimeToWords {
 
     // 1. Determine Minutes & Relation
     if (minute == 0) {
-       suffix = "OCLOCK";
+      suffix = "OCLOCK";
     } else if (minute == 5) {
-       minuteParts = ["FIVE"];
-       relation = "PAST";
+      minuteParts = ["FIVE"];
+      relation = "PAST";
     } else if (minute == 10) {
-       minuteParts = ["TEN"];
-       relation = "PAST";
+      minuteParts = ["TEN"];
+      relation = "PAST";
     } else if (minute == 15) {
-       minuteParts = ["QUARTER"];
-       relation = "PAST";
+      minuteParts = ["QUARTER"];
+      relation = "PAST";
     } else if (minute == 20) {
-       minuteParts = ["TWENTY"];
-       relation = "PAST";
+      minuteParts = ["TWENTY"];
+      relation = "PAST";
     } else if (minute == 25) {
-       minuteParts = ["TWENTY", "FIVE"];
-       relation = "PAST";
+      minuteParts = ["TWENTY", "FIVE"];
+      relation = "PAST";
     } else if (minute == 30) {
-       minuteParts = ["HALF"];
-       relation = "PAST";
+      minuteParts = ["HALF"];
+      relation = "PAST";
     } else if (minute == 35) {
-       // 25 to next hour
-       minuteParts = ["TWENTY", "FIVE"];
-       relation = "TO";
-       hour += 1;
+      // 25 to next hour
+      minuteParts = ["TWENTY", "FIVE"];
+      relation = "TO";
+      hour += 1;
     } else if (minute == 40) {
-       minuteParts = ["TWENTY"];
-       relation = "TO";
-       hour += 1;
+      minuteParts = ["TWENTY"];
+      relation = "TO";
+      hour += 1;
     } else if (minute == 45) {
-       minuteParts = ["QUARTER"];
-       relation = "TO";
-       hour += 1;
+      minuteParts = ["QUARTER"];
+      relation = "TO";
+      hour += 1;
     } else if (minute == 50) {
-       minuteParts = ["TEN"];
-       relation = "TO";
-       hour += 1;
+      minuteParts = ["TEN"];
+      relation = "TO";
+      hour += 1;
     } else if (minute == 55) {
-       minuteParts = ["FIVE"];
-       relation = "TO";
-       hour += 1;
+      minuteParts = ["FIVE"];
+      relation = "TO";
+      hour += 1;
     }
-    
+
     // 2. Determine Hour
     // Normalize hour (0-23) to (1-12)
     int displayHour = hour % 12;
     if (displayHour == 0) displayHour = 12;
-    
+
     switch (displayHour) {
-      case 1: hourStr = "ONE"; break;
-      case 2: hourStr = "TWO"; break;
-      case 3: hourStr = "THREE"; break;
-      case 4: hourStr = "FOUR"; break;
-      case 5: hourStr = "FIVE"; break;
-      case 6: hourStr = "SIX"; break;
-      case 7: hourStr = "SEVEN"; break;
-      case 8: hourStr = "EIGHT"; break;
-      case 9: hourStr = "NINE"; break;
-      case 10: hourStr = "TEN"; break;
-      case 11: hourStr = "ELEVEN"; break;
-      case 12: hourStr = "TWELVE"; break;
+      case 1:
+        hourStr = "ONE";
+        break;
+      case 2:
+        hourStr = "TWO";
+        break;
+      case 3:
+        hourStr = "THREE";
+        break;
+      case 4:
+        hourStr = "FOUR";
+        break;
+      case 5:
+        hourStr = "FIVE";
+        break;
+      case 6:
+        hourStr = "SIX";
+        break;
+      case 7:
+        hourStr = "SEVEN";
+        break;
+      case 8:
+        hourStr = "EIGHT";
+        break;
+      case 9:
+        hourStr = "NINE";
+        break;
+      case 10:
+        hourStr = "TEN";
+        break;
+      case 11:
+        hourStr = "ELEVEN";
+        break;
+      case 12:
+        hourStr = "TWELVE";
+        break;
     }
-    
+
     // 3. Assemble
     parts.addAll(minuteParts);
     if (relation != null) parts.add(relation);

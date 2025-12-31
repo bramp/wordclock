@@ -20,7 +20,7 @@ class LetterGrid extends StatelessWidget {
     // We want the grid to fit within the screen, maintaining aspect ratio.
     // The grid is 11 columns x 10 rows.
     // Aspect Ratio is 11/10 = 1.1 width/height.
-    
+
     return AspectRatio(
       aspectRatio: grid.width / grid.height,
       child: LayoutBuilder(
@@ -28,13 +28,13 @@ class LetterGrid extends StatelessWidget {
           // Calculate cell size
           final width = constraints.maxWidth / grid.width;
           final height = constraints.maxHeight / grid.height;
-          // Use the smaller dimension to keep cells square-ish if needed, 
-          // or just fill the space. 
+          // Use the smaller dimension to keep cells square-ish if needed,
+          // or just fill the space.
           // Monospaced fonts usually need careful sizing.
-          
+
           // Let's use a Wrap or GridView?
           // GridView is perfect.
-          
+
           return GridView.builder(
             physics: const NeverScrollableScrollPhysics(), // Disable scrolling
             itemCount: grid.letters.length,
@@ -45,7 +45,7 @@ class LetterGrid extends StatelessWidget {
             itemBuilder: (context, index) {
               final isActive = activeIndices.contains(index);
               final char = grid.letters[index];
-              
+
               return Center(
                 child: AnimatedDefaultTextStyle(
                   duration: const Duration(milliseconds: 500),
@@ -55,9 +55,15 @@ class LetterGrid extends StatelessWidget {
                     fontSize: height * 0.6, // Scale font with cell height
                     fontWeight: isActive ? FontWeight.w900 : FontWeight.w300,
                     color: isActive ? activeColor : inactiveColor,
-                    shadows: isActive && activeColor.opacity > 0.5 ? [
-                       BoxShadow(color: activeColor, blurRadius: 8, spreadRadius: 1)
-                    ] : [],
+                    shadows: isActive && activeColor.a > 0.5
+                        ? [
+                            BoxShadow(
+                              color: activeColor,
+                              blurRadius: 8,
+                              spreadRadius: 1,
+                            ),
+                          ]
+                        : [],
                   ),
                   child: Text(char),
                 ),

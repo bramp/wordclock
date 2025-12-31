@@ -1,4 +1,4 @@
-
+// ignore_for_file: avoid_print
 import 'dart:io';
 import 'package:wordclock/logic/time_to_words.dart';
 import 'package:wordclock/model/grid_def.dart';
@@ -23,19 +23,21 @@ void main(List<String> args) {
     }
   }
 
-  print('Time: ${now.hour.toString().padLeft(2, '0')}:${now.minute.toString().padLeft(2, '0')}');
+  print(
+    'Time: ${now.hour.toString().padLeft(2, '0')}:${now.minute.toString().padLeft(2, '0')}',
+  );
 
   // 2. Logic: Time -> Phrase string
   final phrase = TimeToWords.convert(now);
   print('Phrase: "$phrase"');
-  
+
   // 3. Logic: Phrase -> Indices
   // Parse string back to words
   final words = phrase.split(' ');
-  
+
   final grid = GridDefinition.english11x10;
   final Set<int> activeIndices = {};
-  
+
   // Track usage for ambiguity resolution
   final Map<String, int> wordUsage = {};
 
@@ -44,7 +46,7 @@ void main(List<String> args) {
     if (definitions != null && definitions.isNotEmpty) {
       int usage = wordUsage[wordStr] ?? 0;
       if (usage >= definitions.length) {
-         usage = definitions.length - 1; 
+        usage = definitions.length - 1;
       }
       activeIndices.addAll(definitions[usage]);
       wordUsage[wordStr] = usage + 1;
@@ -64,17 +66,17 @@ void _printGrid(GridDefinition grid, Set<int> activeIndices) {
   const String inactiveColor = '\x1B[38;5;240m'; // Dark Grey
 
   final buffer = StringBuffer();
-  
-  buffer.writeln('+' + '-' * (grid.width * 2 + 1) + '+');
-  
+
+  buffer.writeln('+${'-' * (grid.width * 2 + 1)}+');
+
   int index = 0;
   for (int y = 0; y < grid.height; y++) {
     buffer.write('| ');
     for (int x = 0; x < grid.width; x++) {
-      if (index >= grid.letters.length) break; 
+      if (index >= grid.letters.length) break;
       final char = grid.letters[index];
       final isActive = activeIndices.contains(index);
-      
+
       if (isActive) {
         buffer.write('$bold$activeColor$char$reset ');
       } else {
@@ -84,7 +86,7 @@ void _printGrid(GridDefinition grid, Set<int> activeIndices) {
     }
     buffer.writeln('|');
   }
-  
-  buffer.writeln('+' + '-' * (grid.width * 2 + 1) + '+');
+
+  buffer.writeln('+${'-' * (grid.width * 2 + 1)}+');
   print(buffer.toString());
 }
