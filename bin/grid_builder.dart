@@ -41,7 +41,6 @@ void main(List<String> args) {
       );
     }
     print('    ,');
-    print('    timeConverter: EnglishTimeToWords(),');
     print(');');
   } catch (e) {
     print('Error generating grid: $e');

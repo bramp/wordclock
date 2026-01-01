@@ -1,10 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:wordclock/logic/time_to_words.dart';
 import 'package:wordclock/model/word_grid.dart';
 import 'package:wordclock/ui/letter_grid.dart';
 
-// Mock Grid for testing
 final _testGrid = WordGrid(
   width: 4,
   letters:
@@ -12,13 +10,7 @@ final _testGrid = WordGrid(
       "EFGH"
       "IJKL"
       "MNOP", // 4x4
-  timeConverter: _MockTimeConverter(),
 );
-
-class _MockTimeConverter implements TimeToWords {
-  @override
-  String convert(DateTime time) => "";
-}
 
 void main() {
   group('LetterGrid', () {

@@ -60,7 +60,9 @@ class _ClockFaceState extends State<ClockFace> {
 
     _lastTime = now;
     _lastGrid = grid;
-    _activeIndices = grid.getIndices(now);
+    final phrase = widget.settingsController.currentLanguage.timeToWords
+        .convert(now);
+    _activeIndices = grid.getIndices(phrase);
     _remainder = now.minute % 5;
   }
 

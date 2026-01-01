@@ -38,6 +38,22 @@ class EnglishLanguage implements WordClockLanguage {
       "J"
       "Q";
 
+  // The original qlocktwo grid. Here for reference only
+  // WordGrid get defaultGrid => WordGrid(
+  //   width: 11,
+  //   letters:
+  //       "ITLISASTIME"
+  //       "ACQUARTERDC"
+  //       "TWENTYFIVEX"
+  //       "HALFBTENFTO"
+  //       "PASTERUNINE"
+  //       "ONESIXTHREE"
+  //       "FOURFIVETWO"
+  //       "EIGHTELEVEN"
+  //       "SEVENTWELVE"
+  //       "TENSEOCLOCK",
+  // );
+
   @override
   WordGrid get defaultGrid => WordGrid(
     width: 11,
@@ -52,6 +68,5 @@ class EnglishLanguage implements WordClockLanguage {
         'SEVENSIXTEN'
         'THREETWELVE'
         'ATWOIOCLOCK',
-    timeConverter: timeToWords,
   );
 }

@@ -77,16 +77,12 @@ void _processLanguage(String lang, int width, int? seed, DateTime now) {
     language: language,
   );
 
-  final grid = WordGrid(
-    width: width,
-    letters: letters,
-    timeConverter: language.timeToWords,
-  );
+  final grid = WordGrid(width: width, letters: letters);
 
   final phrase = language.timeToWords.convert(now);
   print('Phrase: "$phrase"');
 
-  final activeIndices = grid.getIndices(now);
+  final activeIndices = grid.getIndices(phrase);
   _printGrid(grid, activeIndices);
 }
 

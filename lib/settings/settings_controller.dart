@@ -80,11 +80,7 @@ class SettingsController extends ChangeNotifier {
         seed: _gridSeed,
         language: _currentLanguage,
       );
-      _currentGrid = WordGrid(
-        width: 11,
-        letters: letters,
-        timeConverter: _currentLanguage.timeToWords,
-      );
+      _currentGrid = WordGrid(width: 11, letters: letters);
     }
   }
 
