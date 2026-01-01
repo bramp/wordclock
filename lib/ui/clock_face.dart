@@ -8,7 +8,7 @@ import 'package:wordclock/model/word_grid.dart';
 import 'package:wordclock/ui/clock_layout.dart';
 import 'package:wordclock/ui/letter_grid.dart';
 import 'package:wordclock/settings/settings_controller.dart';
-import 'package:wordclock/ui/settings_page.dart';
+import 'package:wordclock/ui/settings/settings_panel.dart';
 
 class ClockFace extends StatefulWidget {
   final SettingsController settingsController;

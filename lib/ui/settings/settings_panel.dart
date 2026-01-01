@@ -1,6 +1,9 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:wordclock/settings/settings_controller.dart';
+import 'package:wordclock/ui/settings/components/section_header.dart';
+import 'package:wordclock/ui/settings/components/speed_chip.dart';
+import 'package:wordclock/ui/settings/components/theme_chip.dart';
 
 class SettingsPanel extends StatelessWidget {
   final SettingsController controller;
@@ -35,12 +38,12 @@ class SettingsPanel extends StatelessWidget {
                   child: ListView(
                     padding: const EdgeInsets.symmetric(horizontal: 16),
                     children: [
-                      const _SectionHeader(title: 'Theme'),
+                      const SectionHeader(title: 'Theme'),
                       Wrap(
                         spacing: 8,
                         runSpacing: 8,
                         children: [
-                          _ThemeChip(
+                          ThemeChip(
                             label: 'Default',
                             colors:
                                 ThemeSettings.defaultTheme.activeGradientColors,
@@ -52,7 +55,7 @@ class SettingsPanel extends StatelessWidget {
                               ThemeSettings.defaultTheme,
                             ),
                           ),
-                          _ThemeChip(
+                          ThemeChip(
                             label: 'Warm',
                             colors:
                                 ThemeSettings.warmTheme.activeGradientColors,
@@ -66,7 +69,7 @@ class SettingsPanel extends StatelessWidget {
                             onTap: () =>
                                 controller.updateTheme(ThemeSettings.warmTheme),
                           ),
-                          _ThemeChip(
+                          ThemeChip(
                             label: 'Matrix',
                             colors:
                                 ThemeSettings.matrixTheme.activeGradientColors,
@@ -81,7 +84,7 @@ class SettingsPanel extends StatelessWidget {
                       ),
 
                       const SizedBox(height: 24),
-                      const _SectionHeader(title: 'Display'),
+                      const SectionHeader(title: 'Display'),
                       SwitchListTile(
                         contentPadding: EdgeInsets.zero,
                         title: const Text(
@@ -104,7 +107,7 @@ class SettingsPanel extends StatelessWidget {
                       ),
 
                       const SizedBox(height: 24),
-                      const _SectionHeader(title: 'About'),
+                      const SectionHeader(title: 'About'),
                       const ListTile(
                         contentPadding: EdgeInsets.zero,
                         title: Text(
@@ -119,7 +122,7 @@ class SettingsPanel extends StatelessWidget {
 
                       if (kDebugMode) ...[
                         const SizedBox(height: 24),
-                        const _SectionHeader(title: 'Debug'),
+                        const SectionHeader(title: 'Debug'),
                         Padding(
                           padding: const EdgeInsets.only(bottom: 8.0),
                           child: const Text(
@@ -131,7 +134,7 @@ class SettingsPanel extends StatelessWidget {
                           spacing: 8,
                           runSpacing: 8,
                           children: [
-                            _SpeedChip(
+                            SpeedChip(
                               label: 'Normal',
                               color: Colors.grey,
                               isSelected:
@@ -139,7 +142,7 @@ class SettingsPanel extends StatelessWidget {
                               onTap: () =>
                                   controller.setClockSpeed(ClockSpeed.normal),
                             ),
-                            _SpeedChip(
+                            SpeedChip(
                               label: 'Fast',
                               color: Colors.orangeAccent,
                               isSelected:
@@ -147,7 +150,7 @@ class SettingsPanel extends StatelessWidget {
                               onTap: () =>
                                   controller.setClockSpeed(ClockSpeed.fast),
                             ),
-                            _SpeedChip(
+                            SpeedChip(
                               label: 'Hyper',
                               color: Colors.purpleAccent,
                               isSelected:
@@ -199,8 +202,8 @@ class SettingsPanel extends StatelessWidget {
                                 now.year,
                                 now.month,
                                 now.day,
-                                time.hour,
-                                time.minute,
+                                now.hour,
+                                now.minute,
                               );
                               controller.setManualTime(newTime);
                             }
@@ -230,124 +233,6 @@ class SettingsPanel extends StatelessWidget {
           ),
         );
       },
-    );
-  }
-}
-
-class _SectionHeader extends StatelessWidget {
-  final String title;
-  const _SectionHeader({required this.title});
-
-  @override
-  Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 12.0),
-      child: Text(
-        title.toUpperCase(),
-        style: const TextStyle(
-          color: Colors.grey,
-          fontSize: 12,
-          fontWeight: FontWeight.bold,
-          letterSpacing: 1.5,
-        ),
-      ),
-    );
-  }
-}
-
-class _ThemeChip extends StatelessWidget {
-  final String label;
-  final List<Color> colors;
-  final bool isSelected;
-  final VoidCallback onTap;
-
-  const _ThemeChip({
-    required this.label,
-    required this.colors,
-    required this.isSelected,
-    required this.onTap,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: onTap,
-      child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-        decoration: BoxDecoration(
-          color: isSelected
-              ? Colors.white.withValues(alpha: 0.1)
-              : Colors.transparent,
-          border: Border.all(
-            color: isSelected
-                ? colors.first
-                : Colors.grey.withValues(alpha: 0.3),
-            width: 2,
-          ),
-          borderRadius: BorderRadius.circular(20),
-        ),
-        child: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Container(
-              width: 16,
-              height: 16,
-              decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(8),
-                gradient: LinearGradient(colors: colors),
-              ),
-            ),
-            const SizedBox(width: 8),
-            Text(
-              label,
-              style: TextStyle(
-                color: isSelected ? Colors.white : Colors.grey,
-                fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-}
-
-class _SpeedChip extends StatelessWidget {
-  final String label;
-  final Color color;
-  final bool isSelected;
-  final VoidCallback onTap;
-
-  const _SpeedChip({
-    required this.label,
-    required this.color,
-    required this.isSelected,
-    required this.onTap,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: onTap,
-      child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-        decoration: BoxDecoration(
-          color: isSelected ? color.withValues(alpha: 0.2) : Colors.transparent,
-          border: Border.all(
-            color: isSelected ? color : Colors.grey.withValues(alpha: 0.3),
-            width: 1.5,
-          ),
-          borderRadius: BorderRadius.circular(16),
-        ),
-        child: Text(
-          label,
-          style: TextStyle(
-            color: isSelected ? Colors.white : Colors.grey,
-            fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
-            fontSize: 13,
-          ),
-        ),
-      ),
     );
   }
 }
