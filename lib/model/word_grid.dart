@@ -49,20 +49,36 @@ class WordGrid {
     return activeIndices;
   }
 
-  // The original qlocktwo grid. Here for reference, we should use our own grid.
+  // The original qlocktwo grid. Here for reference only
+  // static final english11x10 = WordGrid(
+  //   width: 11,
+  //   letters:
+  //       "ITLISASTIME"
+  //       "ACQUARTERDC"
+  //       "TWENTYFIVEX"
+  //       "HALFBTENFTO"
+  //       "PASTERUNINE"
+  //       "ONESIXTHREE"
+  //       "FOURFIVETWO"
+  //       "EIGHTELEVEN"
+  //       "SEVENTWELVE"
+  //       "TENSEOCLOCK",
+  //   timeConverter: EnglishTimeToWords(),
+  // );
+
   static final english11x10 = WordGrid(
     width: 11,
     letters:
-        "ITLISASTIME"
-        "ACQUARTERDC"
-        "TWENTYFIVEX"
-        "HALFBTENFTO"
-        "PASTERUNINE"
-        "ONESIXTHREE"
-        "FOURFIVETWO"
-        "EIGHTELEVEN"
-        "SEVENTWELVE"
-        "TENSEOCLOCK",
+        'ITZISJHALFU'
+        'QUARTERTENB'
+        'TWENTYOFIVE'
+        'JPASTTOARRX'
+        'EIGHTELEVEN'
+        'FIVEFOURTAE'
+        'NINEONEEHWL'
+        'SEVENSIXTEN'
+        'THREETWELVE'
+        'TWONOCLOCKU',
     timeConverter: EnglishTimeToWords(),
   );
 }

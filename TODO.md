@@ -12,3 +12,5 @@
 - [x] Add a debug mode, where we can set the time, or make the time tick extremely fast (one minute each second)
 - [X] Can we ensure all tests pass, and test is always formatted/linted before commit. Perhaps a pre-commit hook?
 - [x] 21:45 doesn't work
+- [ ] Draw a ' after O, so it reads O'Clock, but the O' should take up a single space on the grid (with the O aligned as normal).
+- [x] Use a grid we generate
