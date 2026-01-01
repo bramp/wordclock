@@ -1,6 +1,7 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:wordclock/settings/settings_controller.dart';
+import 'package:wordclock/settings/theme_settings.dart';
 import 'package:wordclock/ui/settings/components/section_header.dart';
 import 'package:wordclock/ui/settings/components/speed_chip.dart';
 import 'package:wordclock/ui/settings/components/theme_chip.dart';

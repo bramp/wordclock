@@ -15,3 +15,5 @@
 - [ ] Draw a ' after O, so it reads O'Clock, but the O' should take up a single space on the grid (with the O aligned as normal).
 - [x] Use a grid we generate
 - [ ] We should make it possible to copy and paste the time
+- [ ] When the app is resized, the grey letters animate their change, but the illumatned ones don't. That seems wrong behaviour
+- [ ] Add a debug toggle to hide the "padding" letters.
