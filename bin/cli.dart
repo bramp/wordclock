@@ -3,19 +3,25 @@ import 'dart:io';
 
 import 'package:wordclock/generator/grid_generator.dart';
 import 'package:wordclock/logic/time_to_words.dart';
+import 'package:wordclock/logic/japanese_time_to_words.dart';
 import 'package:wordclock/model/word_grid.dart';
 
 void main(List<String> args) {
   // Defaults
   int width = 11;
   int? seed;
-  String lang = 'en';
+  List<String> languages = ['en'];
   DateTime now = DateTime.now();
 
   // Simple Argument Parsing
   for (var arg in args) {
     if (arg.startsWith('--lang=')) {
-      lang = arg.substring(7);
+      final raw = arg.substring(7);
+      if (raw == 'all') {
+        languages = ['en', 'ja'];
+      } else {
+        languages = raw.split(',');
+      }
     } else if (arg.startsWith('--width=')) {
       width = int.parse(arg.substring(8));
     } else if (arg.startsWith('--seed=')) {
@@ -36,16 +42,31 @@ void main(List<String> args) {
     }
   }
 
+  print(
+    'Time: ${now.hour.toString().padLeft(2, '0')}:${now.minute.toString().padLeft(2, '0')}',
+  );
+
+  for (final lang in languages) {
+    _processLanguage(lang, width, seed, now);
+  }
+}
+
+void _processLanguage(String lang, int width, int? seed, DateTime now) {
+  print('\n=== Language: $lang ===');
+
   // Select Language
   TimeToWords converter;
   switch (lang) {
     case 'en':
       converter = EnglishTimeToWords();
       break;
+    case 'ja':
+      converter = JapaneseTimeToWords();
+      break;
     default:
       print('Unsupported language: $lang');
-      print('Supported languages: en');
-      exit(1);
+      print('Supported languages: en, ja');
+      return;
   }
 
   print('Generating grid for lang="$lang", width=$width, seed=$seed...');
@@ -61,9 +82,6 @@ void main(List<String> args) {
     timeConverter: converter,
   );
 
-  print(
-    'Time: ${now.hour.toString().padLeft(2, '0')}:${now.minute.toString().padLeft(2, '0')}',
-  );
   final phrase = converter.convert(now);
   print('Phrase: "$phrase"');
 
@@ -81,7 +99,18 @@ void _printGrid(WordGrid grid, Set<int> activeIndices) {
 
   final buffer = StringBuffer();
 
-  buffer.writeln('+${'-' * (grid.width * 2 + 1)}+');
+  // Determine if we need wide mode (for CJK)
+  // Check if any character in the grid is wide (> 255)
+  final bool useWideMode = grid.letters.runes.any((c) => c > 255);
+
+  // Border width calculation:
+  // Compact (ASCII): | C C | -> 2 + w*2 + 1 = 2w+3. Dashes = 2w+1.
+  // Wide (CJK): | C  C  | -> 2 + w*3 + 1 = 3w+3. Dashes = 3w+1.
+  final int dashCount = useWideMode
+      ? (grid.width * 3 + 1)
+      : (grid.width * 2 + 1);
+
+  buffer.writeln('+${'-' * dashCount}+');
 
   int index = 0;
   for (int y = 0; y < grid.height; y++) {
@@ -91,16 +120,27 @@ void _printGrid(WordGrid grid, Set<int> activeIndices) {
       final char = grid.letters[index];
       final isActive = activeIndices.contains(index);
 
-      if (isActive) {
-        buffer.write('$bold$activeColor$char$reset ');
+      String padding;
+      if (useWideMode) {
+        // Enforce 3-cell alignment
+        final isCharWide = char.runes.first > 255;
+        padding = isCharWide ? ' ' : '  ';
       } else {
-        buffer.write('$dim$inactiveColor$char$reset ');
+        // Standard compact 2-cell alignment
+        padding = ' ';
+      }
+
+      if (isActive) {
+        buffer.write('$bold$activeColor$char$reset$padding');
+      } else {
+        buffer.write('$dim$inactiveColor$char$reset$padding');
       }
       index++;
     }
     buffer.writeln('|');
   }
 
-  buffer.writeln('+${'-' * (grid.width * 2 + 1)}+');
+  buffer.writeln('+${'-' * dashCount}+');
+
   print(buffer.toString());
 }

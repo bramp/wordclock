@@ -6,8 +6,9 @@ class GridLayout {
     int width,
     List<Node> orderedResult,
     Graph graph,
-    Random random,
-  ) {
+    Random random, {
+    required String paddingAlphabet,
+  }) {
     final buffer = StringBuffer();
     // We accumulate words for a single line, then flush them with distributed padding.
     List<String> currentLineWords = [];
@@ -30,11 +31,11 @@ class GridLayout {
       if (currentLineWords.contains(firstNode.word) &&
           currentLineWords.first == firstNode.word) {
         line = currentLineWords.join("");
-        line += _generatePadding(paddingTotal, random);
+        line += _generatePadding(paddingTotal, random, paddingAlphabet);
       }
       // 2. PIN BOTTOM-RIGHT: If this is the LAST line and contains the last node, padding goes at the START.
       else if (isLastLine && currentLineWords.contains(lastNode.word)) {
-        line = _generatePadding(paddingTotal, random);
+        line = _generatePadding(paddingTotal, random, paddingAlphabet);
         line += currentLineWords.join("");
       }
       // 3. RANDOM SCATTER: Randomly split padding before and after
@@ -42,9 +43,9 @@ class GridLayout {
         // Split padding randomly
         final int paddingBefore = random.nextInt(paddingTotal + 1);
         final int paddingAfter = paddingTotal - paddingBefore;
-        line += _generatePadding(paddingBefore, random);
+        line += _generatePadding(paddingBefore, random, paddingAlphabet);
         line += currentLineWords.join("");
-        line += _generatePadding(paddingAfter, random);
+        line += _generatePadding(paddingAfter, random, paddingAlphabet);
       }
       buffer.write(line);
 
@@ -74,7 +75,7 @@ class GridLayout {
 
       // Add separator if needed and not start of line
       if (currentLineWords.isNotEmpty && needsSeparator) {
-        currentLineWords.add(_generatePadding(1, random));
+        currentLineWords.add(_generatePadding(1, random, paddingAlphabet));
         currentLineLength += 1;
       }
       currentLineWords.add(wordStr);
@@ -86,38 +87,11 @@ class GridLayout {
     return buffer.toString();
   }
 
-  static String _generatePadding(int length, Random random) {
-    // English Letter Frequency (Roughly)
-    const String frequencyString =
-        "EEEEEEEEEEE" // 11
-        "AAAAAAAA" // 8
-        "RRRRRR" // 6
-        "IIIIII" // 6
-        "OOOOOO" // 6
-        "TTTTTT" // 6
-        "NNNNN" // 5
-        "SSSS" // 4
-        "LLLL" // 4
-        "CCCC" // 3
-        "UUU" // 3
-        "DDD" // 3
-        "PPP" // 3
-        "MMM" // 3
-        "HHH" // 3
-        "G"
-        "B"
-        "F"
-        "Y"
-        "W"
-        "K"
-        "V"
-        "X"
-        "Z"
-        "J"
-        "Q";
+  static String _generatePadding(int length, Random random, String alphabet) {
+    if (alphabet.isEmpty) return ' ' * length;
     return List.generate(
       length,
-      (index) => frequencyString[random.nextInt(frequencyString.length)],
+      (index) => alphabet[random.nextInt(alphabet.length)],
     ).join();
   }
 }

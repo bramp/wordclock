@@ -15,11 +15,18 @@ class GridGenerator {
     TimeToWords? language,
   }) {
     final Random random = seed != null ? Random(seed) : Random(0);
-    final graph = DependencyGraphBuilder.build(converter: language);
+    final converter = language ?? EnglishTimeToWords();
+    final graph = DependencyGraphBuilder.build(converter: converter);
     final sortedNodes = TopologicalSorter.sort(
       graph,
       random: seed != null ? random : null,
     );
-    return GridLayout.generateString(width, sortedNodes, graph, random);
+    return GridLayout.generateString(
+      width,
+      sortedNodes,
+      graph,
+      random,
+      paddingAlphabet: converter.paddingChars,
+    );
   }
 }
