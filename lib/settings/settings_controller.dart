@@ -6,10 +6,16 @@ import 'package:wordclock/generator/grid_generator.dart';
 import 'package:wordclock/model/word_grid.dart';
 import 'package:wordclock/languages/language.dart';
 import 'package:wordclock/languages/english.dart';
+import 'package:wordclock/languages/japanese.dart';
 
 enum ClockSpeed { normal, fast, hyper }
 
 class SettingsController extends ChangeNotifier {
+  static final List<WordClockLanguage> supportedLanguages = [
+    EnglishLanguage(),
+    JapaneseLanguage(),
+  ];
+
   ThemeSettings _currentSettings = ThemeSettings.defaultTheme;
 
   // The active clock instance.
@@ -22,7 +28,9 @@ class SettingsController extends ChangeNotifier {
 
   // Dynamic Grid State
   int? _gridSeed; // null = use default static grid
-  WordClockLanguage _currentLanguage = EnglishLanguage();
+
+  // TODO The default language should be based on the user's locale
+  WordClockLanguage _currentLanguage = supportedLanguages[0];
   late WordGrid _currentGrid;
 
   SettingsController() {

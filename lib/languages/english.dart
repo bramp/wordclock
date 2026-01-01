@@ -4,6 +4,9 @@ import 'package:wordclock/model/word_grid.dart';
 
 class EnglishLanguage implements WordClockLanguage {
   @override
+  String get displayName => 'English';
+
+  @override
   final TimeToWords timeToWords = EnglishTimeToWords();
 
   @override
@@ -34,23 +37,6 @@ class EnglishLanguage implements WordClockLanguage {
       "Z"
       "J"
       "Q";
-
-  // The original qlocktwo grid. Here for reference only
-  // WordGrid get defaultGrid => WordGrid(
-  //   width: 11,
-  //   letters:
-  //       "ITLISASTIME"
-  //       "ACQUARTERDC"
-  //       "TWENTYFIVEX"
-  //       "HALFBTENFTO"
-  //       "PASTERUNINE"
-  //       "ONESIXTHREE"
-  //       "FOURFIVETWO"
-  //       "EIGHTELEVEN"
-  //       "SEVENTWELVE"
-  //       "TENSEOCLOCK",
-  //   timeConverter: timeToWords,
-  // );
 
   @override
   WordGrid get defaultGrid => WordGrid(

@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:wordclock/settings/settings_controller.dart';
 import 'package:wordclock/settings/theme_settings.dart';
 import 'package:wordclock/ui/settings/components/debug_settings.dart';
+import 'package:wordclock/ui/settings/components/language_selector.dart';
 import 'package:wordclock/ui/settings/components/section_header.dart';
 import 'package:wordclock/ui/settings/components/theme_selector.dart';
 
@@ -39,6 +40,9 @@ class SettingsPanel extends StatelessWidget {
                   child: ListView(
                     padding: const EdgeInsets.symmetric(horizontal: 16),
                     children: [
+                      const SectionHeader(title: 'Language'),
+                      LanguageSelector(controller: controller),
+                      const SizedBox(height: 24),
                       const SectionHeader(title: 'Theme'),
                       ThemeSelector(
                         currentTheme: settings,

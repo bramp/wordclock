@@ -5,6 +5,9 @@ import 'package:wordclock/model/word_grid.dart';
 
 class JapaneseLanguage implements WordClockLanguage {
   @override
+  String get displayName => '日本語';
+
+  @override
   final TimeToWords timeToWords = JapaneseTimeToWords();
 
   @override
