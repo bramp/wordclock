@@ -38,8 +38,23 @@ dependencies:
   clock: ^1.1.2
 
 dev_dependencies:
+  flutter_launcher_icons: ^0.14.4
   flutter_test:
     sdk: flutter
+
+# Create images with  `./favicon.sh`
+flutter_launcher_icons:
+  android: "launcher_icon"
+  ios: false
+  # Use favicon.svg when https://github.com/fluttercommunity/flutter_launcher_icons/issues/20 is fixed.
+  image_path: "assets/favicon.png"
+  min_sdk_android: 21 # android min sdk min:16, default 21
+  web:
+    generate: true
+    image_path: "assets/favicon.png"
+    background_color: "#000000"
+    theme_color: "#000000"
+
 
 dependency_overrides:
   characters: ^1.4.1

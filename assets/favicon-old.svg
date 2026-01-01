@@ -1,0 +1,46 @@
+<svg width="512" height="512" viewBox="0 0 512 512" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <!-- Grid Pattern -->
+    <pattern id="grid" width="51.2" height="51.2" patternUnits="userSpaceOnUse">
+      <path d="M 51.2 0 L 0 0 0 51.2" fill="none" stroke="#222" stroke-width="2"/>
+    </pattern>
+
+    <!-- Neon Glow Filter -->
+    <filter id="neon-glow" x="-50%" y="-50%" width="200%" height="200%">
+      <feGaussianBlur stdDeviation="4" result="coloredBlur"/>
+      <feMerge>
+        <feMergeNode in="coloredBlur"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+
+    <!-- Background Gradient -->
+    <linearGradient id="bg-gradient" x1="0%" y1="0%" x2="0%" y2="100%">
+        <stop offset="0%" style="stop-color:#080808;stop-opacity:1" />
+        <stop offset="100%" style="stop-color:#181818;stop-opacity:1" />
+    </linearGradient>
+
+    <!-- Radiant Text Gradient (Brighter Matrix Green) -->
+    <linearGradient id="text-gradient" x1="0%" y1="0%" x2="100%" y2="100%" gradientUnits="userSpaceOnUse">
+        <stop offset="0%" style="stop-color:#00FF00;stop-opacity:1" />
+        <stop offset="100%" style="stop-color:#00AA00;stop-opacity:1" />
+    </linearGradient>
+  </defs>
+
+  <!-- Background (Square) -->
+  <rect x="0" y="0" width="512" height="512" fill="url(#bg-gradient)"/>
+
+  <!-- Grid Overlay (Square) - Reduced Opacity for Contrast -->
+  <rect x="0" y="0" width="512" height="512" fill="url(#grid)" opacity="0.4"/>
+
+  <!-- Text Group -->
+  <!-- Optimized for legibility: sans-serif fallback, looser spacing, slight stroke -->
+  <g fill="url(#text-gradient)" stroke="url(#text-gradient)" stroke-width="6" paint-order="stroke fill" filter="url(#neon-glow)" font-family="monospace, sans-serif" font-weight="900" font-size="160" letter-spacing="-2">
+      <!-- WORD: Top Center -->
+      <text x="50%" y="220" text-anchor="middle">WORD</text>
+
+      <!-- CLOCK: Bottom Center -->
+      <text x="50%" y="380" text-anchor="middle">CLOCK</text>
+  </g>
+
+</svg>
