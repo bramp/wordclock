@@ -44,6 +44,8 @@ class ThemeSettings {
   );
 }
 
+enum ClockSpeed { normal, fast, hyper }
+
 class SettingsController extends ChangeNotifier {
   ThemeSettings _currentSettings = ThemeSettings.defaultTheme;
 
@@ -62,8 +64,8 @@ class SettingsController extends ChangeNotifier {
   /// Returns the clock instance.
   Clock get clock => _clock;
 
-  bool get isFastTickMode => _isFastTickMode;
-  bool _isFastTickMode = false;
+  ClockSpeed get clockSpeed => _clockSpeed;
+  ClockSpeed _clockSpeed = ClockSpeed.normal;
 
   bool get isManualTime => _isManualTime;
 
@@ -72,10 +74,20 @@ class SettingsController extends ChangeNotifier {
     notifyListeners();
   }
 
-  void setFastTickMode(bool enabled) {
-    if (_isFastTickMode == enabled) return;
-    _isFastTickMode = enabled;
-    _clock.setRate(enabled ? 60.0 : 1.0);
+  void setClockSpeed(ClockSpeed speed) {
+    if (_clockSpeed == speed) return;
+    _clockSpeed = speed;
+    switch (speed) {
+      case ClockSpeed.normal:
+        _clock.setRate(1.0);
+        break;
+      case ClockSpeed.fast:
+        _clock.setRate(60.0);
+        break;
+      case ClockSpeed.hyper:
+        _clock.setRate(300.0);
+        break;
+    }
     notifyListeners();
   }
 
@@ -85,8 +97,7 @@ class SettingsController extends ChangeNotifier {
       _clock.setTime(time);
     } else {
       _isManualTime = false;
-      _isFastTickMode = false;
-      _clock.setRate(1.0);
+      setClockSpeed(ClockSpeed.normal);
       _clock.setTime(DateTime.now());
     }
     notifyListeners();

@@ -120,20 +120,56 @@ class SettingsPanel extends StatelessWidget {
                       if (kDebugMode) ...[
                         const SizedBox(height: 24),
                         const _SectionHeader(title: 'Debug'),
-                        SwitchListTile(
-                          contentPadding: EdgeInsets.zero,
-                          title: const Text(
-                            'Fast Tick Mode',
-                            style: TextStyle(color: Colors.white),
+                        Padding(
+                          padding: const EdgeInsets.only(bottom: 8.0),
+                          child: const Text(
+                            'Speed',
+                            style: TextStyle(color: Colors.white, fontSize: 16),
                           ),
-                          subtitle: const Text(
-                            '1 minute per second',
-                            style: TextStyle(color: Colors.grey, fontSize: 12),
+                        ),
+                        Wrap(
+                          spacing: 8,
+                          runSpacing: 8,
+                          children: [
+                            _SpeedChip(
+                              label: 'Normal',
+                              color: Colors.grey,
+                              isSelected:
+                                  controller.clockSpeed == ClockSpeed.normal,
+                              onTap: () =>
+                                  controller.setClockSpeed(ClockSpeed.normal),
+                            ),
+                            _SpeedChip(
+                              label: 'Fast',
+                              color: Colors.orangeAccent,
+                              isSelected:
+                                  controller.clockSpeed == ClockSpeed.fast,
+                              onTap: () =>
+                                  controller.setClockSpeed(ClockSpeed.fast),
+                            ),
+                            _SpeedChip(
+                              label: 'Hyper',
+                              color: Colors.purpleAccent,
+                              isSelected:
+                                  controller.clockSpeed == ClockSpeed.hyper,
+                              onTap: () =>
+                                  controller.setClockSpeed(ClockSpeed.hyper),
+                            ),
+                          ],
+                        ),
+                        Padding(
+                          padding: const EdgeInsets.only(top: 8.0),
+                          child: Text(
+                            switch (controller.clockSpeed) {
+                              ClockSpeed.normal => 'Standard time',
+                              ClockSpeed.fast => '1 minute per second',
+                              ClockSpeed.hyper => '5 minutes per second',
+                            },
+                            style: const TextStyle(
+                              color: Colors.grey,
+                              fontSize: 12,
+                            ),
                           ),
-                          value: controller.isFastTickMode,
-                          activeThumbColor: Colors.redAccent,
-                          onChanged: (value) =>
-                              controller.setFastTickMode(value),
                         ),
                         ListTile(
                           contentPadding: EdgeInsets.zero,
@@ -183,7 +219,6 @@ class SettingsPanel extends StatelessWidget {
                             ),
                             onTap: () {
                               controller.setManualTime(null);
-                              controller.setFastTickMode(false);
                             },
                           ),
                       ],
@@ -271,6 +306,46 @@ class _ThemeChip extends StatelessWidget {
               ),
             ),
           ],
+        ),
+      ),
+    );
+  }
+}
+
+class _SpeedChip extends StatelessWidget {
+  final String label;
+  final Color color;
+  final bool isSelected;
+  final VoidCallback onTap;
+
+  const _SpeedChip({
+    required this.label,
+    required this.color,
+    required this.isSelected,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+        decoration: BoxDecoration(
+          color: isSelected ? color.withValues(alpha: 0.2) : Colors.transparent,
+          border: Border.all(
+            color: isSelected ? color : Colors.grey.withValues(alpha: 0.3),
+            width: 1.5,
+          ),
+          borderRadius: BorderRadius.circular(16),
+        ),
+        child: Text(
+          label,
+          style: TextStyle(
+            color: isSelected ? Colors.white : Colors.grey,
+            fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+            fontSize: 13,
+          ),
         ),
       ),
     );
