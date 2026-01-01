@@ -5,6 +5,12 @@ import 'package:wordclock/generator/grid_generator.dart';
 import 'package:wordclock/languages/all.dart';
 import 'package:wordclock/model/word_grid.dart';
 
+/// Returns true if a character should be treated as a double-width character.
+bool isWide(int charCode) => charCode >= 0x2000;
+
+/// Returns true if any character in the text requires wide-mode alignment.
+bool needsWideMode(String text) => text.runes.any(isWide);
+
 void main(List<String> args) {
   // Defaults
   int width = 11;
@@ -90,8 +96,7 @@ void _printGrid(WordGrid grid, Set<int> activeIndices) {
   final buffer = StringBuffer();
 
   // Determine if we need wide mode (for CJK)
-  // Check if any character in the grid is wide (> 255)
-  final bool useWideMode = grid.letters.runes.any((c) => c > 255);
+  final bool useWideMode = needsWideMode(grid.letters);
 
   // Border width calculation:
   // Compact (ASCII): | C C | -> 2 + w*2 + 1 = 2w+3. Dashes = 2w+1.
@@ -113,7 +118,7 @@ void _printGrid(WordGrid grid, Set<int> activeIndices) {
       String padding;
       if (useWideMode) {
         // Enforce 3-cell alignment
-        final isCharWide = char.runes.first > 255;
+        final isCharWide = isWide(char.runes.first);
         padding = isCharWide ? ' ' : '  ';
       } else {
         // Standard compact 2-cell alignment
