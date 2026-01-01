@@ -14,5 +14,8 @@ class JapaneseLanguage implements WordClockLanguage {
   final String paddingAlphabet = '東西南北春夏秋冬日月火水木金土山川海空星花鳥風月上下左右中心光闇世界';
 
   @override
+  final int minuteIncrement = 1;
+
+  @override
   WordGrid? get defaultGrid => null;
 }

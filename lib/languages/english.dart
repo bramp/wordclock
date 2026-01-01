@@ -38,6 +38,9 @@ class EnglishLanguage implements WordClockLanguage {
       "J"
       "Q";
 
+  @override
+  final int minuteIncrement = 5;
+
   // The original qlocktwo grid. Here for reference only
   // WordGrid get defaultGrid => WordGrid(
   //   width: 11,

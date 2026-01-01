@@ -16,6 +16,8 @@ void main() {
     );
 
     expect(find.text('English'), findsOneWidget);
+    expect(find.text('Español'), findsOneWidget);
+    expect(find.text('Deutsch'), findsOneWidget);
     expect(find.text('日本語'), findsOneWidget);
   });
 

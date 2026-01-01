@@ -2,9 +2,7 @@
 import 'dart:io';
 
 import 'package:wordclock/generator/grid_generator.dart';
-import 'package:wordclock/languages/language.dart';
-import 'package:wordclock/languages/english.dart';
-import 'package:wordclock/languages/japanese.dart';
+import 'package:wordclock/languages/all.dart';
 import 'package:wordclock/model/word_grid.dart';
 
 void main(List<String> args) {
@@ -14,12 +12,14 @@ void main(List<String> args) {
   List<String> languages = ['en'];
   DateTime now = DateTime.now();
 
+  final availableIds = WordClockLanguages.byId.keys.toList();
+
   // Simple Argument Parsing
   for (var arg in args) {
     if (arg.startsWith('--lang=')) {
       final raw = arg.substring(7);
       if (raw == 'all') {
-        languages = ['en', 'ja'];
+        languages = availableIds;
       } else {
         languages = raw.split(',');
       }
@@ -56,18 +56,11 @@ void _processLanguage(String lang, int width, int? seed, DateTime now) {
   print('\n=== Language: $lang ===');
 
   // Select Language
-  WordClockLanguage language;
-  switch (lang) {
-    case 'en':
-      language = EnglishLanguage();
-      break;
-    case 'ja':
-      language = JapaneseLanguage();
-      break;
-    default:
-      print('Unsupported language: $lang');
-      print('Supported languages: en, ja');
-      return;
+  final language = WordClockLanguages.byId[lang];
+  if (language == null) {
+    print('Unsupported language: $lang');
+    print('Supported languages: ${WordClockLanguages.byId.keys.join(', ')}');
+    return;
   }
 
   print('Generating grid for lang="$lang", width=$width, seed=$seed...');

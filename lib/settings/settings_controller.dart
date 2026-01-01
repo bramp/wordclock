@@ -5,16 +5,13 @@ import 'package:wordclock/settings/theme_settings.dart';
 import 'package:wordclock/generator/grid_generator.dart';
 import 'package:wordclock/model/word_grid.dart';
 import 'package:wordclock/languages/language.dart';
-import 'package:wordclock/languages/english.dart';
-import 'package:wordclock/languages/japanese.dart';
+import 'package:wordclock/languages/all.dart';
 
 enum ClockSpeed { normal, fast, hyper }
 
 class SettingsController extends ChangeNotifier {
-  static final List<WordClockLanguage> supportedLanguages = [
-    EnglishLanguage(),
-    JapaneseLanguage(),
-  ];
+  static List<WordClockLanguage> get supportedLanguages =>
+      WordClockLanguages.all;
 
   ThemeSettings _currentSettings = ThemeSettings.defaultTheme;
 

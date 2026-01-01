@@ -1,19 +1,16 @@
 import 'dart:collection';
 import 'package:wordclock/generator/graph_types.dart';
-import 'package:wordclock/logic/time_to_words.dart';
+import 'package:wordclock/languages/language.dart';
 
 class DependencyGraphBuilder {
-  static Graph build({TimeToWords? converter}) {
+  static Graph build({required WordClockLanguage language}) {
     final Graph graph = {};
-
-    // Cache to check if a node has been created in the graph
-    // We use the graph keys as the definitive set of existing nodes.
-
-    final timeConverter = converter ?? EnglishTimeToWords();
+    final timeConverter = language.timeToWords;
+    final increment = language.minuteIncrement;
 
     // Scan 24 Hours
     for (int h = 0; h < 24; h++) {
-      for (int m = 0; m < 60; m++) {
+      for (int m = 0; m < 60; m += increment) {
         final time = DateTime(2025, 1, 1, h, m);
         final phrase = timeConverter.convert(time);
         final rawWords = phrase.split(' ');
@@ -24,6 +21,7 @@ class DependencyGraphBuilder {
         final Map<String, int> sentenceCounts = {};
 
         for (final word in rawWords) {
+          if (word.isEmpty) continue;
           // 1. Determine minimum allowed index based on occurrences in THIS sentence
           // 0-based indexing: 1st word k=0. 2nd k=1.
           int count = sentenceCounts[word] ?? 0;

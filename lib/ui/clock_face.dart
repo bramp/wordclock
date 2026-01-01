@@ -60,10 +60,10 @@ class _ClockFaceState extends State<ClockFace> {
 
     _lastTime = now;
     _lastGrid = grid;
-    final phrase = widget.settingsController.currentLanguage.timeToWords
-        .convert(now);
+    final lang = widget.settingsController.currentLanguage;
+    final phrase = lang.timeToWords.convert(now);
     _activeIndices = grid.getIndices(phrase);
-    _remainder = now.minute % 5;
+    _remainder = now.minute % lang.minuteIncrement;
   }
 
   @override
@@ -134,12 +134,15 @@ class _ClockFaceState extends State<ClockFace> {
       builder: (context, child) {
         if (kDebugMode) print('Rebuilding ClockFace... ${DateTime.now()}');
         final settings = widget.settingsController.settings;
+        final lang = widget.settingsController.currentLanguage;
         // Use the clock provided by settings
         final now = widget.settingsController.clock.now();
         final grid = widget.settingsController.currentGrid;
 
         // Recalculate grid if time changed
         _recalculateIndices(now, grid);
+
+        final showDots = settings.showMinuteDots && lang.minuteIncrement > 1;
 
         // Update cache if needed
         _updateCachedGrids(
@@ -170,7 +173,7 @@ class _ClockFaceState extends State<ClockFace> {
                       child: ClockLayout(
                         grid: grid,
                         remainder: 0,
-                        showDots: settings.showMinuteDots,
+                        showDots: showDots,
                         forceAllDots: true, // Always show placeholder dots
                         dotColor: settings.inactiveColor,
                         duration: widget.animationDuration,
@@ -193,7 +196,7 @@ class _ClockFaceState extends State<ClockFace> {
                         child: ClockLayout(
                           grid: grid,
                           remainder: _remainder,
-                          showDots: settings.showMinuteDots,
+                          showDots: showDots,
                           forceAllDots: false,
                           dotColor: Colors.white,
                           duration: widget.animationDuration,
