@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:wordclock/model/word_grid.dart';
-import 'package:wordclock/ui/grid_letter.dart';
+import 'package:wordclock/ui/clock_letter.dart';
 
 class LetterGrid extends StatelessWidget {
   final WordGrid grid;
@@ -74,7 +74,7 @@ class LetterGrid extends StatelessWidget {
               final isActive = activeIndices.contains(index);
               final char = grid.letters[index];
 
-              return GridLetter(
+              return ClockLetter(
                 char: char,
                 isActive: isActive,
                 activeStyle: activeStyle,

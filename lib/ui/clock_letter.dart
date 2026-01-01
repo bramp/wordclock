@@ -1,12 +1,15 @@
 import 'package:flutter/material.dart';
 
-class GridLetter extends StatelessWidget {
+class ClockLetter extends StatelessWidget {
   final String char;
   final bool isActive;
   final TextStyle activeStyle;
   final TextStyle inactiveStyle;
 
-  const GridLetter({
+  static const duration = Duration(milliseconds: 1000);
+  static const curve = Curves.easeInOut;
+
+  const ClockLetter({
     super.key,
     required this.char,
     required this.isActive,
@@ -16,9 +19,6 @@ class GridLetter extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    const duration = Duration(milliseconds: 1000);
-    const curve = Curves.easeInOut;
-
     // Optimization: If we are fading between Transparent and ActiveColor,
     // use AnimatedOpacity (with FadeTransition internally) which is much cheaper
     // than re-painting the Text via AnimatedDefaultTextStyle.
