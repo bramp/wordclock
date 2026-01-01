@@ -11,11 +11,18 @@ import 'package:wordclock/settings/settings_controller.dart';
 import 'package:wordclock/ui/settings_page.dart';
 
 class ClockFace extends StatefulWidget {
-  final WordGrid grid;
   final SettingsController settingsController;
+  final WordGrid grid;
+  final Duration animationDuration;
+  final Curve animationCurve;
 
-  ClockFace({super.key, WordGrid? grid, required this.settingsController})
-    : grid = grid ?? WordGrid.english11x10;
+  ClockFace({
+    super.key,
+    WordGrid? grid,
+    required this.settingsController,
+    this.animationDuration = const Duration(milliseconds: 1000),
+    this.animationCurve = Curves.easeInOut,
+  }) : grid = grid ?? WordGrid.english11x10;
 
   @override
   State<ClockFace> createState() => _ClockFaceState();
@@ -67,7 +74,12 @@ class _ClockFaceState extends State<ClockFace> {
   Widget? _cachedActiveGrid;
   Set<int>? _lastActiveIndices;
 
-  void _updateCachedGrids(SettingsController settings, Set<int> activeIndices) {
+  void _updateCachedGrids(
+    SettingsController settings,
+    Set<int> activeIndices,
+    Duration duration,
+    Curve curve,
+  ) {
     if (_cachedActiveGrid == null ||
         _cachedInactiveGrid == null ||
         !setEquals(_lastActiveIndices, activeIndices)) {
@@ -76,6 +88,8 @@ class _ClockFaceState extends State<ClockFace> {
         activeIndices: const {},
         inactiveColor: const Color(0xFF333333),
         activeColor: Colors.transparent,
+        duration: duration,
+        curve: curve,
       );
 
       _cachedActiveGrid = LetterGrid(
@@ -83,6 +97,8 @@ class _ClockFaceState extends State<ClockFace> {
         activeIndices: activeIndices,
         activeColor: Colors.white,
         inactiveColor: Colors.white.withValues(alpha: 0),
+        duration: duration,
+        curve: curve,
       );
 
       _lastActiveIndices = activeIndices;
@@ -123,13 +139,18 @@ class _ClockFaceState extends State<ClockFace> {
         // If settings changed but indices didn't, we MUST rebuild.
         // But detecting settings change inside StreamBuilder is hard without listening.
         // Fortunately, if Settings change, `main.dart` rebuilds `ClockFace`, calling `didUpdateWidget`, clearing cache.
-        _updateCachedGrids(widget.settingsController, _activeIndices);
+        _updateCachedGrids(
+          widget.settingsController,
+          _activeIndices,
+          widget.animationDuration,
+          widget.animationCurve,
+        );
 
         return Scaffold(
           key: _scaffoldKey, // TODO Do we need a GlobalKey? Document why
           backgroundColor: settings.backgroundColor,
           endDrawer: SettingsPanel(controller: widget.settingsController),
-          drawerScrimColor: Colors.black.withValues(alpha: 0.3),
+          drawerScrimColor: Colors.black.withAlpha(0x4D),
           body: Stack(
             children: [
               // Background: Faceplate color (usually matches scaffold)
@@ -148,6 +169,8 @@ class _ClockFaceState extends State<ClockFace> {
                         showDots: settings.showMinuteDots,
                         forceAllDots: true, // Always show placeholder dots
                         dotColor: settings.inactiveColor,
+                        duration: widget.animationDuration,
+                        curve: widget.animationCurve,
                         child: _cachedInactiveGrid!,
                       ),
                     ),
@@ -169,6 +192,8 @@ class _ClockFaceState extends State<ClockFace> {
                           showDots: settings.showMinuteDots,
                           forceAllDots: false,
                           dotColor: Colors.white,
+                          duration: widget.animationDuration,
+                          curve: widget.animationCurve,
                           child: _cachedActiveGrid!,
                         ),
                       ),

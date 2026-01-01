@@ -5,9 +5,8 @@ class ClockLetter extends StatelessWidget {
   final bool isActive;
   final TextStyle activeStyle;
   final TextStyle inactiveStyle;
-
-  static const duration = Duration(milliseconds: 1000);
-  static const curve = Curves.easeInOut;
+  final Duration duration;
+  final Curve curve;
 
   const ClockLetter({
     super.key,
@@ -15,6 +14,8 @@ class ClockLetter extends StatelessWidget {
     required this.isActive,
     required this.activeStyle,
     required this.inactiveStyle,
+    this.duration = const Duration(milliseconds: 1000),
+    this.curve = Curves.easeInOut,
   });
 
   @override

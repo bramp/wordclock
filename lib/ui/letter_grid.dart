@@ -7,6 +7,8 @@ class LetterGrid extends StatelessWidget {
   final Set<int> activeIndices;
   final Color activeColor;
   final Color inactiveColor;
+  final Duration duration;
+  final Curve curve;
 
   // Toggle for expensive glow effects
   static const bool enableGlow = true;
@@ -17,6 +19,8 @@ class LetterGrid extends StatelessWidget {
     required this.activeIndices,
     this.activeColor = Colors.white,
     this.inactiveColor = const Color.fromRGBO(255, 255, 255, 0.15),
+    this.duration = const Duration(milliseconds: 1000),
+    this.curve = Curves.easeInOut,
   });
 
   @override
@@ -77,6 +81,8 @@ class LetterGrid extends StatelessWidget {
                 isActive: isActive,
                 activeStyle: activeStyle,
                 inactiveStyle: inactiveStyle,
+                duration: duration,
+                curve: curve,
               );
             }),
           );

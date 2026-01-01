@@ -12,6 +12,8 @@ class ClockLayout extends StatelessWidget {
   /// This is used for the inactive/background layer to show the "placeholder" dots.
   final bool forceAllDots;
   final Color dotColor;
+  final Duration duration;
+  final Curve curve;
 
   const ClockLayout({
     super.key,
@@ -21,6 +23,8 @@ class ClockLayout extends StatelessWidget {
     required this.showDots,
     this.forceAllDots = false,
     required this.dotColor,
+    this.duration = const Duration(milliseconds: 1000),
+    this.curve = Curves.easeInOut,
   });
 
   @override
@@ -44,6 +48,8 @@ class ClockLayout extends StatelessWidget {
                 left: 0,
                 color: dotColor,
                 isActive: forceAllDots || remainder >= 1,
+                duration: duration,
+                curve: curve,
               ),
               // 2 minutes: Top Right
               ClockFaceDot(
@@ -51,6 +57,8 @@ class ClockLayout extends StatelessWidget {
                 right: 0,
                 color: dotColor,
                 isActive: forceAllDots || remainder >= 2,
+                duration: duration,
+                curve: curve,
               ),
               // 3 minutes: Bottom Right
               ClockFaceDot(
@@ -58,6 +66,8 @@ class ClockLayout extends StatelessWidget {
                 right: 0,
                 color: dotColor,
                 isActive: forceAllDots || remainder >= 3,
+                duration: duration,
+                curve: curve,
               ),
               // 4 minutes: Bottom Left
               ClockFaceDot(
@@ -65,6 +75,8 @@ class ClockLayout extends StatelessWidget {
                 left: 0,
                 color: dotColor,
                 isActive: forceAllDots || remainder >= 4,
+                duration: duration,
+                curve: curve,
               ),
             ],
           ],

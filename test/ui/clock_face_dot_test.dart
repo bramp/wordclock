@@ -10,7 +10,7 @@ void main() {
           home: Stack(
             children: [
               ClockFaceDot(
-                color: Colors.red,
+                color: Colors.white,
                 isActive: true,
                 top: 10,
                 left: 10,
@@ -20,13 +20,22 @@ void main() {
         ),
       );
 
-      final containerFinder = find.byType(AnimatedContainer);
-      expect(containerFinder, findsOneWidget);
+      // Verify opacity is 1.0 (fully visible)
+      final opacityFinder = find.byType(AnimatedOpacity);
+      expect(opacityFinder, findsOneWidget);
+      final animatedOpacity = tester.widget<AnimatedOpacity>(opacityFinder);
+      expect(animatedOpacity.opacity, 1.0);
 
-      final container = tester.widget<AnimatedContainer>(containerFinder);
+      // Verify container decoration has correct color/shadow
+      final containerFinder = find.descendant(
+        of: opacityFinder,
+        matching: find.byType(Container),
+      );
+      expect(containerFinder, findsOneWidget);
+      final container = tester.widget<Container>(containerFinder);
       final decoration = container.decoration as BoxDecoration;
-      expect(decoration.color, Colors.red);
-      expect(decoration.shape, BoxShape.circle);
+      expect(decoration.color, Colors.white);
+      expect(decoration.boxShadow, isNotEmpty);
     });
 
     testWidgets('renders transparent when inactive', (
@@ -34,27 +43,26 @@ void main() {
     ) async {
       await tester.pumpWidget(
         const MaterialApp(
-          home: Stack(
-            children: [
-              ClockFaceDot(
-                color: Colors.red,
-                isActive: false,
-                top: 10,
-                left: 10,
-              ),
-            ],
+          home: Scaffold(
+            body: Stack(
+              children: [
+                ClockFaceDot(
+                  color: Colors.red,
+                  isActive: false,
+                  top: 10,
+                  left: 10,
+                ),
+              ],
+            ),
           ),
         ),
       );
 
-      final containerFinder = find.byType(AnimatedContainer);
-      expect(containerFinder, findsOneWidget);
-
-      final container = tester.widget<AnimatedContainer>(containerFinder);
-      final decoration = container.decoration as BoxDecoration;
-
-      // Color should be transparent version of red
-      expect(decoration.color, Colors.red.withValues(alpha: 0.0));
+      // Verify opacity is 0.0 (invisible)
+      final opacityFinder = find.byType(AnimatedOpacity);
+      expect(opacityFinder, findsOneWidget);
+      final animatedOpacity = tester.widget<AnimatedOpacity>(opacityFinder);
+      expect(animatedOpacity.opacity, 0.0);
     });
 
     // TODO: Figure out how to test implicit animation transitions
