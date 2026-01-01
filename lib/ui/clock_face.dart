@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 
 import 'package:wordclock/model/word_grid.dart';
@@ -109,6 +110,7 @@ class _ClockFaceState extends State<ClockFace> {
     return ListenableBuilder(
       listenable: widget.settingsController,
       builder: (context, child) {
+        if (kDebugMode) print('Rebuilding ClockFace... ${DateTime.now()}');
         final settings = widget.settingsController.settings;
         // Use the clock provided by settings
         final now = widget.settingsController.clock.now();

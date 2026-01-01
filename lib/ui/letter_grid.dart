@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:wordclock/model/word_grid.dart';
+import 'package:wordclock/ui/grid_letter.dart';
 
 class LetterGrid extends StatelessWidget {
   final WordGrid grid;
@@ -35,8 +36,32 @@ class LetterGrid extends StatelessWidget {
           // or just fill the space.
           // Monospaced fonts usually need careful sizing.
 
-          // Let's use a Wrap or GridView?
-          // GridView is perfect.
+          // Pre-compute styles to avoid recreation for every letter
+          // Shared shadows list
+          final shadows = enableGlow
+              ? [
+                  Shadow(color: activeColor, blurRadius: 10),
+                  Shadow(color: activeColor, blurRadius: 20),
+                ]
+              : <Shadow>[];
+
+          final fontSize = height * 0.6;
+
+          final activeStyle = TextStyle(
+            fontFamily: 'monospace',
+            fontSize: fontSize,
+            fontWeight: FontWeight.w900,
+            color: activeColor,
+            shadows: shadows,
+          );
+
+          final inactiveStyle = TextStyle(
+            fontFamily: 'monospace',
+            fontSize: fontSize,
+            fontWeight: FontWeight.w300,
+            color: inactiveColor,
+            shadows: const [],
+          );
 
           return GridView.builder(
             physics: const NeverScrollableScrollPhysics(), // Disable scrolling
@@ -48,25 +73,12 @@ class LetterGrid extends StatelessWidget {
             itemBuilder: (context, index) {
               final isActive = activeIndices.contains(index);
               final char = grid.letters[index];
-              // Should the following be it's own widget? Which could look ~identical to clock_face_dot.
-              return Center(
-                child: AnimatedDefaultTextStyle(
-                  duration: const Duration(milliseconds: 1000),
-                  curve: Curves.easeInOut,
-                  style: TextStyle(
-                    fontFamily: 'monospace', // Default mono, can be changed
-                    fontSize: height * 0.6, // Scale font with cell height
-                    fontWeight: isActive ? FontWeight.w900 : FontWeight.w300,
-                    color: isActive ? activeColor : inactiveColor,
-                    shadows: isActive && enableGlow
-                        ? [
-                            Shadow(color: activeColor, blurRadius: 10),
-                            Shadow(color: activeColor, blurRadius: 20),
-                          ]
-                        : [],
-                  ),
-                  child: Text(char),
-                ),
+
+              return GridLetter(
+                char: char,
+                isActive: isActive,
+                activeStyle: activeStyle,
+                inactiveStyle: inactiveStyle,
               );
             },
           );
