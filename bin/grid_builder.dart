@@ -15,6 +15,7 @@ void main(List<String> args) {
 
   // Parse args
   int? seed;
+  bool showDot = false;
   for (final arg in args) {
     if (arg.startsWith('--seed=')) {
       seed = int.tryParse(arg.substring(7));
@@ -23,6 +24,9 @@ void main(List<String> args) {
       final w = int.tryParse(arg.substring(8));
       if (w != null) gridWidth = w;
     }
+    if (arg == '--dot') {
+      showDot = true;
+    }
   }
 
   // Initialize Random
@@ -30,6 +34,11 @@ void main(List<String> args) {
 
   // 1. SCAN & BUILD GRAPH
   final graph = _buildDependencyGraph();
+
+  if (showDot) {
+    _printDotUrl(graph);
+    return;
+  }
 
   // 2. TOPOLOGICAL SORT
   List<Node> sortedNodes;
@@ -321,4 +330,65 @@ String _generatePadding(int length, Random random) {
     length,
     (index) => chars[random.nextInt(chars.length)],
   ).join();
+}
+
+void _printDotUrl(Graph graph) {
+  final dotContent = _generateDot(graph);
+  final encoded = Uri.encodeComponent(dotContent);
+  print('https://dreampuf.github.io/GraphvizOnline/#$encoded');
+}
+
+String _generateDot(Graph graph) {
+  // Pre-calculate word frequencies to determine if index is needed
+  final wordCounts = <String, int>{};
+  for (final node in graph.keys) {
+    wordCounts[node.word] = (wordCounts[node.word] ?? 0) + 1;
+  }
+
+  String nodeName(Node node) {
+    return wordCounts[node.word]! > 1 ? node.toString() : node.word;
+  }
+
+  String quote(String s) {
+    // Only quote if necessary (simplified check for our known domain)
+    if (RegExp(r'^[a-zA-Z_][a-zA-Z0-9_]*$').hasMatch(s)) {
+      return s;
+    }
+    return '"$s"';
+  }
+
+  final buffer = StringBuffer();
+  buffer.writeln('digraph WordClock {');
+  buffer.writeln('  rankdir=LR;');
+  buffer.writeln('  node [shape=box, fontname="Helvetica"];');
+
+  // Sort keys for deterministic output
+  final sortedNodes = graph.keys.toList()
+    ..sort((a, b) => a.toString().compareTo(b.toString()));
+
+  for (final node in sortedNodes) {
+    final edges = graph[node];
+
+    // Only show index if there are multiple occurrences of this word
+    final label = wordCounts[node.word]! > 1
+        ? '${node.word} (${node.index})'
+        : node.word;
+
+    final id = quote(nodeName(node));
+
+    // Print the node definition for clarity
+    buffer.writeln('  $id [label="$label"];');
+
+    if (edges != null && edges.isNotEmpty) {
+      final sortedEdges = edges.toList()
+        ..sort((a, b) => a.toString().compareTo(b.toString()));
+
+      for (final child in sortedEdges) {
+        final childId = quote(nodeName(child));
+        buffer.writeln('  $id->$childId;');
+      }
+    }
+  }
+  buffer.writeln('}');
+  return buffer.toString();
 }
