@@ -36,11 +36,12 @@ class SpanishTimeToWords implements TimeToWords {
     return switch (m) {
       0 when h == 12 => 'ES MEDIODÍA', // It is noon
       0 when h == 0 => 'ES MEDIANOCHE', // It is midnight
-      0 => '${displayHour == 1 ? 'ES LA' : 'SON LAS'} ${hours[displayHour]}',
+      0 =>
+        '${displayHour == 1 ? 'ES LA' : 'SON LAS'} ${hours[displayHour]}', // It is X o'clock
       <= 30 =>
-        '${displayHour == 1 ? 'ES LA' : 'SON LAS'} ${hours[displayHour]} Y ${minutes[m]}', // "Y" = and
+        '${displayHour == 1 ? 'ES LA' : 'SON LAS'} ${hours[displayHour]} Y ${minutes[m]}', // X and Y minutes
       _ =>
-        '${nextHour == 1 ? 'ES LA' : 'SON LAS'} ${hours[nextHour]} MENOS ${minutes[60 - m]}', // "MENOS" = minus
+        '${nextHour == 1 ? 'ES LA' : 'SON LAS'} ${hours[nextHour]} MENOS ${minutes[60 - m]}', // Y minus X minutes
     };
   }
 }

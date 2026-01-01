@@ -32,16 +32,16 @@ class DutchTimeToWords implements TimeToWords {
     int nextHour = (displayHour + 1) % 12;
 
     return switch (m) {
-      0 => 'HET IS ${hours[displayHour]} UUR', // X o'clock
-      15 => 'HET IS KWART OVER ${hours[displayHour]}', // Quarter after
-      30 => 'HET IS HALF ${hours[nextHour]}', // Half to (lit: "half X")
-      45 => 'HET IS KWART VOOR ${hours[nextHour]}', // Quarter before
-      < 15 => 'HET IS ${minutes[m]} OVER ${hours[displayHour]}', // X after
+      0 => 'HET IS ${hours[displayHour]} UUR', // It is X o'clock
+      15 => 'HET IS KWART OVER ${hours[displayHour]}', // Quarter after X
+      30 => 'HET IS HALF ${hours[nextHour]}', // Half to Y (lit: "half Y")
+      45 => 'HET IS KWART VOOR ${hours[nextHour]}', // Quarter before Y
+      < 15 => 'HET IS ${minutes[m]} OVER ${hours[displayHour]}', // X after Y
       < 30 =>
-        'HET IS ${minutes[30 - m]} VOOR HALF ${hours[nextHour]}', // X before half
+        'HET IS ${minutes[30 - m]} VOOR HALF ${hours[nextHour]}', // X before half Y
       < 45 =>
-        'HET IS ${minutes[m - 30]} OVER HALF ${hours[nextHour]}', // X after half
-      _ => 'HET IS ${minutes[60 - m]} VOOR ${hours[nextHour]}', // X before
+        'HET IS ${minutes[m - 30]} OVER HALF ${hours[nextHour]}', // X after half Y
+      _ => 'HET IS ${minutes[60 - m]} VOOR ${hours[nextHour]}', // X before Y
     };
   }
 }

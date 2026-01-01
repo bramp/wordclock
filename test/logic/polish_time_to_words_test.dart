@@ -10,19 +10,19 @@ void main() {
       expect(converter.convert(time), "JEST DZIESIĄTA");
     });
 
-    test('10:05 is JEST PIĘĆ PO DZIESIĄTA', () {
+    test('10:05 is JEST PIĘĆ PO DZIESIĄTEJ', () {
       final time = DateTime(2023, 1, 1, 10, 5);
-      expect(converter.convert(time), "JEST PIĘĆ PO DZIESIĄTA");
+      expect(converter.convert(time), "JEST PIĘĆ PO DZIESIĄTEJ");
     });
 
-    test('10:15 is JEST KWADRANS PO DZIESIĄTA', () {
+    test('10:15 is JEST KWADRANS PO DZIESIĄTEJ', () {
       final time = DateTime(2023, 1, 1, 10, 15);
-      expect(converter.convert(time), "JEST KWADRANS PO DZIESIĄTA");
+      expect(converter.convert(time), "JEST KWADRANS PO DZIESIĄTEJ");
     });
 
-    test('10:30 is JEST WPÓŁ DO JEDENASTA', () {
+    test('10:30 is JEST WPÓŁ DO JEDENASTEJ', () {
       final time = DateTime(2023, 1, 1, 10, 30);
-      expect(converter.convert(time), "JEST WPÓŁ DO JEDENASTA");
+      expect(converter.convert(time), "JEST WPÓŁ DO JEDENASTEJ");
     });
 
     test('10:45 is JEST ZA KWADRANS JEDENASTA', () {

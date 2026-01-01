@@ -37,12 +37,12 @@ class EnglishTimeToWords implements TimeToWords {
     final hStr = hours[displayHour]!;
 
     return switch (m) {
-      0 => "IT IS $hStr OCLOCK",
-      15 => "IT IS QUARTER PAST $hStr", // Quarter after
-      30 => "IT IS HALF PAST $hStr", // Half past
-      45 => "IT IS QUARTER TO $hStr", // Quarter before
-      < 30 => "IT IS ${minutes[m]} PAST $hStr", // Minutes past
-      _ => "IT IS ${minutes[60 - m]} TO $hStr", // Minutes to
+      0 => "IT IS $hStr OCLOCK", // Exact hour
+      15 => "IT IS QUARTER PAST $hStr", // Quarter after X
+      30 => "IT IS HALF PAST $hStr", // Half past X
+      45 => "IT IS QUARTER TO $hStr", // Quarter before X
+      < 30 => "IT IS ${minutes[m]} PAST $hStr", // X minutes past Y
+      _ => "IT IS ${minutes[60 - m]} TO $hStr", // X minutes to Y
     };
   }
 }

@@ -5,34 +5,34 @@ void main() {
   group('RussianTimeToWords', () {
     final converter = RussianTimeToWords();
 
-    test('10:00 is СЕЙЧАС ДЕСЯТЬ ЧАСОВ', () {
+    test('10:00 is ДЕСЯТЬ', () {
       final time = DateTime(2023, 1, 1, 10, 0);
-      expect(converter.convert(time), "СЕЙЧАС ДЕСЯТЬ ЧАСОВ");
+      expect(converter.convert(time), "ДЕСЯТЬ");
     });
 
-    test('01:00 is СЕЙЧАС ЧАС', () {
+    test('01:00 is ЧАС', () {
       final time = DateTime(2023, 1, 1, 1, 0);
-      expect(converter.convert(time), "СЕЙЧАС ЧАС");
+      expect(converter.convert(time), "ЧАС");
     });
 
-    test('02:00 is СЕЙЧАС ДВА ЧАСА', () {
+    test('02:00 is ДВА', () {
       final time = DateTime(2023, 1, 1, 2, 0);
-      expect(converter.convert(time), "СЕЙЧАС ДВА ЧАСА");
+      expect(converter.convert(time), "ДВА");
     });
 
-    test('10:05 is ДЕСЯТЬ ЧАСОВ ПЯТЬ МИНУТ', () {
+    test('10:05 is ПЯТЬ ОДИННАДЦАТОГО', () {
       final time = DateTime(2023, 1, 1, 10, 5);
-      expect(converter.convert(time), "ДЕСЯТЬ ЧАСОВ ПЯТЬ МИНУТ");
+      expect(converter.convert(time), "ПЯТЬ ОДИННАДЦАТОГО");
     });
 
-    test('10:30 is ДЕСЯТЬ ЧАСОВ ПОЛОВИНА', () {
+    test('10:30 is ПОЛ ОДИННАДЦАТОГО', () {
       final time = DateTime(2023, 1, 1, 10, 30);
-      expect(converter.convert(time), "ДЕСЯТЬ ЧАСОВ ПОЛОВИНА");
+      expect(converter.convert(time), "ПОЛ ОДИННАДЦАТОГО");
     });
 
-    test('10:45 is ДЕСЯТЬ ЧАСОВ СОРОК ПЯТЬ МИНУТ', () {
+    test('10:45 is БЕЗ ЧЕТВЕРТИ ОДИННАДЦАТЬ', () {
       final time = DateTime(2023, 1, 1, 10, 45);
-      expect(converter.convert(time), "ДЕСЯТЬ ЧАСОВ СОРОК ПЯТЬ МИНУТ");
+      expect(converter.convert(time), "БЕЗ ЧЕТВЕРТИ ОДИННАДЦАТЬ");
     });
   });
 }

@@ -1,7 +1,8 @@
 import 'package:wordclock/logic/time_to_words.dart';
 
 class PolishTimeToWords implements TimeToWords {
-  static const hours = [
+  // Nominative case for hours (used for exact hours and "ZA" - before)
+  static const hoursNominative = [
     'DWUNASTA', // Twelfth
     'PIERWSZA', // First
     'DRUGA', // Second
@@ -16,6 +17,22 @@ class PolishTimeToWords implements TimeToWords {
     'JEDENASTA', // Eleventh
   ];
 
+  // Genitive case for hours (used for "PO" - after and "WPÓŁ DO" - half to)
+  static const hoursGenitive = [
+    'DWUNASTEJ', // Twelfth
+    'PIERWSZEJ', // First
+    'DRUGIEJ', // Second
+    'TRZECIEJ', // Third
+    'CZWARTEJ', // Fourth
+    'PIĄTEJ', // Fifth
+    'SZÓSTEJ', // Sixth
+    'SIÓDMEJ', // Seventh
+    'ÓSMEJ', // Eighth
+    'DZIEWIĄTEJ', // Ninth
+    'DZIESIĄTEJ', // Tenth
+    'JEDENASTEJ', // Eleventh
+  ];
+
   static const minutes = {
     5: 'PIĘĆ', // Five
     10: 'DZIESIĘĆ', // Ten
@@ -27,19 +44,20 @@ class PolishTimeToWords implements TimeToWords {
   @override
   String convert(DateTime time) {
     int h = time.hour;
-    int m = (time.minute ~/ 5) * 5; // Round down to nearest 5
+    int m = (time.minute ~/ 5) * 5;
 
     int displayHour = h % 12;
     int nextHour = (displayHour + 1) % 12;
 
     return switch (m) {
-      0 => 'JEST ${hours[displayHour]}',
-      15 =>
-        'JEST KWADRANS PO ${hours[displayHour]}', // KWADRANS PO = quarter past
-      30 => 'JEST WPÓŁ DO ${hours[nextHour]}', // WPÓŁ DO = half to
-      45 => 'JEST ZA KWADRANS ${hours[nextHour]}', // ZA = to/in
-      < 30 => 'JEST ${minutes[m]} PO ${hours[displayHour]}', // PO = after
-      _ => 'JEST ZA ${minutes[60 - m]} ${hours[nextHour]}', // ZA = to/in
+      0 => 'JEST ${hoursNominative[displayHour]}', // It is X
+      15 => 'JEST KWADRANS PO ${hoursGenitive[displayHour]}', // Quarter after X
+      30 => 'JEST WPÓŁ DO ${hoursGenitive[nextHour]}', // Half to X
+      45 => 'JEST ZA KWADRANS ${hoursNominative[nextHour]}', // Quarter before X
+      < 30 =>
+        'JEST ${minutes[m]} PO ${hoursGenitive[displayHour]}', // X after Y
+      _ =>
+        'JEST ZA ${minutes[60 - m]} ${hoursNominative[nextHour]}', // X before Y
     };
   }
 }

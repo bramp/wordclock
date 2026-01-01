@@ -47,12 +47,13 @@ class FrenchTimeToWords implements TimeToWords {
     return switch (m) {
       0 => 'IL EST ${hLabel(displayHour)}', // It is X o'clock
       15 => 'IL EST ${hLabel(displayHour)} ET QUART', // And quarter
-      30 => 'IL EST ${hLabel(displayHour)} ET DEMIE', // And half
+      30 =>
+        'IL EST ${hLabel(displayHour)} ET ${displayHour == 0 || displayHour == 12 ? 'DEMI' : 'DEMIE'}', // And half (masculine for noon/midnight, feminine for hours)
       45 =>
         'IL EST ${hLabel(nextDisplayHour)} MOINS LE QUART', // Minus the quarter
-      < 30 => 'IL EST ${hLabel(displayHour)} ${minutes[m]}',
+      < 30 => 'IL EST ${hLabel(displayHour)} ${minutes[m]}', // X minutes past Y
       _ =>
-        'IL EST ${hLabel(nextDisplayHour)} MOINS ${minutes[60 - m]}', // MOINS = minus
+        'IL EST ${hLabel(nextDisplayHour)} MOINS ${minutes[60 - m]}', // Y minus X minutes
     };
   }
 }

@@ -22,26 +22,27 @@ class JapaneseTimeToWords implements TimeToWords {
   }
 
   /// Converts a number to its Japanese Kanji representation (up to 59).
+  /// e.g., 45 -> 四十五 (Four-Ten-Five)
   String _getNumber(int n) {
     if (n <= 10) return _digit(n);
-    if (n < 20) return '十 ${_digit(n - 10)}'.trim();
+    if (n < 20) return '十${_digit(n - 10)}';
 
     final tens = n ~/ 10;
     final ones = n % 10;
-    return '${_digit(tens)} 十 ${_digit(ones)}'.trim();
+    return '${_digit(tens)}十${_digit(ones)}';
   }
 
   String _digit(int n) => switch (n) {
-    1 => '一',
-    2 => '二',
-    3 => '三',
-    4 => '四',
-    5 => '五',
-    6 => '六',
-    7 => '七',
-    8 => '八',
-    9 => '九',
-    10 => '十',
+    1 => '一', // One
+    2 => '二', // Two
+    3 => '三', // Three
+    4 => '四', // Four
+    5 => '五', // Five
+    6 => '六', // Six
+    7 => '七', // Seven
+    8 => '八', // Eight
+    9 => '九', // Nine
+    10 => '十', // Ten
     _ => '',
   };
 }

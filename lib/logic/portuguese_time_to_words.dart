@@ -33,17 +33,24 @@ class PortugueseTimeToWords implements TimeToWords {
     int nextHour = (displayHour + 1) % 12;
 
     String hStr = hours[displayHour];
-    String nextHStr = hours[nextHour];
+    if (h == 12 || h == 0) {
+      hStr = h == 12 ? 'MEIO DIA' : 'MEIA NOITE';
+    }
 
     return switch (m) {
       0 when h == 12 => 'MEIO DIA', // Noon
       0 when h == 0 => 'MEIA NOITE', // Midnight
-      0 => '${displayHour == 1 ? 'É' : 'SÃO'} $hStr HORAS', // X hours
-      30 => '${displayHour == 1 ? 'É' : 'SÃO'} $hStr E MEIA', // And half
+      0 => '${displayHour == 1 ? 'É' : 'SÃO'} $hStr HORAS', // It is X hours
+      30 =>
+        '${(h == 12 || h == 0 || displayHour == 1) ? 'É' : 'SÃO'} $hStr E MEIA', // It is X and half
       < 30 =>
-        '${displayHour == 1 ? 'É' : 'SÃO'} $hStr E ${minutes[m]}', // "E" = and
+        '${(h == 12 || h == 0 || displayHour == 1) ? 'É' : 'SÃO'} $hStr E ${minutes[m]}', // It is X and Y minutes
       _ =>
-        '${minutes[60 - m]} PARA AS $nextHStr', // "PARA AS" = "to the" (lit: "X for the Y")
+        '${minutes[60 - m]} PARA ${nextHour == 0
+            ? 'A MEIA NOITE'
+            : nextHour == 12
+            ? 'O MEIO DIA'
+            : 'AS ${hours[nextHour]}'}', // X minutes to Y
     };
   }
 }

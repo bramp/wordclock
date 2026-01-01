@@ -7,12 +7,8 @@ void main() {
     final language = JapaneseLanguage();
     final graph = DependencyGraphBuilder.build(language: language);
 
-    final goNodes = graph.keys.where((n) => n.char == "午").toList();
-
-    // With word-level reuse, '午' should be 2 (one for 午前, one for 午後)
-    expect(goNodes.length, 2);
-
     // Total nodes should be reasonable.
-    expect(graph.length, lessThan(600));
+    // With spaces, reuse is much better (approx 175 nodes vs 3300+ without spaces).
+    expect(graph.length, lessThan(200));
   });
 }

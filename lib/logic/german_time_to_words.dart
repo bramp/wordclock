@@ -37,15 +37,15 @@ class GermanTimeToWords implements TimeToWords {
 
     return switch (m) {
       0 => 'ES IST $hStr UHR', // It is X o'clock
-      15 => 'ES IST VIERTEL NACH ${hours[displayHour]}', // Quarter past
-      30 => 'ES IST HALB ${hours[nextHour]}', // Half to (lit: "half X")
-      45 => 'ES IST VIERTEL VOR ${hours[nextHour]}', // Quarter before
-      < 20 => 'ES IST ${minutes[m]} NACH ${hours[displayHour]}', // X after
+      15 => 'ES IST VIERTEL NACH ${hours[displayHour]}', // Quarter after X
+      30 => 'ES IST HALB ${hours[nextHour]}', // Half to Y (lit: "half Y")
+      45 => 'ES IST VIERTEL VOR ${hours[nextHour]}', // Quarter before Y
+      < 20 => 'ES IST ${minutes[m]} NACH ${hours[displayHour]}', // X after Y
       < 30 =>
-        'ES IST ${minutes[30 - m]} VOR HALB ${hours[nextHour]}', // X before half
+        'ES IST ${minutes[30 - m]} VOR HALB ${hours[nextHour]}', // X before half Y
       < 40 =>
-        'ES IST ${minutes[m - 30]} NACH HALB ${hours[nextHour]}', // X after half
-      _ => 'ES IST ${minutes[60 - m]} VOR ${hours[nextHour]}', // X before
+        'ES IST ${minutes[m - 30]} NACH HALB ${hours[nextHour]}', // X after half Y
+      _ => 'ES IST ${minutes[60 - m]} VOR ${hours[nextHour]}', // X before Y
     };
   }
 }
