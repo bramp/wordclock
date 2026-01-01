@@ -58,7 +58,7 @@ class WordGrid {
   }
 
   // The original qlocktwo grid. Here for reference only
-  // static final english11x10 = WordGrid(
+  // static final englishQlocktwo = WordGrid(
   //   width: 11,
   //   letters:
   //       "ITLISASTIME"

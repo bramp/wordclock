@@ -1,40 +1,73 @@
 // ignore_for_file: avoid_print
 import 'dart:io';
 
+import 'package:wordclock/generator/grid_generator.dart';
+import 'package:wordclock/logic/time_to_words.dart';
 import 'package:wordclock/model/word_grid.dart';
 
 void main(List<String> args) {
-  // 1. Determine Time
+  // Defaults
+  int width = 11;
+  int? seed;
+  String lang = 'en';
   DateTime now = DateTime.now();
-  if (args.isNotEmpty) {
-    try {
-      final parts = args[0].split(':');
-      if (parts.length == 2) {
-        final hour = int.parse(parts[0]);
-        final minute = int.parse(parts[1]);
-        now = DateTime(now.year, now.month, now.day, hour, minute);
-      } else {
-        print('Invalid format. Use HH:mm');
+
+  // Simple Argument Parsing
+  for (var arg in args) {
+    if (arg.startsWith('--lang=')) {
+      lang = arg.substring(7);
+    } else if (arg.startsWith('--width=')) {
+      width = int.parse(arg.substring(8));
+    } else if (arg.startsWith('--seed=')) {
+      seed = int.tryParse(arg.substring(7));
+    } else if (!arg.startsWith('--')) {
+      // Assume time in HH:mm
+      try {
+        final parts = arg.split(':');
+        if (parts.length == 2) {
+          final hour = int.parse(parts[0]);
+          final minute = int.parse(parts[1]);
+          now = DateTime(now.year, now.month, now.day, hour, minute);
+        }
+      } catch (e) {
+        print('Error parsing time: $e');
         exit(1);
       }
-    } catch (e) {
-      print('Error parsing time: $e');
-      exit(1);
     }
   }
+
+  // Select Language
+  TimeToWords converter;
+  switch (lang) {
+    case 'en':
+      converter = EnglishTimeToWords();
+      break;
+    default:
+      print('Unsupported language: $lang');
+      print('Supported languages: en');
+      exit(1);
+  }
+
+  print('Generating grid for lang="$lang", width=$width, seed=$seed...');
+  final letters = GridGenerator.generate(
+    width: width,
+    seed: seed,
+    language: converter,
+  );
+
+  final grid = WordGrid(
+    width: width,
+    letters: letters,
+    timeConverter: converter,
+  );
 
   print(
     'Time: ${now.hour.toString().padLeft(2, '0')}:${now.minute.toString().padLeft(2, '0')}',
   );
-
-  // 2. Logic: Time to Indices
-  final grid = WordGrid.english11x10;
-  final activeIndices = grid.getIndices(now);
-
-  final phrase = grid.timeConverter.convert(now);
+  final phrase = converter.convert(now);
   print('Phrase: "$phrase"');
 
-  // 4. Render
+  final activeIndices = grid.getIndices(now);
   _printGrid(grid, activeIndices);
 }
 

@@ -3,19 +3,19 @@ import 'package:wordclock/generator/graph_types.dart';
 import 'package:wordclock/logic/time_to_words.dart';
 
 class DependencyGraphBuilder {
-  static Graph build() {
+  static Graph build({TimeToWords? converter}) {
     final Graph graph = {};
 
     // Cache to check if a node has been created in the graph
     // We use the graph keys as the definitive set of existing nodes.
 
-    final converter = EnglishTimeToWords();
+    final timeConverter = converter ?? EnglishTimeToWords();
 
     // Scan 24 Hours
     for (int h = 0; h < 24; h++) {
       for (int m = 0; m < 60; m++) {
         final time = DateTime(2025, 1, 1, h, m);
-        final phrase = converter.convert(time);
+        final phrase = timeConverter.convert(time);
         final rawWords = phrase.split(' ');
 
         Node? prevNode;
