@@ -14,6 +14,14 @@ class WordGrid {
          "Grid letters must fit perfectly into width",
        );
 
+  factory WordGrid.fromLetters(int width, String letters) {
+    return WordGrid(
+      width: width,
+      letters: letters,
+      timeConverter: EnglishTimeToWords(),
+    );
+  }
+
   int get height => letters.length ~/ width;
 
   /// Calculates the set of indices to light up for the given [time].

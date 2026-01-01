@@ -12,17 +12,15 @@ import 'package:wordclock/ui/settings/settings_panel.dart';
 
 class ClockFace extends StatefulWidget {
   final SettingsController settingsController;
-  final WordGrid grid;
   final Duration animationDuration;
   final Curve animationCurve;
 
-  ClockFace({
+  const ClockFace({
     super.key,
-    WordGrid? grid,
     required this.settingsController,
     this.animationDuration = const Duration(milliseconds: 1000),
     this.animationCurve = Curves.easeInOut,
-  }) : grid = grid ?? WordGrid.english11x10;
+  });
 
   @override
   State<ClockFace> createState() => _ClockFaceState();
@@ -35,6 +33,7 @@ class _ClockFaceState extends State<ClockFace> {
   DateTime? _lastTime;
   Set<int> _activeIndices = {};
   int _remainder = 0;
+  WordGrid? _lastGrid;
 
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
 
@@ -49,17 +48,19 @@ class _ClockFaceState extends State<ClockFace> {
     });
   }
 
-  void _recalculateIndices(DateTime now) {
+  void _recalculateIndices(DateTime now, WordGrid grid) {
     if (_lastTime != null &&
         _lastTime!.minute == now.minute &&
         _lastTime!.hour == now.hour &&
-        _activeIndices.isNotEmpty) {
-      // No change in time that affects words.
+        _activeIndices.isNotEmpty &&
+        _lastGrid == grid) {
+      // No change in time that affects words, and grid is same.
       return;
     }
 
     _lastTime = now;
-    _activeIndices = widget.grid.getIndices(now);
+    _lastGrid = grid;
+    _activeIndices = grid.getIndices(now);
     _remainder = now.minute % 5;
   }
 
@@ -73,18 +74,21 @@ class _ClockFaceState extends State<ClockFace> {
   Widget? _cachedInactiveGrid;
   Widget? _cachedActiveGrid;
   Set<int>? _lastActiveIndices;
+  WordGrid? _lastCachedGrid;
 
   void _updateCachedGrids(
     SettingsController settings,
+    WordGrid grid,
     Set<int> activeIndices,
     Duration duration,
     Curve curve,
   ) {
     if (_cachedActiveGrid == null ||
         _cachedInactiveGrid == null ||
-        !setEquals(_lastActiveIndices, activeIndices)) {
+        !setEquals(_lastActiveIndices, activeIndices) ||
+        _lastCachedGrid != grid) {
       _cachedInactiveGrid = LetterGrid(
-        grid: widget.grid,
+        grid: grid,
         activeIndices: const {},
         inactiveColor: const Color(0xFF333333),
         activeColor: Colors.transparent,
@@ -93,7 +97,7 @@ class _ClockFaceState extends State<ClockFace> {
       );
 
       _cachedActiveGrid = LetterGrid(
-        grid: widget.grid,
+        grid: grid,
         activeIndices: activeIndices,
         activeColor: Colors.white,
         inactiveColor: Colors.white.withValues(alpha: 0),
@@ -102,15 +106,15 @@ class _ClockFaceState extends State<ClockFace> {
       );
 
       _lastActiveIndices = activeIndices;
+      _lastCachedGrid = grid;
     }
   }
 
   @override
   void didUpdateWidget(ClockFace oldWidget) {
     super.didUpdateWidget(oldWidget);
-    // Invalidate cache if settings or grid config changed passed from parent
-    _cachedActiveGrid = null;
-    _cachedInactiveGrid = null;
+    // Invalidate cache if settings config changed passed from parent
+    // Note: grid logic is now handled in build/update methods via controller
   }
 
   // Helper for set equality
@@ -130,17 +134,15 @@ class _ClockFaceState extends State<ClockFace> {
         final settings = widget.settingsController.settings;
         // Use the clock provided by settings
         final now = widget.settingsController.clock.now();
+        final grid = widget.settingsController.currentGrid;
 
         // Recalculate grid if time changed
-        _recalculateIndices(now);
+        _recalculateIndices(now, grid);
 
         // Update cache if needed
-        // Note: We always use the LATEST settings here.
-        // If settings changed but indices didn't, we MUST rebuild.
-        // But detecting settings change inside StreamBuilder is hard without listening.
-        // Fortunately, if Settings change, `main.dart` rebuilds `ClockFace`, calling `didUpdateWidget`, clearing cache.
         _updateCachedGrids(
           widget.settingsController,
+          grid,
           _activeIndices,
           widget.animationDuration,
           widget.animationCurve,
@@ -164,7 +166,7 @@ class _ClockFaceState extends State<ClockFace> {
                     // Layer 1: Inactive Elements
                     RepaintBoundary(
                       child: ClockLayout(
-                        grid: widget.grid,
+                        grid: grid,
                         remainder: 0,
                         showDots: settings.showMinuteDots,
                         forceAllDots: true, // Always show placeholder dots
@@ -187,7 +189,7 @@ class _ClockFaceState extends State<ClockFace> {
                         },
                         blendMode: BlendMode.srcIn,
                         child: ClockLayout(
-                          grid: widget.grid,
+                          grid: grid,
                           remainder: _remainder,
                           showDots: settings.showMinuteDots,
                           forceAllDots: false,

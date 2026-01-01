@@ -3,6 +3,8 @@ import 'package:flutter/material.dart';
 import 'package:wordclock/model/adjustable_clock.dart';
 
 import 'package:wordclock/settings/theme_settings.dart';
+import 'package:wordclock/generator/grid_generator.dart';
+import 'package:wordclock/model/word_grid.dart';
 
 enum ClockSpeed { normal, fast, hyper }
 
@@ -17,6 +19,10 @@ class SettingsController extends ChangeNotifier {
   // Track state simply to report to UI (though clock handles logic)
   bool _isManualTime = false;
 
+  // Dynamic Grid State
+  int? _gridSeed; // null = use default static grid
+  WordGrid _currentGrid = WordGrid.english11x10;
+
   SettingsController(); // Constructor doesn't need init logic anymore
 
   ThemeSettings get settings => _currentSettings;
@@ -29,8 +35,24 @@ class SettingsController extends ChangeNotifier {
 
   bool get isManualTime => _isManualTime;
 
+  int? get gridSeed => _gridSeed;
+  WordGrid get currentGrid => _currentGrid;
+
   void updateTheme(ThemeSettings newSettings) {
     _currentSettings = newSettings;
+    notifyListeners();
+  }
+
+  void setGridSeed(int? seed) {
+    if (_gridSeed == seed) return;
+    _gridSeed = seed;
+
+    if (seed == null) {
+      _currentGrid = WordGrid.english11x10;
+    } else {
+      final letters = GridGenerator.generate(width: 11, seed: seed);
+      _currentGrid = WordGrid.fromLetters(11, letters);
+    }
     notifyListeners();
   }
 

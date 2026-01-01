@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:wordclock/settings/settings_controller.dart';
 import 'package:wordclock/settings/theme_settings.dart';
 import 'package:wordclock/ui/settings/components/section_header.dart';
+import 'package:wordclock/ui/settings/components/seed_selector.dart';
 import 'package:wordclock/ui/settings/components/speed_chip.dart';
 import 'package:wordclock/ui/settings/components/theme_chip.dart';
 
@@ -225,6 +226,18 @@ class SettingsPanel extends StatelessWidget {
                               controller.setManualTime(null);
                             },
                           ),
+                        const SizedBox(height: 16),
+                        Padding(
+                          padding: const EdgeInsets.only(bottom: 8.0),
+                          child: const Text(
+                            'Grid Seed',
+                            style: TextStyle(color: Colors.white, fontSize: 16),
+                          ),
+                        ),
+                        SeedSelector(
+                          value: controller.gridSeed,
+                          onChanged: (val) => controller.setGridSeed(val),
+                        ),
                       ],
                     ],
                   ),
