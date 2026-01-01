@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 
 class ThemeSettings {
@@ -39,5 +40,23 @@ class ThemeSettings {
     ],
     inactiveColor: Color.fromRGBO(0, 255, 0, 0.15),
     backgroundColor: Colors.black,
+  );
+
+  @override
+  bool operator ==(Object other) {
+    if (identical(this, other)) return true;
+    if (other is! ThemeSettings) return false;
+    return listEquals(activeGradientColors, other.activeGradientColors) &&
+        inactiveColor == other.inactiveColor &&
+        backgroundColor == other.backgroundColor &&
+        showMinuteDots == other.showMinuteDots;
+  }
+
+  @override
+  int get hashCode => Object.hash(
+    Object.hashAll(activeGradientColors),
+    inactiveColor,
+    backgroundColor,
+    showMinuteDots,
   );
 }
