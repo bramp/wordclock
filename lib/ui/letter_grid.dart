@@ -63,14 +63,12 @@ class LetterGrid extends StatelessWidget {
             shadows: const [],
           );
 
-          return GridView.builder(
-            physics: const NeverScrollableScrollPhysics(), // Disable scrolling
-            itemCount: grid.letters.length,
-            gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-              crossAxisCount: grid.width,
-              childAspectRatio: width / height,
-            ),
-            itemBuilder: (context, index) {
+          return GridView.count(
+            physics: const NeverScrollableScrollPhysics(),
+            crossAxisCount: grid.width,
+            childAspectRatio: width / height,
+            padding: EdgeInsets.zero,
+            children: List.generate(grid.letters.length, (index) {
               final isActive = activeIndices.contains(index);
               final char = grid.letters[index];
 
@@ -80,7 +78,7 @@ class LetterGrid extends StatelessWidget {
                 activeStyle: activeStyle,
                 inactiveStyle: inactiveStyle,
               );
-            },
+            }),
           );
         },
       ),
