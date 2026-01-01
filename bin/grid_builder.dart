@@ -1,10 +1,12 @@
 import 'package:wordclock/generator/grid_generator.dart';
+import 'package:wordclock/languages/english.dart';
 
 // ignore_for_file: avoid_print
 
 void main(List<String> args) {
   int gridWidth = 11; // Default
   int? seed;
+  final language = EnglishLanguage();
 
   for (final arg in args) {
     if (arg.startsWith('--seed=')) {
@@ -21,7 +23,11 @@ void main(List<String> args) {
   }
 
   try {
-    final gridString = GridGenerator.generate(width: gridWidth, seed: seed);
+    final gridString = GridGenerator.generate(
+      width: gridWidth,
+      seed: seed,
+      language: language,
+    );
     final height = gridString.length ~/ gridWidth;
 
     print('\n/// AUTOMATICALLY GENERATED PREVIEW');

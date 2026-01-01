@@ -4,7 +4,8 @@ import 'package:wordclock/generator/dependency_graph.dart';
 import 'package:wordclock/generator/grid_layout.dart';
 import 'package:wordclock/generator/topological_sort.dart';
 
-import 'package:wordclock/logic/time_to_words.dart';
+import 'package:wordclock/languages/language.dart';
+import 'package:wordclock/languages/english.dart';
 
 class GridGenerator {
   /// Generates a grid of characters for the word clock.
@@ -12,10 +13,13 @@ class GridGenerator {
   static String generate({
     required int width,
     int? seed,
-    TimeToWords? language,
+    WordClockLanguage? language,
   }) {
     final Random random = seed != null ? Random(seed) : Random(0);
-    final converter = language ?? EnglishTimeToWords();
+    final lang = language ?? EnglishLanguage();
+    final converter = lang.timeToWords;
+    final padding = lang.paddingAlphabet;
+
     final graph = DependencyGraphBuilder.build(converter: converter);
     final sortedNodes = TopologicalSorter.sort(
       graph,
@@ -26,7 +30,7 @@ class GridGenerator {
       sortedNodes,
       graph,
       random,
-      paddingAlphabet: converter.paddingChars,
+      paddingAlphabet: padding,
     );
   }
 }

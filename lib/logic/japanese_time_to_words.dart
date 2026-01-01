@@ -2,9 +2,6 @@ import 'package:wordclock/logic/time_to_words.dart';
 
 class JapaneseTimeToWords implements TimeToWords {
   @override
-  String get paddingChars => '東西南北春夏秋冬日月火水木金土山川海空星花鳥風月上下左右中心光闇世界';
-
-  @override
   String convert(DateTime time) {
     int minute = time.minute;
     int hour = time.hour;

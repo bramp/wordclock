@@ -1,41 +1,9 @@
 abstract class TimeToWords {
   /// Converts a [DateTime] object into a human-readable string representation of time.
   String convert(DateTime time);
-
-  /// Returns a string of characters to use for filling empty spaces in the grid.
-  String get paddingChars;
 }
 
 class EnglishTimeToWords implements TimeToWords {
-  @override
-  String get paddingChars =>
-      "EEEEEEEEEEE" // 11
-      "AAAAAAAA" // 8
-      "RRRRRR" // 6
-      "IIIIII" // 6
-      "OOOOOO" // 6
-      "TTTTTT" // 6
-      "NNNNN" // 5
-      "SSSS" // 4
-      "LLLL" // 4
-      "CCCC" // 3
-      "UUU" // 3
-      "DDD" // 3
-      "PPP" // 3
-      "MMM" // 3
-      "HHH" // 3
-      "G"
-      "B"
-      "F"
-      "Y"
-      "W"
-      "K"
-      "V"
-      "X"
-      "Z"
-      "J"
-      "Q";
-
   @override
   String convert(DateTime time) {
     // Round down to nearest 5 minutes

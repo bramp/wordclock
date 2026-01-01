@@ -2,8 +2,9 @@
 import 'dart:io';
 
 import 'package:wordclock/generator/grid_generator.dart';
-import 'package:wordclock/logic/time_to_words.dart';
-import 'package:wordclock/logic/japanese_time_to_words.dart';
+import 'package:wordclock/languages/language.dart';
+import 'package:wordclock/languages/english.dart';
+import 'package:wordclock/languages/japanese.dart';
 import 'package:wordclock/model/word_grid.dart';
 
 void main(List<String> args) {
@@ -55,13 +56,13 @@ void _processLanguage(String lang, int width, int? seed, DateTime now) {
   print('\n=== Language: $lang ===');
 
   // Select Language
-  TimeToWords converter;
+  WordClockLanguage language;
   switch (lang) {
     case 'en':
-      converter = EnglishTimeToWords();
+      language = EnglishLanguage();
       break;
     case 'ja':
-      converter = JapaneseTimeToWords();
+      language = JapaneseLanguage();
       break;
     default:
       print('Unsupported language: $lang');
@@ -73,16 +74,16 @@ void _processLanguage(String lang, int width, int? seed, DateTime now) {
   final letters = GridGenerator.generate(
     width: width,
     seed: seed,
-    language: converter,
+    language: language,
   );
 
   final grid = WordGrid(
     width: width,
     letters: letters,
-    timeConverter: converter,
+    timeConverter: language.timeToWords,
   );
 
-  final phrase = converter.convert(now);
+  final phrase = language.timeToWords.convert(now);
   print('Phrase: "$phrase"');
 
   final activeIndices = grid.getIndices(now);

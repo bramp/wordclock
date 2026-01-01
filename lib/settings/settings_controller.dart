@@ -1,10 +1,11 @@
 import 'package:clock/clock.dart';
 import 'package:flutter/material.dart';
 import 'package:wordclock/model/adjustable_clock.dart';
-
 import 'package:wordclock/settings/theme_settings.dart';
 import 'package:wordclock/generator/grid_generator.dart';
 import 'package:wordclock/model/word_grid.dart';
+import 'package:wordclock/languages/language.dart';
+import 'package:wordclock/languages/english.dart';
 
 enum ClockSpeed { normal, fast, hyper }
 
@@ -21,9 +22,12 @@ class SettingsController extends ChangeNotifier {
 
   // Dynamic Grid State
   int? _gridSeed; // null = use default static grid
-  WordGrid _currentGrid = WordGrid.english11x10;
+  WordClockLanguage _currentLanguage = EnglishLanguage();
+  late WordGrid _currentGrid;
 
-  SettingsController(); // Constructor doesn't need init logic anymore
+  SettingsController() {
+    _regenerateGrid();
+  }
 
   ThemeSettings get settings => _currentSettings;
 
@@ -36,6 +40,7 @@ class SettingsController extends ChangeNotifier {
   bool get isManualTime => _isManualTime;
 
   int? get gridSeed => _gridSeed;
+  WordClockLanguage get currentLanguage => _currentLanguage;
   WordGrid get currentGrid => _currentGrid;
 
   void updateTheme(ThemeSettings newSettings) {
@@ -43,17 +48,36 @@ class SettingsController extends ChangeNotifier {
     notifyListeners();
   }
 
+  void setLanguage(WordClockLanguage language) {
+    if (_currentLanguage == language) return;
+    _currentLanguage = language;
+    _regenerateGrid();
+    notifyListeners();
+  }
+
   void setGridSeed(int? seed) {
     if (_gridSeed == seed) return;
     _gridSeed = seed;
-
-    if (seed == null) {
-      _currentGrid = WordGrid.english11x10;
-    } else {
-      final letters = GridGenerator.generate(width: 11, seed: seed);
-      _currentGrid = WordGrid.fromLetters(11, letters);
-    }
+    _regenerateGrid();
     notifyListeners();
+  }
+
+  void _regenerateGrid() {
+    final defGrid = _currentLanguage.defaultGrid;
+    if (_gridSeed == null && defGrid != null) {
+      _currentGrid = defGrid;
+    } else {
+      final letters = GridGenerator.generate(
+        width: 11,
+        seed: _gridSeed,
+        language: _currentLanguage,
+      );
+      _currentGrid = WordGrid(
+        width: 11,
+        letters: letters,
+        timeConverter: _currentLanguage.timeToWords,
+      );
+    }
   }
 
   void setClockSpeed(ClockSpeed speed) {

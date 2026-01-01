@@ -17,9 +17,6 @@ final _testGrid = WordGrid(
 
 class _MockTimeConverter implements TimeToWords {
   @override
-  String get paddingChars => 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
-
-  @override
   String convert(DateTime time) => "";
 }
 

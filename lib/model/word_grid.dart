@@ -14,14 +14,6 @@ class WordGrid {
          "Grid letters must fit perfectly into width",
        );
 
-  factory WordGrid.fromLetters(int width, String letters) {
-    return WordGrid(
-      width: width,
-      letters: letters,
-      timeConverter: EnglishTimeToWords(),
-    );
-  }
-
   int get height => letters.length ~/ width;
 
   /// Calculates the set of indices to light up for the given [time].
@@ -56,38 +48,4 @@ class WordGrid {
     }
     return activeIndices;
   }
-
-  // The original qlocktwo grid. Here for reference only
-  // static final englishQlocktwo = WordGrid(
-  //   width: 11,
-  //   letters:
-  //       "ITLISASTIME"
-  //       "ACQUARTERDC"
-  //       "TWENTYFIVEX"
-  //       "HALFBTENFTO"
-  //       "PASTERUNINE"
-  //       "ONESIXTHREE"
-  //       "FOURFIVETWO"
-  //       "EIGHTELEVEN"
-  //       "SEVENTWELVE"
-  //       "TENSEOCLOCK",
-  //   timeConverter: EnglishTimeToWords(),
-  // );
-
-  // Automatically generated grid using bin/grid_builder.dart
-  static final english11x10 = WordGrid(
-    width: 11,
-    letters:
-        'ITRISSHALFA'
-        'AQUARTERTEN'
-        'TWENTYCFIVE'
-        'SPASTTOETMO'
-        'EIGHTELEVEN'
-        'ODQFIVEFOUR'
-        'RZUNINEONEP'
-        'SEVENSIXTEN'
-        'THREETWELVE'
-        'ATWOIOCLOCK',
-    timeConverter: EnglishTimeToWords(),
-  );
 }
