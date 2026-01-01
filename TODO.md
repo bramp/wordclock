@@ -18,3 +18,4 @@
 - [ ] When the app is resized, the grey letters animate their change, but the illumatned ones don't. That seems wrong behaviour
 - [ ] Add a debug toggle to hide the "padding" letters.
 - [ ] Add support for other languages (see https://en.wikipedia.org/wiki/Languages_used_on_the_Internet for list)
+- [ ] Generate railroad diagrams (instead of dot diagrams) see https://github.com/GuntherRademacher/rr

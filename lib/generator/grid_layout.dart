@@ -2,6 +2,7 @@ import 'dart:math';
 import 'package:wordclock/generator/graph_types.dart';
 
 class GridLayout {
+  /// Generates a grid string of the given [width] from the [orderedResult] nodes.
   static String generateString(
     int width,
     List<Node> orderedResult,
@@ -9,82 +10,14 @@ class GridLayout {
     Random random, {
     required String paddingAlphabet,
   }) {
-    final buffer = StringBuffer();
-    // We accumulate words for a single line, then flush them with distributed padding.
-    List<String> currentLineWords = [];
-    int currentLineLength = 0;
-
-    // Track previous node to determine required padding betweeen words
-    Node? prevNode;
-
-    // Identify special "pinned" nodes
-    // Note: We assume the first node is top-left and last is bottom-right based on topological sort/input
-    final Node firstNode = orderedResult.first;
-    final Node lastNode = orderedResult.last;
-
-    void flushLine({required bool isLastLine}) {
-      if (currentLineWords.isEmpty) return;
-      final int paddingTotal = width - currentLineLength;
-      String line = "";
-
-      // 1. PIN TOP-LEFT: If this line contains the very first node (IT), padding goes at the END.
-      if (currentLineWords.contains(firstNode.word) &&
-          currentLineWords.first == firstNode.word) {
-        line = currentLineWords.join("");
-        line += _generatePadding(paddingTotal, random, paddingAlphabet);
-      }
-      // 2. PIN BOTTOM-RIGHT: If this is the LAST line and contains the last node, padding goes at the START.
-      else if (isLastLine && currentLineWords.contains(lastNode.word)) {
-        line = _generatePadding(paddingTotal, random, paddingAlphabet);
-        line += currentLineWords.join("");
-      }
-      // 3. RANDOM SCATTER: Randomly split padding before and after
-      else {
-        // Split padding randomly
-        final int paddingBefore = random.nextInt(paddingTotal + 1);
-        final int paddingAfter = paddingTotal - paddingBefore;
-        line += _generatePadding(paddingBefore, random, paddingAlphabet);
-        line += currentLineWords.join("");
-        line += _generatePadding(paddingAfter, random, paddingAlphabet);
-      }
-      buffer.write(line);
-
-      // Clear for next line
-      currentLineWords = [];
-      currentLineLength = 0;
-    }
-
-    for (int i = 0; i < orderedResult.length; i++) {
-      final node = orderedResult[i];
-      final wordStr = node.word;
-
-      // Determine if padding is required due to direct dependency
-      // If A->B, we need at least 1 padding char if they are on the same line?
-      bool needsSeparator = false;
-      if (prevNode != null && graph[prevNode]?.contains(node) == true) {
-        needsSeparator = true;
-      }
-
-      // Calculate space needed (Word + separator)
-      int spaceNeeded = wordStr.length + (needsSeparator ? 1 : 0);
-
-      // Check fit
-      if (currentLineLength + spaceNeeded > width) {
-        flushLine(isLastLine: false);
-      }
-
-      // Add separator if needed and not start of line
-      if (currentLineWords.isNotEmpty && needsSeparator) {
-        currentLineWords.add(_generatePadding(1, random, paddingAlphabet));
-        currentLineLength += 1;
-      }
-      currentLineWords.add(wordStr);
-      currentLineLength += wordStr.length;
-      prevNode = node;
-    }
-    // Flush remaining
-    flushLine(isLastLine: true);
-    return buffer.toString();
+    final session = _GridLayoutSession(
+      width: width,
+      orderedResult: orderedResult,
+      graph: graph,
+      random: random,
+      paddingAlphabet: paddingAlphabet,
+    );
+    return session.generate();
   }
 
   static String _generatePadding(int length, Random random, String alphabet) {
@@ -94,4 +27,200 @@ class GridLayout {
       (index) => alphabet[random.nextInt(alphabet.length)],
     ).join();
   }
+}
+
+/// Internal state for a single grid generation pass.
+class _GridLayoutSession {
+  final int width;
+  final List<Node> orderedResult;
+  final Graph graph;
+  final Random random;
+  final String paddingAlphabet;
+
+  final StringBuffer _buffer = StringBuffer();
+  List<_GridItem> _currentLineItems = [];
+  int _currentLineLength = 0;
+
+  late final Node? _firstNode;
+  late final Node? _lastNode;
+
+  _GridLayoutSession({
+    required this.width,
+    required this.orderedResult,
+    required this.graph,
+    required this.random,
+    required this.paddingAlphabet,
+  }) {
+    _firstNode = orderedResult.isNotEmpty ? orderedResult.first : null;
+    _lastNode = orderedResult.isNotEmpty ? orderedResult.last : null;
+  }
+
+  String generate() {
+    int i = 0;
+    Node? lastWordLastNode;
+
+    while (i < orderedResult.length) {
+      final wordNodes = _findNextWordBlock(i);
+      final int wordLength = wordNodes.length;
+
+      // Check if we need a gap between lastWordLastNode and wordNodes.first
+      if (lastWordLastNode != null &&
+          graph[lastWordLastNode]!.contains(wordNodes.first)) {
+        _addGapIfNecessary();
+      }
+
+      // Check fit for the ENTIRE word
+      if (_currentLineLength + wordLength > width) {
+        _flushLine(isLastLine: false);
+      }
+
+      // Add word characters
+      for (final wn in wordNodes) {
+        _currentLineItems.add(_GridItem(wn.char, wn));
+      }
+      _currentLineLength += wordLength;
+      lastWordLastNode = wordNodes.last;
+
+      i += wordLength;
+    }
+
+    _flushLine(isLastLine: true);
+    return _buffer.toString();
+  }
+
+  /// Finds the next contiguous block of nodes belonging to the same word.
+  List<Node> _findNextWordBlock(int startIndex) {
+    int j = startIndex + 1;
+    while (j < orderedResult.length) {
+      final prev = orderedResult[j - 1];
+      final curr = orderedResult[j];
+      if (prev.word != curr.word || !graph[prev]!.contains(curr)) {
+        break;
+      }
+      j++;
+    }
+    return orderedResult.sublist(startIndex, j);
+  }
+
+  /// Adds a mandatory gap between words if they are in the same phrase.
+  void _addGapIfNecessary() {
+    if (_currentLineItems.isNotEmpty) {
+      if (_currentLineLength + 1 > width) {
+        _flushLine(isLastLine: false);
+      } else {
+        _currentLineItems.add(
+          _GridItem(GridLayout._generatePadding(1, random, paddingAlphabet)),
+        );
+        _currentLineLength += 1;
+      }
+    }
+  }
+
+  /// Flushes the current line to the buffer, applying padding and pinning.
+  void _flushLine({required bool isLastLine}) {
+    if (_currentLineItems.isEmpty) return;
+
+    final int paddingTotal = max(0, width - _currentLineLength);
+    String line = "";
+
+    // 1. PIN TOP-LEFT
+    if (_containsNode(_firstNode) &&
+        _currentLineItems.first.node == _firstNode) {
+      line = _currentLineItems.map((e) => e.char).join("");
+      line += GridLayout._generatePadding(
+        paddingTotal,
+        random,
+        paddingAlphabet,
+      );
+    }
+    // 2. PIN BOTTOM-RIGHT
+    else if (isLastLine && _containsNode(_lastNode)) {
+      line = GridLayout._generatePadding(paddingTotal, random, paddingAlphabet);
+      line += _currentLineItems.map((e) => e.char).join("");
+    }
+    // 3. RANDOM SCATTER
+    else {
+      line = _distributePadding(paddingTotal);
+    }
+
+    _buffer.write(line);
+    _currentLineItems = [];
+    _currentLineLength = 0;
+  }
+
+  bool _containsNode(Node? node) {
+    if (node == null) return false;
+    return _currentLineItems.any((item) => item.node == node);
+  }
+
+  /// Randomly distributes padding across all slots (before, after, and between units).
+  String _distributePadding(int paddingTotal) {
+    final units = _groupItemsIntoUnits();
+    final int numSlots = units.length + 1;
+    final slotPaddings = List.filled(numSlots, 0);
+
+    for (int p = 0; p < paddingTotal; p++) {
+      slotPaddings[random.nextInt(numSlots)]++;
+    }
+
+    String line = "";
+    for (int s = 0; s < units.length; s++) {
+      line += GridLayout._generatePadding(
+        slotPaddings[s],
+        random,
+        paddingAlphabet,
+      );
+      line += units[s];
+    }
+    line += GridLayout._generatePadding(
+      slotPaddings.last,
+      random,
+      paddingAlphabet,
+    );
+    return line;
+  }
+
+  /// Groups items into "units" (contiguous words or single gaps) that shouldn't be split by padding.
+  List<String> _groupItemsIntoUnits() {
+    List<String> units = [];
+    String currentUnit = "";
+    String? currentWord;
+
+    for (final item in _currentLineItems) {
+      if (item.node == null) {
+        if (currentUnit.isNotEmpty) {
+          units.add(currentUnit);
+          currentUnit = "";
+          currentWord = null;
+        }
+        units.add(item.char);
+      } else {
+        if (currentWord != null && item.node!.word == currentWord) {
+          currentUnit += item.char;
+        } else {
+          if (currentUnit.isNotEmpty) {
+            units.add(currentUnit);
+          }
+          currentUnit = item.char;
+          currentWord = item.node!.word;
+        }
+      }
+    }
+    if (currentUnit.isNotEmpty) {
+      units.add(currentUnit);
+    }
+    return units;
+  }
+}
+
+/// Represents a single character in the grid during the layout process.
+class _GridItem {
+  /// The character to be displayed in the grid.
+  final String char;
+
+  /// The original [Node] this character belongs to, if any.
+  /// Padding and gap characters will have a null [node].
+  final Node? node;
+
+  _GridItem(this.char, [this.node]);
 }
