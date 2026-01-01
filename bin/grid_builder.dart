@@ -256,55 +256,105 @@ void _generateGrid(
 ) {
   final buffer = StringBuffer();
 
-  String currentRow = "";
+  // We accumulate words for a single line, then flush them with distributed padding.
+  List<String> currentLineWords = [];
+  int currentLineLength = 0;
+
+  // Track previous node to determine required padding betweeen words
   Node? prevNode;
 
-  for (final node in orderedResult) {
+  // Identify special "pinned" nodes
+  // Note: We assume the first node is top-left and last is bottom-right based on topological sort/input
+  final Node firstNode = orderedResult.first;
+  final Node lastNode = orderedResult.last;
+
+  void flushLine({required bool isLastLine}) {
+    if (currentLineWords.isEmpty) return;
+
+    final int paddingTotal = width - currentLineLength;
+    String line = "";
+
+    // 1. PIN TOP-LEFT: If this line contains the very first node (IT), padding goes at the END.
+    if (currentLineWords.contains(firstNode.word) &&
+        currentLineWords.first == firstNode.word) {
+      // Ideally check if it's strictly the first item, which it should be.
+      line = currentLineWords.join("");
+      line += _generatePadding(paddingTotal, random);
+    }
+    // 2. PIN BOTTOM-RIGHT: If this is the LAST line and contains the last node, padding goes at the START.
+    else if (isLastLine && currentLineWords.contains(lastNode.word)) {
+      // Verify it's actually the last node of the list
+      line = _generatePadding(paddingTotal, random);
+      line += currentLineWords.join("");
+    }
+    // 3. RANDOM SCATTER: Randomly split padding before and after
+    else {
+      // Split padding randomly
+      final int paddingBefore = random.nextInt(paddingTotal + 1);
+      final int paddingAfter = paddingTotal - paddingBefore;
+
+      line += _generatePadding(paddingBefore, random);
+      line += currentLineWords.join("");
+      line += _generatePadding(paddingAfter, random);
+    }
+
+    buffer.write(line);
+
+    // Clear for next line
+    currentLineWords = [];
+    currentLineLength = 0;
+  }
+
+  for (int i = 0; i < orderedResult.length; i++) {
+    final node = orderedResult[i];
     final wordStr = node.word;
 
     // Determine if padding is required due to direct dependency
-    bool needsPadding = false;
+    // If A->B, we need at least 1 padding char if they are on the same line?
+    // Actually, generic padding is just filling the grid.
+    // The requirement "padding ... within the line" suggests we might split padding between words too,
+    // but the user said "distribute the padding within the line", which often means around the block of words.
+    // Let's stick to placing the block of words together for readability, but shifting that block left/right/center randomly.
+    // Splitting words apart with padding makes them hard to read (e.g. T W E N T Y).
+    // EXCEPT if we need a required separator.
+
+    bool needsSeparator = false;
     if (prevNode != null && graph[prevNode]?.contains(node) == true) {
-      needsPadding = true;
+      needsSeparator = true;
     }
 
-    // Calculate space needed (Word + optional Padding)
-    int spaceNeeded = wordStr.length + (needsPadding ? 1 : 0);
+    // Calculate space needed (Word + separator)
+    int spaceNeeded = wordStr.length + (needsSeparator ? 1 : 0);
 
     // Check fit
-    if (currentRow.length + spaceNeeded > width) {
-      // Wrap to next line
-      final paddingNeeded = width - currentRow.length;
-      final padding = _generatePadding(paddingNeeded, random);
-      buffer.write(currentRow + padding);
-
-      currentRow = "";
-
-      if (needsPadding && paddingNeeded == 0) {
-        currentRow += _generatePadding(1, random);
-      }
-    } else {
-      // Fits on same line
-      if (needsPadding) {
-        currentRow += _generatePadding(1, random);
-      }
+    if (currentLineLength + spaceNeeded > width) {
+      // Flush current line
+      flushLine(isLastLine: false);
     }
+
+    // Add separator if needed and not start of line
+    if (currentLineWords.isNotEmpty && needsSeparator) {
+      // We add 'separator' as a 1-char padding string to the list of words for simplicity
+      // or just account for it in length and append strictly.
+      // Actually, easiest is to append a padding char to the PREVIOUS word or START of CURRENT word.
+      // Let's add independent random character as a "word"
+      currentLineWords.add(_generatePadding(1, random));
+      currentLineLength += 1;
+    }
+
+    currentLineWords.add(wordStr);
+    currentLineLength += wordStr.length;
+
+    prevNode = node;
 
     if (wordStr.length > width) {
       print('ERROR: $wordStr is too wide ($width)');
       return;
     }
-
-    currentRow += wordStr;
-    prevNode = node;
   }
 
-  // Flush
-  if (currentRow.isNotEmpty) {
-    final paddingNeeded = width - currentRow.length;
-    final padding = _generatePadding(paddingNeeded, random);
-    buffer.write(currentRow + padding);
-  }
+  // Flush remaining
+  flushLine(isLastLine: true);
 
   final gridString = buffer.toString();
   final height = gridString.length ~/ width;
@@ -317,18 +367,44 @@ void _generateGrid(
   for (int i = 0; i < height; i++) {
     print("    '${gridString.substring(i * width, (i + 1) * width)}'");
   }
-
   print('    ,');
-  // TODO This should actually be based on the converter actually used.
   print('    timeConverter: EnglishTimeToWords(),');
   print(');');
 }
 
 String _generatePadding(int length, Random random) {
-  const chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+  // English Letter Frequency (Roughly)
+  const String frequencyString =
+      "EEEEEEEEEEE" // 11
+      "AAAAAAAA" // 8
+      "RRRRRR" // 6
+      "IIIIII" // 6
+      "OOOOOO" // 6
+      "TTTTTT" // 6
+      "NNNNN" // 5
+      "SSSS" // 4
+      "LLLL" // 4
+      "CCCC" // 3
+      "UUU" // 3
+      "DDD" // 3
+      "PPP" // 3
+      "MMM" // 3
+      "HHH" // 3
+      "G"
+      "B"
+      "F"
+      "Y"
+      "W"
+      "K"
+      "V"
+      "X"
+      "Z"
+      "J"
+      "Q";
+
   return List.generate(
     length,
-    (index) => chars[random.nextInt(chars.length)],
+    (index) => frequencyString[random.nextInt(frequencyString.length)],
   ).join();
 }
 

@@ -66,19 +66,20 @@ class WordGrid {
   //   timeConverter: EnglishTimeToWords(),
   // );
 
+  // Automatically generated grid using bin/grid_builder.dart
   static final english11x10 = WordGrid(
     width: 11,
     letters:
-        'ITZISJHALFU'
-        'QUARTERTENB'
-        'TWENTYOFIVE'
-        'JPASTTOARRX'
+        'ITRISSHALFA'
+        'AQUARTERTEN'
+        'TWENTYCFIVE'
+        'SPASTTOETMO'
         'EIGHTELEVEN'
-        'FIVEFOURTAE'
-        'NINEONEEHWL'
+        'ODQFIVEFOUR'
+        'RZUNINEONEP'
         'SEVENSIXTEN'
         'THREETWELVE'
-        'TWONOCLOCKU',
+        'ATWOIOCLOCK',
     timeConverter: EnglishTimeToWords(),
   );
 }
