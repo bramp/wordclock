@@ -1,6 +1,6 @@
 // Extracts all the valid values from ScriptableWordClockWidget/Word Clock Widget.js
 // To run:
-// node bin/extract_scriptable_highlights.js --lang en
+// node bin/extract_scriptable_highlights.js --lang EN
 
 const fs = require('fs');
 
@@ -71,7 +71,8 @@ function getHighlightedWordsForTime(language, hour, minute) {
 
     const widget_word_matrix = matrix.a;
     const time_map = matrix.r;
-    const hour_display_limit = matrix.b || 0;
+    // Default to 35 if not defined (matching Widget logic)
+    const hour_display_limit = (typeof matrix.b !== 'undefined') ? matrix.b : 35;
 
     const onOffMap = [];
     for (let i = 0; i < widget_word_matrix.length; i++) {
@@ -99,6 +100,7 @@ function getHighlightedWordsForTime(language, hour, minute) {
         if (!time_map.e.hasOwnProperty(h)) {
             h = h % 12;
         }
+
 
         // display minute
         if (time_map.d && time_map.d[minute]) {

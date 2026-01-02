@@ -76,14 +76,21 @@ void main() async {
     final int hourDisplayLimit = value['b'] ?? 35;
     final Map<String, dynamic> rules = value['r'] ?? {};
 
-    List<String> extractWords(List<dynamic> coords) {
-      return coords.map<String>((c) {
+    // Helper to extract words with their coordinates
+    List<ScriptableWord> extractWords(List<dynamic> coords) {
+      return coords.map<ScriptableWord>((c) {
         final List<dynamic> coord = c as List;
         final int row = coord[0];
         final int col = coord[1];
-        final int length = (coord.length > 2) ? (coord[2] ?? 0) : 0;
-        final int endIdx = math.min(col + length + 1, gridRows[row].length);
-        return gridRows[row].sublist(col, endIdx).join('');
+        final int lengthParam = (coord.length > 2) ? (coord[2] ?? 0) : 0;
+        // In Scriptable logic, loop is i <= start + length. So span is length + 1.
+        final int span = lengthParam + 1;
+
+        final int endIdx = math.min(col + span, gridRows[row].length);
+
+        final String text = gridRows[row].sublist(col, endIdx).join('');
+
+        return ScriptableWord(text: text, row: row, col: col, span: span);
       }).toList();
     }
 
