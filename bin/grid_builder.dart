@@ -2,7 +2,7 @@ import 'dart:io';
 import 'package:wordclock/generator/grid_generator.dart';
 import 'package:wordclock/languages/english.dart';
 import 'package:wordclock/languages/language.dart';
-import 'package:wordclock/languages/scriptable.dart';
+import 'package:wordclock/languages/timecheck.dart';
 
 // ignore_for_file: avoid_print
 
@@ -23,12 +23,12 @@ void main(List<String> args) {
       final langCode = arg.substring(11);
       if (langCode != 'en') {
         // Try to load from scriptable dataset
-        final jsonFile = File('assets/scriptable_languages.json');
+        final jsonFile = File('assets/timecheck_languages.json');
         if (!jsonFile.existsSync()) {
-          print('Error: assets/scriptable_languages.json not found.');
+          print('Error: assets/timecheck_languages.json not found.');
           return;
         }
-        final languages = ScriptableLanguage.loadAll(
+        final languages = TimeCheckLanguage.loadAll(
           jsonFile.readAsStringSync(),
         );
         if (!languages.containsKey(langCode)) {

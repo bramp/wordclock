@@ -1,7 +1,7 @@
 import 'package:wordclock/logic/time_to_words.dart';
 
 /// Represents a single word or phrase segment with its position on the grid.
-class ScriptableWord {
+class TimeCheckWord {
   final String text;
   final int row;
   final int col;
@@ -10,15 +10,15 @@ class ScriptableWord {
   /// Used for determining adjacency/overlap logic accurately, as one cell may contain multiple letters.
   final int span;
 
-  ScriptableWord({
+  TimeCheckWord({
     required this.text,
     required this.row,
     required this.col,
     required this.span,
   });
 
-  factory ScriptableWord.fromJson(Map<String, dynamic> json) {
-    return ScriptableWord(
+  factory TimeCheckWord.fromJson(Map<String, dynamic> json) {
+    return TimeCheckWord(
       text: json['t'] as String,
       row: json['r'] as int,
       col: json['c'] as int,
@@ -32,17 +32,17 @@ class ScriptableWord {
   String toString() => text;
 }
 
-/// Holds the raw grid and rules for a language from the Scriptable dataset.
-class ScriptableLanguageData {
+/// Holds the raw grid and rules for a language from the TimeCheck dataset.
+class TimeCheckLanguageData {
   final String grid;
   final int width;
   final int hourDisplayLimit;
-  final List<ScriptableWord> intro;
-  final Map<int, List<ScriptableWord>> exact;
-  final Map<int, List<ScriptableWord>> delta;
-  final Map<int, Map<int, List<ScriptableWord>>> conditional;
+  final List<TimeCheckWord> intro;
+  final Map<int, List<TimeCheckWord>> exact;
+  final Map<int, List<TimeCheckWord>> delta;
+  final Map<int, Map<int, List<TimeCheckWord>>> conditional;
 
-  ScriptableLanguageData({
+  TimeCheckLanguageData({
     required this.grid,
     required this.width,
     required this.hourDisplayLimit,
@@ -52,20 +52,20 @@ class ScriptableLanguageData {
     required this.conditional,
   });
 
-  factory ScriptableLanguageData.fromJson(Map<String, dynamic> json) {
-    List<ScriptableWord> parseList(dynamic list) {
+  factory TimeCheckLanguageData.fromJson(Map<String, dynamic> json) {
+    List<TimeCheckWord> parseList(dynamic list) {
       if (list == null) return [];
-      return (list as List).map((x) => ScriptableWord.fromJson(x)).toList();
+      return (list as List).map((x) => TimeCheckWord.fromJson(x)).toList();
     }
 
-    Map<int, List<ScriptableWord>> parseMap(Map<String, dynamic>? map) {
+    Map<int, List<TimeCheckWord>> parseMap(Map<String, dynamic>? map) {
       if (map == null) return {};
       return map.map(
         (key, value) => MapEntry(int.parse(key), parseList(value)),
       );
     }
 
-    Map<int, Map<int, List<ScriptableWord>>> parseConditional(
+    Map<int, Map<int, List<TimeCheckWord>>> parseConditional(
       Map<String, dynamic>? map,
     ) {
       if (map == null) return {};
@@ -75,7 +75,7 @@ class ScriptableLanguageData {
       );
     }
 
-    return ScriptableLanguageData(
+    return TimeCheckLanguageData(
       grid: json['grid'] as String,
       width: json['width'] as int,
       hourDisplayLimit: json['hourDisplayLimit'] as int,
@@ -89,12 +89,12 @@ class ScriptableLanguageData {
   }
 
   Map<String, dynamic> toJson() {
-    Map<String, dynamic> serializeMap(Map<int, List<ScriptableWord>> map) {
+    Map<String, dynamic> serializeMap(Map<int, List<TimeCheckWord>> map) {
       return map.map((key, value) => MapEntry(key.toString(), value));
     }
 
     Map<String, dynamic> serializeConditional(
-      Map<int, Map<int, List<ScriptableWord>>> map,
+      Map<int, Map<int, List<TimeCheckWord>>> map,
     ) {
       return map.map(
         (key, value) => MapEntry(key.toString(), serializeMap(value)),
@@ -113,10 +113,10 @@ class ScriptableLanguageData {
   }
 }
 
-/// Implements TimeToWords from the ScriptableWordClockWidget dataset.
-class ScriptableTimeToWords implements TimeToWords {
-  final ScriptableLanguageData data;
-  ScriptableTimeToWords(this.data);
+/// Implements TimeToWords from the TimeCheck dataset.
+class TimeCheckTimeToWords implements TimeToWords {
+  final TimeCheckLanguageData data;
+  TimeCheckTimeToWords(this.data);
 
   @override
   String convert(DateTime time) {
@@ -126,7 +126,7 @@ class ScriptableTimeToWords implements TimeToWords {
     // Round down to nearest 5 minutes
     minute = minute - (minute % 5);
 
-    List<ScriptableWord> activeWords = [];
+    List<TimeCheckWord> activeWords = [];
 
     // 1. Always add Intro words
     activeWords.addAll(data.intro);
@@ -135,6 +135,9 @@ class ScriptableTimeToWords implements TimeToWords {
     if (data.conditional.containsKey(hour) &&
         data.conditional[hour]!.containsKey(minute)) {
       activeWords.addAll(data.conditional[hour]![minute]!);
+    } else if (data.conditional.containsKey(hour % 12) &&
+        data.conditional[hour % 12]!.containsKey(minute)) {
+      activeWords.addAll(data.conditional[hour % 12]![minute]!);
     } else {
       // 3. Normal Logic
       if (minute >= data.hourDisplayLimit) {
@@ -156,7 +159,7 @@ class ScriptableTimeToWords implements TimeToWords {
     }
 
     // 4. De-duplicate words sharing the same start position
-    final uniqueWordsMap = <String, ScriptableWord>{};
+    final uniqueWordsMap = <String, TimeCheckWord>{};
     for (final word in activeWords) {
       final key = '${word.row}:${word.col}';
       // If we encounter a duplicate start position, we assume it's the same word
@@ -177,9 +180,9 @@ class ScriptableTimeToWords implements TimeToWords {
     });
 
     // 6. Merge adjacent or overlapping words
-    final mergedWords = <ScriptableWord>[];
+    final mergedWords = <TimeCheckWord>[];
     if (sortedWords.isNotEmpty) {
-      ScriptableWord current = sortedWords.first;
+      TimeCheckWord current = sortedWords.first;
       for (int i = 1; i < sortedWords.length; i++) {
         final next = sortedWords[i];
 
@@ -210,7 +213,7 @@ class ScriptableTimeToWords implements TimeToWords {
               ? (nextEnd - current.col)
               : current.span;
 
-          current = ScriptableWord(
+          current = TimeCheckWord(
             text: newText,
             row: current.row,
             col: current.col,

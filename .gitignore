@@ -45,5 +45,6 @@ app.*.map.json
 /android/app/release
 
 # Submodule related
-ScriptableWordClockWidget
-assets/scriptable_languages.json
+#ScriptableWordClockWidget
+assets/timecheck_languages.json
+check-new.js

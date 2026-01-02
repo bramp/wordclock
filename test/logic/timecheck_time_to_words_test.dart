@@ -2,21 +2,21 @@ import 'dart:convert';
 import 'dart:io';
 
 import 'package:flutter_test/flutter_test.dart';
-import 'package:wordclock/logic/scriptable_time_to_words.dart';
+import 'package:wordclock/logic/timecheck_time_to_words.dart';
 
 void main() {
   Map<String, Map<String, String>> expectedOutputs = {};
-  Map<String, dynamic> scriptableData = {};
+  Map<String, dynamic> timeCheckData = {};
 
   setUpAll(() async {
-    // 1. Run the extraction script
+    // 1. Run the extraction script (using TimeCheck source)
     // We assume the test is run from the project root
     final process = await Process.run('node', [
-      'bin/extract_scriptable_highlights.js',
+      'bin/extract_timecheck_times.js',
     ]);
 
     if (process.exitCode != 0) {
-      fail('Failed to run extract_scriptable_highlights.js: ${process.stderr}');
+      fail('Failed to run bin/extract_timecheck_times.js: ${process.stderr}');
     }
 
     // 2. Parse the output
@@ -44,15 +44,15 @@ void main() {
       }
     }
 
-    // 3. Load scriptable_languages.json
-    final jsonFile = File('assets/scriptable_languages.json');
+    // 3. Load timecheck_languages.json
+    final jsonFile = File('assets/timecheck_languages.json');
     if (!jsonFile.existsSync()) {
-      fail('assets/scriptable_languages.json not found');
+      fail('assets/timecheck_languages.json not found');
     }
-    scriptableData = jsonDecode(jsonFile.readAsStringSync());
+    timeCheckData = jsonDecode(jsonFile.readAsStringSync());
   });
 
-  group('ScriptableTimeToWords vs Original JS Output', () {
+  group('TimeCheckTimeToWords vs Original JS Output', () {
     test('Verify all languages match original JS logic', () {
       if (expectedOutputs.isEmpty) {
         fail('No expected outputs were parsed from the node script.');
@@ -63,16 +63,13 @@ void main() {
 
       // Iterate over each language found in the extraction output
       expectedOutputs.forEach((langCode, timeMap) {
-        if (!scriptableData.containsKey(langCode)) {
+        if (!timeCheckData.containsKey(langCode)) {
           failures.add('$langCode: Missing in JSON data');
           return;
         }
 
-        // Skip KR due to source data quality issues (per user instructions)
-        if (langCode == 'KR') return;
-
-        final data = ScriptableLanguageData.fromJson(scriptableData[langCode]);
-        final converter = ScriptableTimeToWords(data);
+        final data = TimeCheckLanguageData.fromJson(timeCheckData[langCode]);
+        final converter = TimeCheckTimeToWords(data);
 
         bool langFailed = false;
 
