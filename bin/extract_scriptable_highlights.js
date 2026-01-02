@@ -40,7 +40,7 @@ if (langIndex !== -1 && process.argv[langIndex + 1]) {
 
 const languages = langFilter
     ? languagesToExtract.filter(l => l.toUpperCase() === langFilter)
-    : languagesToExtract;
+    : languagesToExtract.filter(l => full_matrix[l] && full_matrix[l].r);
 
 if (langFilter && languages.length === 0) {
     console.error(`Language "${langFilter}" not found. Available languages: ${languagesToExtract.join(', ')}`);
@@ -71,6 +71,10 @@ function getHighlightedWordsForTime(language, hour, minute) {
 
     const widget_word_matrix = matrix.a;
     const time_map = matrix.r;
+    if (!time_map) {
+        // console.warn(`Warning: matrix.r (time_map) is undefined for language ${language}. Skipping.`);
+        return "";
+    }
     // Default to 35 if not defined (matching Widget logic)
     const hour_display_limit = (typeof matrix.b !== 'undefined') ? matrix.b : 35;
 
