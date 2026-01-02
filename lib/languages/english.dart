@@ -1,5 +1,6 @@
 import 'package:wordclock/languages/language.dart';
 import 'package:wordclock/logic/time_to_words.dart';
+import 'package:wordclock/logic/english_time_to_word.dart';
 import 'package:wordclock/model/word_grid.dart';
 
 class EnglishLanguage implements WordClockLanguage {
@@ -7,7 +8,9 @@ class EnglishLanguage implements WordClockLanguage {
   String get displayName => 'English';
 
   @override
-  final TimeToWords timeToWords = EnglishTimeToWords();
+  final TimeToWords timeToWords;
+
+  const EnglishLanguage({this.timeToWords = const EnglishTimeToWords()});
 
   @override
   final String paddingAlphabet =

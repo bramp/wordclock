@@ -109,6 +109,25 @@ void main() async {
       ),
     );
 
+    // Fix for JP 3:30 bug (merged words)
+    if (key == 'JP') {
+      final cond3_30 = data.conditional[3]?[30];
+      if (cond3_30 != null &&
+          cond3_30.length == 1 &&
+          cond3_30.first.text == '三時半です') {
+        final original = cond3_30.first;
+        // Update text to include space. Reference logic will not merge but just use text.
+        final newWord = TimeCheckWord(
+          text: '三時半 です',
+          row: original.row,
+          col: original.col,
+          span: original.span,
+        );
+        data.conditional[3]![30] = [newWord];
+        print('Patched JP 3:30 conditional text');
+      }
+    }
+
     timeCheckDataJson[key] = data.toJson();
   });
 

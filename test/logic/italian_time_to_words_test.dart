@@ -2,8 +2,8 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:wordclock/logic/italian_time_to_words.dart';
 
 void main() {
-  group('ItalianTimeToWords', () {
-    final converter = ItalianTimeToWords();
+  group('NativeItalianTimeToWords', () {
+    final converter = NativeItalianTimeToWords();
 
     test('10:00 is SONO LE DIECI', () {
       final time = DateTime(2023, 1, 1, 10, 0);

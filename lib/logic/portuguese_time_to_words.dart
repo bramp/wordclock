@@ -1,6 +1,6 @@
 import 'package:wordclock/logic/time_to_words.dart';
 
-class PortugueseTimeToWords implements TimeToWords {
+class NativePortugueseTimeToWords implements TimeToWords {
   static const hours = [
     'DOZE', // Twelve
     'UMA', // One
@@ -52,5 +52,98 @@ class PortugueseTimeToWords implements TimeToWords {
             ? 'O MEIO DIA'
             : 'AS ${hours[nextHour]}'}', // X minutes to Y
     };
+  }
+}
+
+class PortugueseTimeToWords implements TimeToWords {
+  @override
+  String convert(DateTime time) {
+    int m = time.minute;
+    int h = time.hour;
+
+    // Round down to nearest 5 minutes
+    m = m - (m % 5);
+
+    // 1. Conditionals
+    int h24 = h % 24;
+    String? conditional = switch (m) {
+      0 => switch (h24) {
+        1 || 13 => 'É UMA HORA',
+        2 => 'SÃO DUAS HORAS',
+        3 => 'SÃO TRÊS HORAS',
+        4 => 'SÃO QUATRO HORAS',
+        5 => 'SÃO CINCO HORAS',
+        6 => 'SÃO SEIS HORAS',
+        7 => 'SÃO SETE HORAS',
+        8 => 'SÃO OITO HORAS',
+        9 => 'SÃO NOVE HORAS',
+        10 => 'SÃO DEZ HORAS',
+        11 => 'SÃO ONZE HORAS',
+        _ => null,
+      },
+      30 when h24 == 12 => 'É MEIA HORA',
+      _ => null,
+    };
+    if (conditional != null) return conditional;
+
+    // 2. Hour display limit (35 minutes)
+    if (m >= 35) {
+      h++;
+    }
+
+    final displayHour = h % 12;
+
+    String words = '';
+
+    // 5. Delta
+    String delta = switch (m) {
+      5 => 'E CINCO', // And five
+      10 => 'E DEZ', // And ten
+      15 => 'E UM QUARTO', // And one quarter
+      20 => 'E VINTE', // And twenty
+      25 => 'E VINTE E CINCO', // And twenty-five
+      30 => 'E MEIA', // And half
+      35 => 'MENOS VINTE E CINCO', // Minus twenty-five
+      40 => 'MENOS VINTE', // Minus twenty
+      45 => 'MENOS UM QUARTO', // Minus one quarter
+      50 => 'MENOS DEZ', // Minus ten
+      55 => 'MENOS CINCO', // Minus five
+      _ => '',
+    };
+
+    // 6. Exact hour
+    String hExact = switch (h % 24) {
+      0 => 'É MEIA NOITE', // It is midnight
+      12 => 'É MEIO DIA', // It is mid day
+      _ => switch (displayHour) {
+        1 => 'É UMA', // It is one
+        2 => 'SÃO DUAS', // It is two
+        3 => 'SÃO TRÊS', // It is three
+        4 => 'SÃO QUATRO', // It is four
+        5 => 'SÃO CINCO', // It is five
+        6 => 'SÃO SEIS', // It is six
+        7 => 'SÃO SETE', // It is seven
+        8 => 'SÃO OITO', // It is eight
+        9 => 'SÃO NOVE', // It is nine
+        10 => 'SÃO DEZ', // It is ten
+        11 => 'SÃO ONZE', // It is eleven
+        _ => '',
+      },
+    };
+
+    words += hExact;
+    if (m == 0 && (h % 24 != 12) && (h % 24 != 0)) {
+      // Append HORA/HORAS for exact hours (except noon/midnight)
+      int h12 = h % 12;
+      if (h12 == 0) h12 = 12;
+      if (h12 == 1) {
+        words += ' HORA';
+      } else {
+        words += ' HORAS';
+      }
+    }
+    if (delta.isNotEmpty) words += ' $delta';
+
+    return words.replaceAll('  ', ' ').trim();
   }
 }

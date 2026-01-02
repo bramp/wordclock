@@ -8,6 +8,7 @@ import 'package:wordclock/logic/time_to_words.dart';
 import 'package:wordclock/model/word_grid.dart';
 
 import 'package:wordclock/languages/english.dart';
+import 'package:wordclock/logic/english_time_to_word.dart';
 
 class MockLanguage implements WordClockLanguage {
   final TimeToWords converter;
@@ -208,7 +209,7 @@ void main() {
   });
 
   test('English language reuse: FIVE and OCLOCK', () {
-    final lang = EnglishLanguage();
+    final lang = EnglishLanguage(timeToWords: NativeEnglishTimeToWords());
     final graph = DependencyGraphBuilder.build(language: lang);
 
     // Let's just count unique words by looking at the Node.word (which is the char)

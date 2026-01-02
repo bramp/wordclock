@@ -1,6 +1,6 @@
 import 'package:wordclock/logic/time_to_words.dart';
 
-class DutchTimeToWords implements TimeToWords {
+class NativeDutchTimeToWords implements TimeToWords {
   static const hours = [
     'TWAALF', // Twelve
     'ÉÉN', // One
@@ -43,5 +43,71 @@ class DutchTimeToWords implements TimeToWords {
         'HET IS ${minutes[m - 30]} OVER HALF ${hours[nextHour]}', // X after half Y
       _ => 'HET IS ${minutes[60 - m]} VOOR ${hours[nextHour]}', // X before Y
     };
+  }
+}
+
+class DutchTimeToWords implements TimeToWords {
+  @override
+  String convert(DateTime time) {
+    int m = time.minute;
+    int h = time.hour;
+
+    // Round down to nearest 5 minutes
+    m = m - (m % 5);
+
+    // 1. Conditionals (None for NL)
+
+    // 2. Hour display limit (20 minutes)
+    if (m >= 20) {
+      h++;
+    }
+
+    final displayHour = h % 12;
+
+    String words = 'HET IS';
+
+    // 5. Delta
+    String delta = switch (m) {
+      0 => ' UUR', // O'clock
+      5 => ' VIJF OVER', // Five past
+      10 => ' TIEN OVER', // Ten past
+      15 => ' KWART OVER', // Quarter past
+      20 => ' TIEN VOOR HALF', // Ten before half
+      25 => ' VIJF VOOR HALF', // Five before half
+      30 => ' HALF', // Half (to)
+      35 => ' VIJF OVER HALF', // Five past half
+      40 => ' TIEN OVER HALF', // Ten past half
+      45 => ' KWART VOOR', // Quarter before
+      50 => ' TIEN VOOR', // Ten before
+      55 => ' VIJF VOOR', // Five before
+      _ => '',
+    };
+
+    // 6. Exact hour
+    String exact = switch (displayHour) {
+      0 => 'TWAALF', // 12
+      1 => 'ÉÉN', // 1
+      2 => 'TWEE', // 2
+      3 => 'DRIE', // 3
+      4 => 'VIER', // 4
+      5 => 'VIJF', // 5
+      6 => 'ZES', // 6
+      7 => 'ZEVEN', // 7
+      8 => 'ACHT', // 8
+      9 => 'NEGEN', // 9
+      10 => 'TIEN', // 10
+      11 => 'ELF', // 11
+      _ => '',
+    };
+
+    if (m == 0) {
+      // Intro -> Exact -> Delta (UUR)
+      words += ' $exact$delta';
+    } else {
+      // Intro -> Delta -> Exact
+      words += '$delta $exact';
+    }
+
+    return words.replaceAll('  ', ' ').trim();
   }
 }

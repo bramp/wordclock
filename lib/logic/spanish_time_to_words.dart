@@ -1,6 +1,6 @@
 import 'package:wordclock/logic/time_to_words.dart';
 
-class SpanishTimeToWords implements TimeToWords {
+class NativeSpanishTimeToWords implements TimeToWords {
   static const hours = [
     'DOCE', // Twelve
     'UNA', // One
@@ -43,5 +43,68 @@ class SpanishTimeToWords implements TimeToWords {
       _ =>
         '${nextHour == 1 ? 'ES LA' : 'SON LAS'} ${hours[nextHour]} MENOS ${minutes[60 - m]}', // Y minus X minutes
     };
+  }
+}
+
+class SpanishTimeToWords implements TimeToWords {
+  @override
+  String convert(DateTime time) {
+    int m = time.minute;
+    int h = time.hour;
+
+    // Round down to nearest 5 minutes
+    m = m - (m % 5);
+
+    // 1. Conditionals (None for ES)
+
+    // 2. Hour display limit (35 minutes)
+    if (m >= 35) {
+      h++;
+    }
+
+    final displayHour = h % 12;
+
+    String words = '';
+
+    // 5. Delta
+    // 6. Exact hour
+    String exact = switch (displayHour) {
+      0 => 'SON LAS DOCE', // They are the twelve
+      1 => 'ES LA UNA', // It is the one
+      2 => 'SON LAS DOS', // They are the two
+      3 => 'SON LAS TRES', // They are the three
+      4 => 'SON LAS CUATRO', // They are the four
+      5 => 'SON LAS CINCO', // They are the five
+      6 => 'SON LAS SEIS', // They are the six
+      7 => 'SON LAS SIETE', // They are the seven
+      8 => 'SON LAS OCHO', // They are the eight
+      9 => 'SON LAS NUEVE', // They are the nine
+      10 => 'SON LAS DIEZ', // They are the ten
+      11 => 'SON LAS ONCE', // They are the eleven
+      _ => '',
+    };
+
+    // 5. Delta
+    String delta = switch (m) {
+      5 => 'Y CINCO', // And five
+      10 => 'Y DIEZ', // And ten
+      15 => 'Y CUARTO', // And quarter
+      20 => 'Y VEINTE', // And twenty
+      25 => 'Y VEINTICINCO', // And twenty-five
+      30 => 'Y MEDIA', // And half
+      35 => 'MENOS VEINTICINCO', // Minus twenty-five
+      40 => 'MENOS VEINTE', // Minus twenty
+      45 => 'MENOS CUARTO', // Minus quarter
+      50 => 'MENOS DIEZ', // Minus ten
+      55 => 'MENOS CINCO', // Minus five
+      _ => '',
+    };
+
+    // Order: Exact + Delta
+    // e.g. SON LAS DOCE + Y CINCO
+    words += " $exact";
+    if (delta.isNotEmpty) words += " $delta";
+
+    return words.replaceAll('  ', ' ').trim();
   }
 }

@@ -2,8 +2,8 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:wordclock/logic/dutch_time_to_words.dart';
 
 void main() {
-  group('DutchTimeToWords', () {
-    final converter = DutchTimeToWords();
+  group('NativeDutchTimeToWords', () {
+    final converter = NativeDutchTimeToWords();
 
     test('10:00 is HET IS TIEN UUR', () {
       final time = DateTime(2023, 1, 1, 10, 0);

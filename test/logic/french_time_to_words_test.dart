@@ -2,8 +2,8 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:wordclock/logic/french_time_to_words.dart';
 
 void main() {
-  group('FrenchTimeToWords', () {
-    final converter = FrenchTimeToWords();
+  group('NativeFrenchTimeToWords', () {
+    final converter = NativeFrenchTimeToWords();
 
     test('10:00 is IL EST DIX HEURES', () {
       final time = DateTime(2023, 1, 1, 10, 0);

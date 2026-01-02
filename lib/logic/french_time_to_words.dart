@@ -1,6 +1,6 @@
 import 'package:wordclock/logic/time_to_words.dart';
 
-class FrenchTimeToWords implements TimeToWords {
+class NativeFrenchTimeToWords implements TimeToWords {
   static const hoursList = [
     'MINUIT', // Midnight
     'UNE', // One
@@ -55,5 +55,95 @@ class FrenchTimeToWords implements TimeToWords {
       _ =>
         'IL EST ${hLabel(nextDisplayHour)} MOINS ${minutes[60 - m]}', // Y minus X minutes
     };
+  }
+}
+
+class FrenchTimeToWords implements TimeToWords {
+  @override
+  String convert(DateTime time) {
+    int m = time.minute;
+    int h = time.hour;
+
+    // Round down to nearest 5 minutes
+    m = m - (m % 5);
+
+    // 1. Conditionals (Midi/Minuit half-hours)
+    String? conditional = switch (m) {
+      30 => switch (h % 24) {
+        0 => 'IL EST MINUIT ET DEMI',
+        12 => 'IL EST MIDI ET DEMI',
+        _ => null,
+      },
+      _ => null,
+    };
+    if (conditional != null) return conditional;
+
+    // 2. Hour display limit (35 minutes)
+    if (m >= 35) {
+      h++;
+    }
+
+    final displayHour = h % 12;
+
+    // 5. Delta
+    String delta = switch (m) {
+      0 => "", // Empty for 0
+      5 => ' CINQ', // Five
+      10 => ' DIX', // Ten
+      15 => ' ET QUART', // And quarter
+      20 => ' VINGT', // Twenty
+      25 => ' VINGT-CINQ', // Twenty-five
+      30 =>
+        ' ET DEMI', // And half. (Using DEMI generic, logic below might need fixing about gender)
+      35 => ' MOINS VINGT-CINQ', // Minus twenty-five
+      40 => ' MOINS VINGT', // Minus twenty
+      45 => ' MOINS LE QUART', // Minus the quarter
+      50 => ' MOINS DIX', // Minus ten
+      55 => ' MOINS CINQ', // Minus five
+      _ => '',
+    };
+
+    // Note: Original code handled 'ET DEMI' vs 'ET DEMIE' in m=30 switch.
+    // But here we need to be careful. Generic 'ET DEMI' in switch above is placeholders?
+    // The previous switch had 'IL EST ET DEMIE' which was weird.
+    // Let's refine the Delta switch to just be the suffix words.
+
+    if (m == 30) {
+      // Logic for DEMI/DEMIE
+      // Midi/Minuit -> DEMI (masculine). Others -> DEMIE (feminine "heure").
+
+      // Actually check h%24 directly for Midi/Minuit
+      if (h % 24 == 0 || h % 24 == 12) {
+        delta = ' ET DEMI';
+      } else {
+        delta = ' ET DEMIE';
+      }
+    }
+
+    // 6. Exact hour
+    String hExact = switch (h % 24) {
+      0 => 'MINUIT', // Midnight
+      12 => 'MIDI', // Noon
+      _ => switch (displayHour) {
+        1 => 'UNE HEURE', // One hour
+        2 => 'DEUX HEURES', // Two hours
+        3 => 'TROIS HEURES', // Three hours
+        4 => 'QUATRE HEURES', // Four hours
+        5 => 'CINQ HEURES', // Five hours
+        6 => 'SIX HEURES', // Six hours
+        7 => 'SEPT HEURES', // Seven hours
+        8 => 'HUIT HEURES', // Eight hours
+        9 => 'NEUF HEURES', // Nine hours
+        10 => 'DIX HEURES', // Ten hours
+        11 => 'ONZE HEURES', // Eleven hours
+        _ => '',
+      },
+    };
+
+    // Construct: IL EST [EXACT] [DELTA]
+    // Construct: IL EST [EXACT] [DELTA]
+    String words = 'IL EST $hExact$delta';
+
+    return words.replaceAll('  ', ' ').trim();
   }
 }

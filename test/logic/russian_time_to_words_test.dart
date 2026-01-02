@@ -2,8 +2,8 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:wordclock/logic/russian_time_to_words.dart';
 
 void main() {
-  group('RussianTimeToWords', () {
-    final converter = RussianTimeToWords();
+  group('NativeRussianTimeToWords', () {
+    final converter = NativeRussianTimeToWords();
 
     test('10:00 is ДЕСЯТЬ', () {
       final time = DateTime(2023, 1, 1, 10, 0);

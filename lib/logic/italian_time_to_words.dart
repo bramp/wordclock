@@ -1,6 +1,6 @@
 import 'package:wordclock/logic/time_to_words.dart';
 
-class ItalianTimeToWords implements TimeToWords {
+class NativeItalianTimeToWords implements TimeToWords {
   static const hours = [
     'DODICI', // Twelve
     'L\'UNA', // One
@@ -50,5 +50,65 @@ class ItalianTimeToWords implements TimeToWords {
       _ =>
         '${hPrefix(nextHour)} ${hName(nextHour)} MENO ${minutes[60 - m]}', // "MENO" = minus
     };
+  }
+}
+
+class ItalianTimeToWords implements TimeToWords {
+  @override
+  String convert(DateTime time) {
+    int m = time.minute;
+    int h = time.hour;
+
+    // Round down to nearest 5 minutes
+    m = m - (m % 5);
+
+    // 1. Conditionals (None for IT)
+
+    // 2. Hour display limit (35 minutes)
+    if (m >= 35) {
+      h++;
+    }
+
+    final displayHour = h % 12;
+
+    String words = '';
+
+    // 5. Delta
+    String delta = switch (m) {
+      5 => 'E CINQUE', // And five
+      10 => 'E DIECI', // And ten
+      15 => 'E UN QUARTO', // And one quarter
+      20 => 'E VENTI', // And twenty
+      25 => 'E VENTICINQUE', // And twenty-five
+      30 => 'E MEZZA', // And half
+      35 => 'MENO VENTICINQUE', // Minus twenty-five
+      40 => 'MENO VENTI', // Minus twenty
+      45 => 'MENO UN QUARTO', // Minus one quarter
+      50 => 'MENO DIECI', // Minus ten
+      55 => 'MENO CINQUE', // Five before
+      _ => '',
+    };
+
+    // 6. Exact hour
+    String exact = switch (displayHour) {
+      0 => 'SONO LE DODICI', // They are the twelve
+      1 => 'È L’UNA', // It is the one
+      2 => 'SONO LE DUE', // They are the two
+      3 => 'SONO LE TRE', // They are the three
+      4 => 'SONO LE QUATTRO', // They are the four
+      5 => 'SONO LE CINQUE', // They are the five
+      6 => 'SONO LE SEI', // They are the six
+      7 => 'SONO LE SETTE', // They are the seven
+      8 => 'SONO LE OTTO', // They are the eight
+      9 => 'SONO LE NOVE', // They are the nine
+      10 => 'SONO LE DIECI', // They are the ten
+      11 => 'SONO LE UNDICI', // They are the eleven
+      _ => '',
+    };
+
+    // Exact + Delta (e.g. SONO LE DUE E CINQUE)
+    words = exact + (delta.isNotEmpty ? ' $delta' : '');
+
+    return words.replaceAll('  ', ' ').trim();
   }
 }

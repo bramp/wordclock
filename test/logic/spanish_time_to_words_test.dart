@@ -2,8 +2,8 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:wordclock/logic/spanish_time_to_words.dart';
 
 void main() {
-  group('SpanishTimeToWords', () {
-    final converter = SpanishTimeToWords();
+  group('NativeSpanishTimeToWords', () {
+    final converter = NativeSpanishTimeToWords();
 
     test('10:00 is SON LAS DIEZ', () {
       final time = DateTime(2023, 1, 1, 10, 0);

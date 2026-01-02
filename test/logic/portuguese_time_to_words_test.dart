@@ -2,8 +2,8 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:wordclock/logic/portuguese_time_to_words.dart';
 
 void main() {
-  group('PortugueseTimeToWords', () {
-    final converter = PortugueseTimeToWords();
+  group('NativePortugueseTimeToWords', () {
+    final converter = NativePortugueseTimeToWords();
 
     test('10:00 is SÃO DEZ HORAS', () {
       final time = DateTime(2023, 1, 1, 10, 0);

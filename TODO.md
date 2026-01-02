@@ -19,3 +19,6 @@
 - [ ] Add a debug toggle to hide the "padding" letters.
 - [ ] Add support for other languages (see https://en.wikipedia.org/wiki/Languages_used_on_the_Internet for list)
 - [ ] Generate railroad diagrams (instead of dot diagrams) see https://github.com/GuntherRademacher/rr
+- [ ] The output of bin/extract_scriptable_highlights.js is not always correct
+  - [ ] "E3" has "IT IS ONE FIVE" but it would be better as "IT IS ONE OH FIVE"
+  - [ ] "CA" mixes correct Catalan time expressions with corrupted hour names. - Lines containing NAO, NZE, D'R, or missing the hour noun are incorrect

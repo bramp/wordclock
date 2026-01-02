@@ -1,23 +1,23 @@
 import 'dart:convert';
 import 'package:wordclock/languages/language.dart';
-import 'package:wordclock/logic/scriptable_time_to_words.dart';
+import 'package:wordclock/logic/timecheck_time_to_words.dart';
 import 'package:wordclock/logic/time_to_words.dart';
 import 'package:wordclock/model/word_grid.dart';
 
-/// A language implementation that loads its data from the ScriptableWordClockWidget dataset.
-class ScriptableLanguage implements WordClockLanguage {
+/// A language implementation that loads its data from https://qlocktwo.com/eu/timecheck
+class TimeCheckLanguage implements WordClockLanguage {
   final String code;
   final String name;
-  final ScriptableLanguageData data;
+  final TimeCheckLanguageData data;
 
-  ScriptableLanguage(this.code, this.name, this.data);
+  TimeCheckLanguage(this.code, this.name, this.data);
 
   @override
   String get displayName => name;
 
   @override
   TimeToWords get timeToWords {
-    return ScriptableTimeToWords(data);
+    return TimeCheckTimeToWords(data);
   }
 
   // TODO We should derive this from the data
@@ -32,16 +32,15 @@ class ScriptableLanguage implements WordClockLanguage {
   @override
   int get minuteIncrement => 5;
 
-  /// Loads all languages from the Scriptable JSON data.
+  /// Loads all languages from the TimeCheck JSON data.
   /// Throws an [ArgumentError] if a language code in the JSON is unknown.
-  static Map<String, ScriptableLanguage> loadAll(String jsonStr) {
+  static Map<String, TimeCheckLanguage> loadAll(String jsonStr) {
     final Map<String, dynamic> jsonMap = jsonDecode(jsonStr);
-    final Map<String, ScriptableLanguage> languages = {};
+    final Map<String, TimeCheckLanguage> languages = {};
 
     // Map of codes to display names and examples (from Qlocktwo variants)
     final names = {
-      'NS':
-          'Niedersächsisch', // Low German (Note: Data contains placeholder text)
+      'NS': 'Niedersächsisch', // Low German
       'E3': 'English (Digital)', // e.g., 10:15 -> "TEN FIFTEEN"
       'CA': 'Català', // Catalan (Traditional "quarter of the next hour" system)
       'CH': 'Bärndütsch', // Bernese German (e.g., 10:15 -> "VIERTU AB ZÄNI")
@@ -78,11 +77,11 @@ class ScriptableLanguage implements WordClockLanguage {
       final name = names[code];
       if (name == null) {
         throw ArgumentError(
-          'Unknown language code in Scriptable dataset: $code',
+          'Unknown language code in TimeCheck dataset: $code',
         );
       }
-      final data = ScriptableLanguageData.fromJson(dataJson);
-      languages[code] = ScriptableLanguage(code, name, data);
+      final data = TimeCheckLanguageData.fromJson(dataJson);
+      languages[code] = TimeCheckLanguage(code, name, data);
     });
 
     return languages;

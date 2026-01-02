@@ -2,8 +2,8 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:wordclock/logic/japanese_time_to_words.dart';
 
 void main() {
-  group('JapaneseTimeToWords', () {
-    final converter = JapaneseTimeToWords();
+  group('NativeJapaneseTimeToWords', () {
+    final converter = NativeJapaneseTimeToWords();
 
     test('10:00 is 午前 十 時', () {
       final time = DateTime(2023, 1, 1, 10, 0);
