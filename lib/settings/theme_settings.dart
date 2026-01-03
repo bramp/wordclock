@@ -42,6 +42,15 @@ class ThemeSettings {
     backgroundColor: Colors.black,
   );
 
+  static const whiteTheme = ThemeSettings(
+    activeGradientColors: [
+      Colors.white,
+      Colors.white,
+    ],
+    inactiveColor: Color.fromRGBO(255, 255, 255, 0.1),
+    backgroundColor: Colors.black,
+  );
+
   @override
   bool operator ==(Object other) {
     if (identical(this, other)) return true;

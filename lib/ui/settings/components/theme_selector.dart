@@ -36,6 +36,12 @@ class ThemeSelector extends StatelessWidget {
           isSelected: _isTheme(ThemeSettings.matrixTheme),
           onTap: () => onThemeChanged(ThemeSettings.matrixTheme),
         ),
+        ThemeChip(
+          label: 'White',
+          colors: ThemeSettings.whiteTheme.activeGradientColors,
+          isSelected: _isTheme(ThemeSettings.whiteTheme),
+          onTap: () => onThemeChanged(ThemeSettings.whiteTheme),
+        ),
       ],
     );
   }
