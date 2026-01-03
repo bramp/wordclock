@@ -26,6 +26,19 @@ class DebugSettings extends StatelessWidget {
           currentSpeed: controller.clockSpeed,
           onSpeedChanged: controller.setClockSpeed,
         ),
+        SwitchListTile(
+          contentPadding: EdgeInsets.zero,
+          title: const Text(
+            'Highlight All Cells',
+            style: TextStyle(color: Colors.white),
+          ),
+          subtitle: const Text(
+            'Show every character that could light up',
+            style: TextStyle(color: Colors.grey, fontSize: 12),
+          ),
+          value: controller.highlightAll,
+          onChanged: (value) => controller.toggleHighlightAll(),
+        ),
         ListTile(
           contentPadding: EdgeInsets.zero,
           title: const Text('Set Time', style: TextStyle(color: Colors.white)),

@@ -31,6 +31,9 @@ class SettingsController extends ChangeNotifier {
   WordClockLanguage _currentLanguage = WordClockLanguages.byId['EN']!;
   late WordGrid _currentGrid;
 
+  bool _highlightAll = false;
+  Set<int>? _allActiveIndices;
+
   SettingsController() {
     _regenerateGrid();
   }
@@ -48,6 +51,12 @@ class SettingsController extends ChangeNotifier {
   int? get gridSeed => _gridSeed;
   WordClockLanguage get currentLanguage => _currentLanguage;
   WordGrid get currentGrid => _currentGrid;
+  bool get highlightAll => _highlightAll;
+
+  Set<int> get allActiveIndices {
+    _allActiveIndices ??= _calculateAllActiveIndices();
+    return _allActiveIndices!;
+  }
 
   void updateTheme(ThemeSettings newSettings) {
     _currentSettings = newSettings;
@@ -57,6 +66,7 @@ class SettingsController extends ChangeNotifier {
   void setLanguage(WordClockLanguage language) {
     if (_currentLanguage == language) return;
     _currentLanguage = language;
+    _allActiveIndices = null;
     _regenerateGrid();
     notifyListeners();
   }
@@ -64,6 +74,7 @@ class SettingsController extends ChangeNotifier {
   void setGridSeed(int? seed) {
     if (_gridSeed == seed) return;
     _gridSeed = seed;
+    _allActiveIndices = null;
     _regenerateGrid();
     notifyListeners();
   }
@@ -109,5 +120,26 @@ class SettingsController extends ChangeNotifier {
       _clock.setTime(DateTime.now());
     }
     notifyListeners();
+  }
+
+  void toggleHighlightAll() {
+    _highlightAll = !_highlightAll;
+    notifyListeners();
+  }
+
+  Set<int> _calculateAllActiveIndices() {
+    final Set<int> all = {};
+    // We only need to check one day
+    final base = DateTime(2024, 1, 1, 0, 0);
+    for (int h = 0; h < 24; h++) {
+      // Step by minuteIncrement to be efficient and match clock behavior
+      final step = _currentLanguage.minuteIncrement;
+      for (int m = 0; m < 60; m += step) {
+        final time = base.add(Duration(hours: h, minutes: m));
+        final phrase = _currentLanguage.timeToWords.convert(time);
+        all.addAll(_currentGrid.getIndices(phrase));
+      }
+    }
+    return all;
   }
 }

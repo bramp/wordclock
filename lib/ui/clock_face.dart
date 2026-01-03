@@ -48,22 +48,34 @@ class _ClockFaceState extends State<ClockFace> {
     });
   }
 
+  bool _lastHighlightAll = false;
+
   void _recalculateIndices(DateTime now, WordGrid grid) {
     if (_lastTime != null &&
         _lastTime!.minute == now.minute &&
         _lastTime!.hour == now.hour &&
         _activeIndices.isNotEmpty &&
-        _lastGrid == grid) {
-      // No change in time that affects words, and grid is same.
+        _lastGrid == grid &&
+        _lastHighlightAll == widget.settingsController.highlightAll) {
+      // No change that affects words.
       return;
     }
+
+    _lastHighlightAll = widget.settingsController.highlightAll;
 
     _lastTime = now;
     _lastGrid = grid;
     final lang = widget.settingsController.currentLanguage;
-    final phrase = lang.timeToWords.convert(now);
-    _activeIndices = grid.getIndices(phrase);
-    _remainder = now.minute % lang.minuteIncrement;
+
+    if (widget.settingsController.highlightAll) {
+      _activeIndices = widget.settingsController.allActiveIndices;
+      // Highlight all minute dots if applicable
+      _remainder = lang.minuteIncrement - 1;
+    } else {
+      final phrase = lang.timeToWords.convert(now);
+      _activeIndices = grid.getIndices(phrase);
+      _remainder = now.minute % lang.minuteIncrement;
+    }
   }
 
   @override
