@@ -4,8 +4,7 @@ import 'package:wordclock/languages/japanese.dart';
 
 void main() {
   test('Japanese language graph size and reuse', () {
-    final language = JapaneseLanguage();
-    final graph = DependencyGraphBuilder.build(language: language);
+    final graph = DependencyGraphBuilder.build(language: japaneseLanguage);
 
     // Total nodes should be reasonable.
     // With spaces, reuse is much better (approx 175 nodes vs 3300+ without spaces).

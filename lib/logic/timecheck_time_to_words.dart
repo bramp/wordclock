@@ -10,7 +10,7 @@ class TimeCheckWord {
   /// Used for determining adjacency/overlap logic accurately, as one cell may contain multiple letters.
   final int span;
 
-  TimeCheckWord({
+  const TimeCheckWord({
     required this.text,
     required this.row,
     required this.col,
@@ -41,6 +41,7 @@ class TimeCheckLanguageData {
   final Map<int, List<TimeCheckWord>> exact;
   final Map<int, List<TimeCheckWord>> delta;
   final Map<int, Map<int, List<TimeCheckWord>>> conditional;
+  final List<TimeCheckWord> padding;
 
   TimeCheckLanguageData({
     required this.grid,
@@ -50,6 +51,7 @@ class TimeCheckLanguageData {
     required this.exact,
     required this.delta,
     required this.conditional,
+    required this.padding,
   });
 
   factory TimeCheckLanguageData.fromJson(Map<String, dynamic> json) {
@@ -75,16 +77,26 @@ class TimeCheckLanguageData {
       );
     }
 
+    final grid = json['grid'] as String;
+    final width = json['width'] as int;
+    final hourDisplayLimit = json['hourDisplayLimit'] as int;
+    final intro = parseList(json['intro']);
+    final exact = parseMap(json['exact'] as Map<String, dynamic>?);
+    final delta = parseMap(json['delta'] as Map<String, dynamic>?);
+    final conditional = parseConditional(
+      json['conditional'] as Map<String, dynamic>?,
+    );
+    final padding = parseList(json['padding']);
+
     return TimeCheckLanguageData(
-      grid: json['grid'] as String,
-      width: json['width'] as int,
-      hourDisplayLimit: json['hourDisplayLimit'] as int,
-      intro: parseList(json['intro']),
-      exact: parseMap(json['exact'] as Map<String, dynamic>?),
-      delta: parseMap(json['delta'] as Map<String, dynamic>?),
-      conditional: parseConditional(
-        json['conditional'] as Map<String, dynamic>?,
-      ),
+      grid: grid,
+      width: width,
+      hourDisplayLimit: hourDisplayLimit,
+      intro: intro,
+      exact: exact,
+      delta: delta,
+      conditional: conditional,
+      padding: padding,
     );
   }
 
@@ -109,6 +121,7 @@ class TimeCheckLanguageData {
       'exact': serializeMap(exact),
       'delta': serializeMap(delta),
       'conditional': serializeConditional(conditional),
+      'padding': padding,
     };
   }
 }

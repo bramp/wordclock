@@ -88,25 +88,95 @@ void main() async {
       }).toList();
     }
 
+    /// Computes the list of padding characters (unused by any word).
+    List<TimeCheckWord> computePadding(
+      String grid,
+      int width,
+      List<TimeCheckWord> intro,
+      Map<int, List<TimeCheckWord>> exact,
+      Map<int, List<TimeCheckWord>> delta,
+      Map<int, Map<int, List<TimeCheckWord>>> conditional,
+    ) {
+      if (grid.isEmpty || width <= 0) return [];
+
+      final totalChars = grid.length;
+      final covered = List<bool>.filled(totalChars, false);
+
+      void mark(List<TimeCheckWord>? words) {
+        if (words == null) return;
+        for (final word in words) {
+          final start = word.row * width + word.col;
+          for (int i = 0; i < word.span; i++) {
+            if (start + i < totalChars) {
+              covered[start + i] = true;
+            }
+          }
+        }
+      }
+
+      mark(intro);
+      for (final list in exact.values) {
+        mark(list);
+      }
+      for (final list in delta.values) {
+        mark(list);
+      }
+      for (final map in conditional.values) {
+        for (final list in map.values) {
+          mark(list);
+        }
+      }
+
+      final padding = <TimeCheckWord>[];
+      for (int i = 0; i < totalChars; i++) {
+        if (!covered[i]) {
+          padding.add(
+            TimeCheckWord(
+              text: grid[i],
+              row: i ~/ width,
+              col: i % width,
+              span: 1,
+            ),
+          );
+        }
+      }
+      return padding;
+    }
+
+    final intro = extractWords(rules['i'] ?? []);
+    final exact = (rules['e'] as Map<String, dynamic>? ?? {}).map(
+      (h, coords) => MapEntry(int.parse(h), extractWords(coords)),
+    );
+    final delta = (rules['d'] as Map<String, dynamic>? ?? {}).map(
+      (m, coords) => MapEntry(int.parse(m), extractWords(coords)),
+    );
+    final conditional = (rules['c'] as Map<String, dynamic>? ?? {}).map(
+      (h, mins) => MapEntry(
+        int.parse(h),
+        (mins as Map<String, dynamic>).map(
+          (m, coords) => MapEntry(int.parse(m), extractWords(coords)),
+        ),
+      ),
+    );
+
+    final padding = computePadding(
+      gridStr,
+      width,
+      intro,
+      exact,
+      delta,
+      conditional,
+    );
+
     final data = TimeCheckLanguageData(
       grid: gridStr,
       width: width,
       hourDisplayLimit: hourDisplayLimit,
-      intro: extractWords(rules['i'] ?? []),
-      exact: (rules['e'] as Map<String, dynamic>? ?? {}).map(
-        (h, coords) => MapEntry(int.parse(h), extractWords(coords)),
-      ),
-      delta: (rules['d'] as Map<String, dynamic>? ?? {}).map(
-        (m, coords) => MapEntry(int.parse(m), extractWords(coords)),
-      ),
-      conditional: (rules['c'] as Map<String, dynamic>? ?? {}).map(
-        (h, mins) => MapEntry(
-          int.parse(h),
-          (mins as Map<String, dynamic>).map(
-            (m, coords) => MapEntry(int.parse(m), extractWords(coords)),
-          ),
-        ),
-      ),
+      intro: intro,
+      exact: exact,
+      delta: delta,
+      conditional: conditional,
+      padding: padding,
     );
 
     // Fix for JP 3:30 bug (merged words)

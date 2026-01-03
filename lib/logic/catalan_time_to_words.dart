@@ -1,6 +1,7 @@
 import 'package:wordclock/logic/time_to_words.dart';
 
 class CatalanTimeToWords implements TimeToWords {
+  const CatalanTimeToWords();
   @override
   String convert(DateTime time) {
     int m = (time.minute ~/ 5) * 5;

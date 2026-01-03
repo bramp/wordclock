@@ -1,6 +1,7 @@
 import 'package:wordclock/logic/time_to_words.dart';
 
 class NativeRussianTimeToWords implements TimeToWords {
+  const NativeRussianTimeToWords();
   static const hours = [
     'ДВЕНАДЦАТЬ', // Twelve
     'ЧАС', // One (lit: "Hour")
@@ -69,6 +70,7 @@ class NativeRussianTimeToWords implements TimeToWords {
 }
 
 class RussianTimeToWords implements TimeToWords {
+  const RussianTimeToWords();
   @override
   String convert(DateTime time) {
     int m = time.minute;

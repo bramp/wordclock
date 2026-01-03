@@ -1,21 +1,18 @@
 import 'package:wordclock/languages/language.dart';
-import 'package:wordclock/logic/spanish_time_to_words.dart';
-import 'package:wordclock/logic/time_to_words.dart';
 import 'package:wordclock/model/word_grid.dart';
+import 'package:wordclock/logic/spanish_time_to_words.dart';
 
-class SpanishLanguage implements WordClockLanguage {
-  @override
-  String get displayName => 'Español';
-
-  @override
-  final TimeToWords timeToWords = SpanishTimeToWords();
-
-  @override
-  final String paddingAlphabet = 'ABCDEFGHIJKLMNÑOPQRSTUVWXYZ';
-
-  @override
-  final int minuteIncrement = 5;
-
-  @override
-  WordGrid? get defaultGrid => null;
-}
+const spanishLanguage = WordClockLanguage(
+  id: 'ES',
+  languageCode: 'es-ES',
+  displayName: 'Español',
+  description: null,
+  timeToWords: SpanishTimeToWords(),
+  paddingAlphabet: 'EIOAMANPMLASLO',
+  timeCheckGrid: WordGrid(
+    width: 11,
+    letters:
+        'ESONELASUNADOSITRESOAMCUATROCINCOSEISASIETENOCHONUEVEPMLADIEZSONCEDOCELYMENOSOVEINTEDIEZVEINTICINCOMEDIACUARTO',
+  ),
+  minuteIncrement: 5,
+);

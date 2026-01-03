@@ -5,7 +5,7 @@ import 'package:wordclock/generator/grid_layout.dart';
 import 'package:wordclock/generator/topological_sort.dart';
 
 import 'package:wordclock/languages/language.dart';
-import 'package:wordclock/languages/english.dart';
+import 'package:wordclock/languages/all.dart';
 
 class GridGenerator {
   /// Generates a grid of characters for the word clock.
@@ -16,7 +16,7 @@ class GridGenerator {
     WordClockLanguage? language,
   }) {
     final Random random = seed != null ? Random(seed) : Random(0);
-    final lang = language ?? EnglishLanguage();
+    final lang = language ?? WordClockLanguages.byId['en']!;
     final padding = lang.paddingAlphabet;
 
     // 1. Build Dependency Graph

@@ -1,6 +1,7 @@
 import 'package:wordclock/logic/time_to_words.dart';
 
 class NativeJapaneseTimeToWords implements TimeToWords {
+  const NativeJapaneseTimeToWords();
   @override
   String convert(DateTime time) {
     int m = time.minute;
@@ -48,6 +49,7 @@ class NativeJapaneseTimeToWords implements TimeToWords {
 }
 
 class JapaneseTimeToWords implements TimeToWords {
+  const JapaneseTimeToWords();
   @override
   String convert(DateTime time) {
     int m = time.minute;

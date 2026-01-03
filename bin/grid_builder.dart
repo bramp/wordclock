@@ -1,15 +1,18 @@
-import 'dart:io';
+import 'package:wordclock/generator/dependency_graph.dart';
+import 'package:wordclock/generator/dot_exporter.dart';
 import 'package:wordclock/generator/grid_generator.dart';
-import 'package:wordclock/languages/english.dart';
+import 'package:wordclock/generator/mermaid_exporter.dart';
 import 'package:wordclock/languages/language.dart';
-import 'package:wordclock/languages/timecheck.dart';
+import 'package:wordclock/languages/all.dart';
 
 // ignore_for_file: avoid_print
 
 void main(List<String> args) {
   int gridWidth = 11; // Default
   int? seed;
-  WordClockLanguage language = EnglishLanguage();
+  WordClockLanguage language = WordClockLanguages.byId['en']!;
+  bool outputDot = false;
+  bool outputMermaid = false;
 
   for (final arg in args) {
     if (arg.startsWith('--seed=')) {
@@ -20,29 +23,31 @@ void main(List<String> args) {
       if (w != null) gridWidth = w;
     }
     if (arg.startsWith('--language=')) {
-      final langCode = arg.substring(11);
-      if (langCode != 'en') {
-        // Try to load from scriptable dataset
-        final jsonFile = File('assets/timecheck_languages.json');
-        if (!jsonFile.existsSync()) {
-          print('Error: assets/timecheck_languages.json not found.');
-          return;
-        }
-        final languages = TimeCheckLanguage.loadAll(
-          jsonFile.readAsStringSync(),
-        );
-        if (!languages.containsKey(langCode)) {
-          print('Error: Unknown language code "$langCode".');
-          print('Available codes: ${languages.keys.join(', ')}');
-          return;
-        }
-        language = languages[langCode]!;
+      final langId = arg.substring(11).toLowerCase();
+      if (WordClockLanguages.byId.containsKey(langId)) {
+        language = WordClockLanguages.byId[langId]!;
+      } else {
+        print('Error: Unknown language ID "$langId".');
+        print('Available IDs: ${WordClockLanguages.byId.keys.join(', ')}');
+        return;
       }
     }
     if (arg == '--dot') {
-      print('DOT output not supported in this version via grid_builder.');
-      return;
+      outputDot = true;
     }
+    if (arg == '--mermaid') {
+      outputMermaid = true;
+    }
+  }
+
+  if (outputDot || outputMermaid) {
+    final graph = DependencyGraphBuilder.build(language: language);
+    if (outputDot) {
+      print(DotExporter.export(graph));
+    } else if (outputMermaid) {
+      print(MermaidExporter.export(graph));
+    }
+    return;
   }
 
   try {

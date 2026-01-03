@@ -1,6 +1,7 @@
 import 'package:wordclock/logic/time_to_words.dart';
 
 class GreekTimeToWords implements TimeToWords {
+  const GreekTimeToWords();
   @override
   String convert(DateTime time) {
     int m = time.minute;

@@ -5,30 +5,22 @@ import 'package:wordclock/generator/topological_sort.dart';
 import 'package:wordclock/generator/grid_layout.dart';
 import 'package:wordclock/languages/language.dart';
 import 'package:wordclock/logic/time_to_words.dart';
-import 'package:wordclock/model/word_grid.dart';
 
-import 'package:wordclock/languages/english.dart';
 import 'package:wordclock/logic/english_time_to_word.dart';
 
-class MockLanguage implements WordClockLanguage {
-  final TimeToWords converter;
-  MockLanguage(this.converter);
-
-  @override
-  String get displayName => 'Mock';
-  @override
-  TimeToWords get timeToWords => converter;
-  @override
-  String get paddingAlphabet => 'ABC';
-  @override
-  int get minuteIncrement => 5;
-  @override
-  WordGrid? get defaultGrid => null;
-}
+WordClockLanguage createMockLanguage(TimeToWords converter) =>
+    WordClockLanguage(
+      id: 'mock',
+      languageCode: 'mock',
+      displayName: 'Mock',
+      timeToWords: converter,
+      paddingAlphabet: 'ABC',
+      minuteIncrement: 5,
+    );
 
 class SimpleConverter implements TimeToWords {
   final List<String> phrases;
-  SimpleConverter(this.phrases);
+  const SimpleConverter(this.phrases);
 
   @override
   String convert(DateTime time) {
@@ -45,7 +37,7 @@ void main() {
     // S2: D B E
     // In the current word-based architecture, they don't share B because they are different words.
     final converter = SimpleConverter(["ABC", "DBE"]);
-    final lang = MockLanguage(converter);
+    final lang = createMockLanguage(converter);
     final graph = DependencyGraphBuilder.build(language: lang);
 
     final bNodes = graph.keys.where((n) => n.char == "B").toList();
@@ -56,7 +48,7 @@ void main() {
     // "午前" (AM) and "午後" (PM)
     // In the current word-based architecture, they don't share "午" because they are different words.
     final converter = SimpleConverter(["午前", "午後"]);
-    final lang = MockLanguage(converter);
+    final lang = createMockLanguage(converter);
     final graph = DependencyGraphBuilder.build(language: lang);
 
     final goNodes = graph.keys.where((n) => n.char == "午").toList();
@@ -72,7 +64,7 @@ void main() {
     // S2: BA
     // Since they are different words, they don't share.
     final converter = SimpleConverter(["AB", "BA"]);
-    final lang = MockLanguage(converter);
+    final lang = createMockLanguage(converter);
     final graph = DependencyGraphBuilder.build(language: lang);
 
     final totalNodes = graph.keys.length;
@@ -84,7 +76,7 @@ void main() {
 
   test('User example: ABC DEF, A DEF, B DE, BC EF', () {
     final converter = SimpleConverter(["ABC DEF", "A DEF", "B DE", "BC EF"]);
-    final lang = MockLanguage(converter);
+    final lang = createMockLanguage(converter);
     final graph = DependencyGraphBuilder.build(language: lang);
     final sorted = TopologicalSorter.sort(graph);
 
@@ -124,7 +116,7 @@ void main() {
     // There is NO phrase containing "PAST P".
     // So there should be NO gap between PAST and P.
     final converter = SimpleConverter(["PAST", "P TO"]);
-    final lang = MockLanguage(converter);
+    final lang = createMockLanguage(converter);
     final graph = DependencyGraphBuilder.build(language: lang);
     final sorted = TopologicalSorter.sort(graph);
 
@@ -169,7 +161,7 @@ void main() {
 
   test('Distributed padding test', () {
     final converter = SimpleConverter(["FIRST", "MIDDLE WORD", "LAST"]);
-    final lang = MockLanguage(converter);
+    final lang = createMockLanguage(converter);
     final graph = DependencyGraphBuilder.build(language: lang);
     final sorted = TopologicalSorter.sort(graph);
 
@@ -209,7 +201,13 @@ void main() {
   });
 
   test('English language reuse: FIVE and OCLOCK', () {
-    final lang = EnglishLanguage(timeToWords: NativeEnglishTimeToWords());
+    final lang = WordClockLanguage(
+      id: 'en-test',
+      languageCode: 'en-US',
+      displayName: 'EnglishTest',
+      timeToWords: const NativeEnglishTimeToWords(),
+      paddingAlphabet: 'ABC',
+    );
     final graph = DependencyGraphBuilder.build(language: lang);
 
     // Let's just count unique words by looking at the Node.word (which is the char)

@@ -1,21 +1,18 @@
 import 'package:wordclock/languages/language.dart';
-import 'package:wordclock/logic/french_time_to_words.dart';
-import 'package:wordclock/logic/time_to_words.dart';
 import 'package:wordclock/model/word_grid.dart';
+import 'package:wordclock/logic/french_time_to_words.dart';
 
-class FrenchLanguage implements WordClockLanguage {
-  @override
-  String get displayName => 'Français';
-
-  @override
-  final TimeToWords timeToWords = FrenchTimeToWords();
-
-  @override
-  final String paddingAlphabet = 'ABCDEFGHIJKLMNOPQRSTUVWXYZÀÂÇÉÈÊËÎÏÔÛÙ';
-
-  @override
-  final int minuteIncrement = 5;
-
-  @override
-  WordGrid? get defaultGrid => null;
-}
+const frenchLanguage = WordClockLanguage(
+  id: 'FR',
+  languageCode: 'fr-FR',
+  displayName: 'Français',
+  description: null,
+  timeToWords: FrenchTimeToWords(),
+  paddingAlphabet: 'NORORPMDUSPAM',
+  timeCheckGrid: WordGrid(
+    width: 11,
+    letters:
+        'ILNESTODEUXQUATRETROISNEUFUNESEPTHUITSIXCINQMIDIXMINUITONZERHEURESMOINSOLEDIXETRQUARTPMDVINGT-CINQUETSDEMIEPAM',
+  ),
+  minuteIncrement: 5,
+);

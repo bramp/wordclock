@@ -1,78 +1,48 @@
 import 'package:wordclock/languages/language.dart';
-import 'package:wordclock/logic/time_to_words.dart';
-import 'package:wordclock/logic/english_time_to_word.dart';
 import 'package:wordclock/model/word_grid.dart';
+import 'package:wordclock/logic/english_time_to_word.dart';
 
-class EnglishLanguage implements WordClockLanguage {
-  @override
-  String get displayName => 'English';
-
-  @override
-  final TimeToWords timeToWords;
-
-  const EnglishLanguage({this.timeToWords = const EnglishTimeToWords()});
-
-  @override
-  final String paddingAlphabet =
-      "EEEEEEEEEEE" // 11
-      "AAAAAAAA" // 8
-      "RRRRRR" // 6
-      "IIIIII" // 6
-      "OOOOOO" // 6
-      "TTTTTT" // 6
-      "NNNNN" // 5
-      "SSSS" // 4
-      "LLLL" // 4
-      "CCCC" // 3
-      "UUU" // 3
-      "DDD" // 3
-      "PPP" // 3
-      "MMM" // 3
-      "HHH" // 3
-      "G"
-      "B"
-      "F"
-      "Y"
-      "W"
-      "K"
-      "V"
-      "X"
-      "Z"
-      "J"
-      "Q";
-
-  @override
-  final int minuteIncrement = 5;
-
-  // The original qlocktwo grid. Here for reference only
-  // WordGrid get defaultGrid => WordGrid(
-  //   width: 11,
-  //   letters:
-  //       "ITLISASTIME"
-  //       "ACQUARTERDC"
-  //       "TWENTYFIVEX"
-  //       "HALFBTENFTO"
-  //       "PASTERUNINE"
-  //       "ONESIXTHREE"
-  //       "FOURFIVETWO"
-  //       "EIGHTELEVEN"
-  //       "SEVENTWELVE"
-  //       "TENSEOCLOCK",
-  // );
-
-  @override
-  WordGrid get defaultGrid => WordGrid(
+const englishAlternativeLanguage = WordClockLanguage(
+  id: 'E2',
+  languageCode: 'en-US-x-alt',
+  displayName: 'English',
+  description: 'Alternative',
+  timeToWords: EnglishAlternativeTimeToWords(),
+  paddingAlphabet: 'LASAMPMCDCXSFERUSEK',
+  timeCheckGrid: WordGrid(
     width: 11,
     letters:
-        'ITRISSHALFA'
-        'AQUARTERTEN'
-        'TWENTYCFIVE'
-        'SPASTTOETMO'
-        'EIGHTELEVEN'
-        'ODQFIVEFOUR'
-        'RZUNINEONEP'
-        'SEVENSIXTEN'
-        'THREETWELVE'
-        'ATWOIOCLOCK',
-  );
-}
+        'ITLISASAMPMACQUARTERDCTWENTYFIVEXHALFSTENFTOPASTERUNINEONESIXTHREEFOURFIVETWOEIGHTELEVENSEVENTWELVETENSEO\'CLOCK',
+  ),
+  minuteIncrement: 5,
+);
+
+const englishLanguage = WordClockLanguage(
+  id: 'EN',
+  languageCode: 'en-US',
+  displayName: 'English',
+  description: null,
+  timeToWords: EnglishTimeToWords(),
+  paddingAlphabet: 'LASAMPMACDCXSFERUSEK',
+  timeCheckGrid: WordGrid(
+    width: 11,
+    letters:
+        'ITLISASAMPMACQUARTERDCTWENTYFIVEXHALFSTENFTOPASTERUNINEONESIXTHREEFOURFIVETWOEIGHTELEVENSEVENTWELVETENSEO\'CLOCK',
+  ),
+  minuteIncrement: 5,
+);
+
+const englishDigitalLanguage = WordClockLanguage(
+  id: 'E3',
+  languageCode: 'en-US-x-digital',
+  displayName: 'English',
+  description: 'Digital',
+  timeToWords: EnglishDigitalTimeToWords(),
+  paddingAlphabet: 'LASAMPMACDCXSFERUSEK',
+  timeCheckGrid: WordGrid(
+    width: 11,
+    letters:
+        'ITLISASAMPMACQUARTERDCTWENTYFIVEXHALFSTENFTOPASTERUNINEONESIXTHREEFOURFIVETWOEIGHTELEVENSEVENTWELVETENSEO\'CLOCK',
+  ),
+  minuteIncrement: 5,
+);

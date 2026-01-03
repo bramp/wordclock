@@ -47,8 +47,12 @@ class DependencyGraphBuilder {
     List<Node> createNewWordNodes(String word, int retryIndex) {
       return List.generate(
         word.length,
-        (i) =>
-            Node(word[i], word, getGlobalIndex(word[i], word, i, retryIndex)),
+        (i) => Node(
+          word[i],
+          word,
+          i,
+          getGlobalIndex(word[i], word, i, retryIndex),
+        ),
       );
     }
 

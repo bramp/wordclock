@@ -27,3 +27,7 @@ repos:
         language: system
         types: [dart]
         pass_filenames: false
+-   repo: https://github.com/google/keep-sorted
+    rev: v0.4.0
+    hooks:
+    -   id: keep-sorted

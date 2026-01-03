@@ -1,6 +1,7 @@
 import 'package:wordclock/logic/time_to_words.dart';
 
 class NativeSpanishTimeToWords implements TimeToWords {
+  const NativeSpanishTimeToWords();
   static const hours = [
     'DOCE', // Twelve
     'UNA', // One
@@ -47,6 +48,7 @@ class NativeSpanishTimeToWords implements TimeToWords {
 }
 
 class SpanishTimeToWords implements TimeToWords {
+  const SpanishTimeToWords();
   @override
   String convert(DateTime time) {
     int m = time.minute;

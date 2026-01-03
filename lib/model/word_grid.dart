@@ -2,11 +2,7 @@ class WordGrid {
   final int width;
   final String letters;
 
-  WordGrid({required this.width, required this.letters})
-    : assert(
-        letters.length % width == 0,
-        "Grid letters must fit perfectly into width",
-      );
+  const WordGrid({required this.width, required this.letters});
 
   int get height => letters.length ~/ width;
 

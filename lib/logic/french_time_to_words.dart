@@ -1,6 +1,7 @@
 import 'package:wordclock/logic/time_to_words.dart';
 
 class NativeFrenchTimeToWords implements TimeToWords {
+  const NativeFrenchTimeToWords();
   static const hoursList = [
     'MINUIT', // Midnight
     'UNE', // One
@@ -59,6 +60,7 @@ class NativeFrenchTimeToWords implements TimeToWords {
 }
 
 class FrenchTimeToWords implements TimeToWords {
+  const FrenchTimeToWords();
   @override
   String convert(DateTime time) {
     int m = time.minute;

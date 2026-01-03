@@ -26,8 +26,9 @@ class SettingsController extends ChangeNotifier {
   // Dynamic Grid State
   int? _gridSeed; // null = use default static grid
 
-  // TODO The default language should be based on the user's locale
-  WordClockLanguage _currentLanguage = supportedLanguages[0];
+  // The default language is English ('en').
+  // Note: supportedLanguages is sorted by ID, so we look it up.
+  WordClockLanguage _currentLanguage = WordClockLanguages.byId['en']!;
   late WordGrid _currentGrid;
 
   SettingsController() {

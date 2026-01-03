@@ -15,10 +15,12 @@ class LanguageSelector extends StatelessWidget {
           spacing: 8,
           runSpacing: 8,
           children: SettingsController.supportedLanguages.map((lang) {
-            final isSelected =
-                controller.currentLanguage.displayName == lang.displayName;
+            final isSelected = controller.currentLanguage.id == lang.id;
+            final label = lang.description != null
+                ? '${lang.displayName} (${lang.description})'
+                : lang.displayName;
             return ChoiceChip(
-              label: Text(lang.displayName),
+              label: Text(label),
               selected: isSelected,
               onSelected: (selected) {
                 if (selected) {

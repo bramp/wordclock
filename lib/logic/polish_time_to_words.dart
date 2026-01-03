@@ -1,6 +1,8 @@
 import 'package:wordclock/logic/time_to_words.dart';
 
 class PolishTimeToWords implements TimeToWords {
+  const PolishTimeToWords();
+
   // Nominative case for hours (used for exact hours and "ZA" - before)
   static const hoursNominative = [
     'DWUNASTA', // Twelfth

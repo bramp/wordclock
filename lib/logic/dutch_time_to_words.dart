@@ -1,6 +1,7 @@
 import 'package:wordclock/logic/time_to_words.dart';
 
 class NativeDutchTimeToWords implements TimeToWords {
+  const NativeDutchTimeToWords();
   static const hours = [
     'TWAALF', // Twelve
     'ÉÉN', // One
@@ -47,6 +48,7 @@ class NativeDutchTimeToWords implements TimeToWords {
 }
 
 class DutchTimeToWords implements TimeToWords {
+  const DutchTimeToWords();
   @override
   String convert(DateTime time) {
     int m = time.minute;
