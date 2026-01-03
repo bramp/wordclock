@@ -28,7 +28,7 @@ class SettingsController extends ChangeNotifier {
 
   // The default language is English ('en').
   // Note: supportedLanguages is sorted by ID, so we look it up.
-  WordClockLanguage _currentLanguage = WordClockLanguages.byId['en']!;
+  WordClockLanguage _currentLanguage = WordClockLanguages.byId['EN']!;
   late WordGrid _currentGrid;
 
   SettingsController() {
@@ -73,12 +73,12 @@ class SettingsController extends ChangeNotifier {
     if (_gridSeed == null && defGrid != null) {
       _currentGrid = defGrid;
     } else {
-      final letters = GridGenerator.generate(
+      final cells = GridGenerator.generate(
         width: 11,
         seed: _gridSeed,
         language: _currentLanguage,
       );
-      _currentGrid = WordGrid(width: 11, letters: letters);
+      _currentGrid = WordGrid(width: 11, cells: cells);
     }
   }
 

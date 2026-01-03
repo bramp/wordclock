@@ -2,17 +2,27 @@ import 'package:wordclock/languages/language.dart';
 import 'package:wordclock/model/word_grid.dart';
 import 'package:wordclock/logic/catalan_time_to_words.dart';
 
-const catalanLanguage = WordClockLanguage(
+final catalanLanguage = WordClockLanguage(
   id: 'CA',
   languageCode: 'ca-ES',
   displayName: 'Català',
   description: null,
   timeToWords: CatalanTimeToWords(),
   paddingAlphabet: 'RMANCINCUE\'TUONZSAUNPIC',
-  timeCheckGrid: WordGrid(
+  timeCheckGrid: WordGrid.fromLetters(
     width: 11,
     letters:
-        'ÉSÓNRLAMUNADOSLESNTRESCINCQUARTSUMENYSIECINCDED\'RUNAONZEDUESTRESETDQUATREDOTZEVUITNOUONZESISAMDEUNPMMENYSIACINC',
+        'ÉSÓNRLAMUNA'
+        'DOSLESNTRES'
+        'CINCQUARTSU'
+        'MENYSIECINC'
+        'DED\'RUNAONZ'
+        'EDUESTRESET'
+        'DQUATREDOTZ'
+        'EVUITNOUONZ'
+        'ESISAMDEUNP'
+        'MMENYSIACIN'
+        'C',
   ),
   minuteIncrement: 5,
 );

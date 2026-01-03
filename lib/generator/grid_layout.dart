@@ -2,8 +2,8 @@ import 'dart:math';
 import 'package:wordclock/generator/graph_types.dart';
 
 class GridLayout {
-  /// Generates a grid string of the given [width] from the [orderedResult] nodes.
-  static String generateString(
+  /// Generates a list of cells of the given [width] from the [orderedResult] nodes.
+  static List<String> generateCells(
     int width,
     List<Node> orderedResult,
     Graph graph,
@@ -20,12 +20,16 @@ class GridLayout {
     return session.generate();
   }
 
-  static String _generatePadding(int length, Random random, String alphabet) {
-    if (alphabet.isEmpty) return ' ' * length;
+  static List<String> _generatePadding(
+    int length,
+    Random random,
+    String alphabet,
+  ) {
+    if (alphabet.isEmpty) return List.filled(length, ' ');
     return List.generate(
       length,
       (index) => alphabet[random.nextInt(alphabet.length)],
-    ).join();
+    );
   }
 }
 
@@ -37,7 +41,7 @@ class _GridLayoutSession {
   final Random random;
   final String paddingAlphabet;
 
-  final StringBuffer _buffer = StringBuffer();
+  final List<String> _cells = [];
   List<_GridItem> _currentLineItems = [];
   int _currentLineLength = 0;
 
@@ -55,7 +59,7 @@ class _GridLayoutSession {
     _lastNode = orderedResult.isNotEmpty ? orderedResult.last : null;
   }
 
-  String generate() {
+  List<String> generate() {
     int i = 0;
     Node? lastWordLastNode;
 
@@ -85,7 +89,7 @@ class _GridLayoutSession {
     }
 
     _flushLine(isLastLine: true);
-    return _buffer.toString();
+    return _cells;
   }
 
   /// Finds the next contiguous block of nodes belonging to the same word.
@@ -109,7 +113,9 @@ class _GridLayoutSession {
         _flushLine(isLastLine: false);
       } else {
         _currentLineItems.add(
-          _GridItem(GridLayout._generatePadding(1, random, paddingAlphabet)),
+          _GridItem(
+            GridLayout._generatePadding(1, random, paddingAlphabet).first,
+          ),
         );
         _currentLineLength += 1;
       }
@@ -121,29 +127,29 @@ class _GridLayoutSession {
     if (_currentLineItems.isEmpty) return;
 
     final int paddingTotal = max(0, width - _currentLineLength);
-    String line = "";
+    final List<String> lineCells = [];
 
     // 1. PIN TOP-LEFT
     if (_containsNode(_firstNode) &&
         _currentLineItems.first.node == _firstNode) {
-      line = _currentLineItems.map((e) => e.char).join("");
-      line += GridLayout._generatePadding(
-        paddingTotal,
-        random,
-        paddingAlphabet,
+      lineCells.addAll(_currentLineItems.map((e) => e.char));
+      lineCells.addAll(
+        GridLayout._generatePadding(paddingTotal, random, paddingAlphabet),
       );
     }
     // 2. PIN BOTTOM-RIGHT
     else if (isLastLine && _containsNode(_lastNode)) {
-      line = GridLayout._generatePadding(paddingTotal, random, paddingAlphabet);
-      line += _currentLineItems.map((e) => e.char).join("");
+      lineCells.addAll(
+        GridLayout._generatePadding(paddingTotal, random, paddingAlphabet),
+      );
+      lineCells.addAll(_currentLineItems.map((e) => e.char));
     }
     // 3. RANDOM SCATTER
     else {
-      line = _distributePadding(paddingTotal);
+      lineCells.addAll(_distributePadding(paddingTotal));
     }
 
-    _buffer.write(line);
+    _cells.addAll(lineCells);
     _currentLineItems = [];
     _currentLineLength = 0;
   }
@@ -154,7 +160,7 @@ class _GridLayoutSession {
   }
 
   /// Randomly distributes padding across all slots (before, after, and between units).
-  String _distributePadding(int paddingTotal) {
+  List<String> _distributePadding(int paddingTotal) {
     final units = _groupItemsIntoUnits();
     final int numSlots = units.length + 1;
     final slotPaddings = List.filled(numSlots, 0);
@@ -163,45 +169,41 @@ class _GridLayoutSession {
       slotPaddings[random.nextInt(numSlots)]++;
     }
 
-    String line = "";
+    final List<String> lineCells = [];
     for (int s = 0; s < units.length; s++) {
-      line += GridLayout._generatePadding(
-        slotPaddings[s],
-        random,
-        paddingAlphabet,
+      lineCells.addAll(
+        GridLayout._generatePadding(slotPaddings[s], random, paddingAlphabet),
       );
-      line += units[s];
+      lineCells.addAll(units[s]);
     }
-    line += GridLayout._generatePadding(
-      slotPaddings.last,
-      random,
-      paddingAlphabet,
+    lineCells.addAll(
+      GridLayout._generatePadding(slotPaddings.last, random, paddingAlphabet),
     );
-    return line;
+    return lineCells;
   }
 
   /// Groups items into "units" (contiguous words or single gaps) that shouldn't be split by padding.
-  List<String> _groupItemsIntoUnits() {
-    List<String> units = [];
-    String currentUnit = "";
+  List<List<String>> _groupItemsIntoUnits() {
+    List<List<String>> units = [];
+    List<String> currentUnit = [];
     String? currentWord;
 
     for (final item in _currentLineItems) {
       if (item.node == null) {
         if (currentUnit.isNotEmpty) {
           units.add(currentUnit);
-          currentUnit = "";
+          currentUnit = [];
           currentWord = null;
         }
-        units.add(item.char);
+        units.add([item.char]);
       } else {
         if (currentWord != null && item.node!.word == currentWord) {
-          currentUnit += item.char;
+          currentUnit.add(item.char);
         } else {
           if (currentUnit.isNotEmpty) {
             units.add(currentUnit);
           }
-          currentUnit = item.char;
+          currentUnit = [item.char];
           currentWord = item.node!.word;
         }
       }

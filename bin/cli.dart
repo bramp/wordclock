@@ -9,13 +9,13 @@ import 'package:wordclock/model/word_grid.dart';
 bool isWide(int charCode) => charCode >= 0x2000;
 
 /// Returns true if any character in the text requires wide-mode alignment.
-bool needsWideMode(String text) => text.runes.any(isWide);
+bool needsWideMode(List<String> cells) => cells.any((c) => c.runes.any(isWide));
 
 void main(List<String> args) {
   // Defaults
   int width = 11;
   int? seed;
-  List<String> languages = ['en'];
+  List<String> languages = ['EN'];
   DateTime now = DateTime.now();
 
   final availableIds = WordClockLanguages.byId.keys.toList();
@@ -62,12 +62,10 @@ void _processLanguage(String lang, int width, int? seed, DateTime now) {
   print('\n=== Language: $lang ===');
 
   // Select Language
-  final language = WordClockLanguages.byId[lang];
-  if (language == null) {
-    print('Unsupported language: $lang');
-    print('Supported languages: ${WordClockLanguages.byId.keys.join(', ')}');
-    return;
-  }
+  final language = WordClockLanguages.all.firstWhere(
+    (l) => l.id.toLowerCase() == lang.toLowerCase(),
+    orElse: () => throw ArgumentError('Unsupported language: $lang'),
+  );
 
   print('Generating grid for lang="$lang", width=$width, seed=$seed...');
   final letters = GridGenerator.generate(
@@ -76,7 +74,7 @@ void _processLanguage(String lang, int width, int? seed, DateTime now) {
     language: language,
   );
 
-  final grid = WordGrid(width: width, letters: letters);
+  final grid = WordGrid(width: width, cells: letters);
 
   final phrase = language.timeToWords.convert(now);
   print('Phrase: "$phrase"');
@@ -96,7 +94,7 @@ void _printGrid(WordGrid grid, Set<int> activeIndices) {
   final buffer = StringBuffer();
 
   // Determine if we need wide mode (for CJK)
-  final bool useWideMode = needsWideMode(grid.letters);
+  final bool useWideMode = needsWideMode(grid.cells);
 
   // Border width calculation:
   // Compact (ASCII): | C C | -> 2 + w*2 + 1 = 2w+3. Dashes = 2w+1.
@@ -111,8 +109,8 @@ void _printGrid(WordGrid grid, Set<int> activeIndices) {
   for (int y = 0; y < grid.height; y++) {
     buffer.write('| ');
     for (int x = 0; x < grid.width; x++) {
-      if (index >= grid.letters.length) break;
-      final char = grid.letters[index];
+      if (index >= grid.cells.length) break;
+      final char = grid.cells[index];
       final isActive = activeIndices.contains(index);
 
       String padding;

@@ -3,7 +3,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:wordclock/model/word_grid.dart';
 import 'package:wordclock/ui/letter_grid.dart';
 
-final _testGrid = WordGrid(
+final _testGrid = WordGrid.fromLetters(
   width: 4,
   letters:
       "ABCD"

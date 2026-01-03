@@ -10,7 +10,7 @@ import 'package:wordclock/languages/all.dart';
 void main(List<String> args) {
   int gridWidth = 11; // Default
   int? seed;
-  WordClockLanguage language = WordClockLanguages.byId['en']!;
+  WordClockLanguage language = WordClockLanguages.byId['EN']!;
   bool outputDot = false;
   bool outputMermaid = false;
 
@@ -23,11 +23,14 @@ void main(List<String> args) {
       if (w != null) gridWidth = w;
     }
     if (arg.startsWith('--language=')) {
-      final langId = arg.substring(11).toLowerCase();
-      if (WordClockLanguages.byId.containsKey(langId)) {
-        language = WordClockLanguages.byId[langId]!;
+      final inputId = arg.substring(11);
+      final match = WordClockLanguages.all
+          .where((l) => l.id.toLowerCase() == inputId.toLowerCase())
+          .toList();
+      if (match.isNotEmpty) {
+        language = match.first;
       } else {
-        print('Error: Unknown language ID "$langId".');
+        print('Error: Unknown language ID "$inputId".');
         print('Available IDs: ${WordClockLanguages.byId.keys.join(', ')}');
         return;
       }
@@ -51,25 +54,24 @@ void main(List<String> args) {
   }
 
   try {
-    final gridString = GridGenerator.generate(
+    final cells = GridGenerator.generate(
       width: gridWidth,
       seed: seed,
       language: language,
     );
-    final height = gridString.length ~/ gridWidth;
+    final height = cells.length ~/ gridWidth;
     final langName = language.displayName.toLowerCase().replaceAll(' ', '');
 
     print('\n/// AUTOMATICALLY GENERATED PREVIEW');
     print('/// Seed: ${seed ?? "Deterministic (0)"}');
-    print('static final $langName${gridWidth}x$height = WordGrid(');
+    print('static final $langName${gridWidth}x$height = WordGrid.fromLetters(');
     print('  width: $gridWidth,');
     print('  letters:');
     for (int i = 0; i < height; i++) {
-      print(
-        "    '${gridString.substring(i * gridWidth, (i + 1) * gridWidth)}'",
-      );
+      final line = cells.sublist(i * gridWidth, (i + 1) * gridWidth).join('');
+      print("    '$line'");
     }
-    print('    ,');
+    print('  ),');
     print(');');
   } catch (e) {
     print('Error generating grid: $e');

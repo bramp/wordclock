@@ -21,9 +21,8 @@ import 'package:wordclock/languages/swedish.dart';
 import 'package:wordclock/languages/turkish.dart';
 
 class WordClockLanguages {
-  // Keep this list sorted.
-  // keep-sorted start
-  static const List<WordClockLanguage> all = [
+  static final List<WordClockLanguage> all = [
+    // keep-sorted start
     berneseGermanLanguage,
     catalanLanguage,
     chineseSimplifiedLanguage,
@@ -51,10 +50,10 @@ class WordClockLanguages {
     swabianGermanLanguage,
     swedishLanguage,
     turkishLanguage,
+    // keep-sorted end
   ];
-  // keep-sorted end
 
   static final Map<String, WordClockLanguage> byId = {
-    for (final lang in all) lang.id.toLowerCase(): lang,
+    for (final lang in all) lang.id: lang,
   };
 }

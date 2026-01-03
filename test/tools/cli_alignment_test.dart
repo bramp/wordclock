@@ -21,10 +21,10 @@ void main() {
     });
 
     test('needsWideMode detects CJK strings correctly', () {
-      expect(needsWideMode('English text'), isFalse);
-      expect(needsWideMode('Polskie znaki: ŁĄĆŹŻ'), isFalse);
-      expect(needsWideMode('Deutsche Wörter: ẞ, Ü, Ö, Ä'), isFalse);
-      expect(needsWideMode('日本語'), isTrue);
+      expect(needsWideMode(['English text']), isFalse);
+      expect(needsWideMode(['Polskie znaki: ŁĄĆŹŻ']), isFalse);
+      expect(needsWideMode(['Deutsche Wörter: ẞ, Ü, Ö, Ä']), isFalse);
+      expect(needsWideMode(['日本語']), isTrue);
     });
   });
 }

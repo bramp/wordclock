@@ -2,17 +2,26 @@ import 'package:wordclock/languages/language.dart';
 import 'package:wordclock/model/word_grid.dart';
 import 'package:wordclock/logic/norwegian_time_to_words.dart';
 
-const norwegianLanguage = WordClockLanguage(
+final norwegianLanguage = WordClockLanguage(
   id: 'NO',
   languageCode: 'nb-NO',
   displayName: 'Norsk',
   description: null,
   timeToWords: NorwegianTimeToWords(),
   paddingAlphabet: 'VMHPÅSUFISLPÅSIDOSNNSTOXAMBPMZBlEGENZNAXS',
-  timeCheckGrid: WordGrid(
+  timeCheckGrid: WordGrid.fromLetters(
     width: 11,
     letters:
-        'KLOKKENVERMFEMHPÅSUFISTlLPÅSIDOSNKVARTNPÅSTOOVERXAMBPMZHALVBlEGENZETTNTOATREXFlREFEMSEKSSYVÅTTENITlELLEVESTOLV',
+        'KLOKKENVERM'
+        'FEMHPÅSUFIS'
+        'TlLPÅSIDOSN'
+        'KVARTNPÅSTO'
+        'OVERXAMBPMZ'
+        'HALVBlEGENZ'
+        'ETTNTOATREX'
+        'FlREFEMSEKS'
+        'SYVÅTTENITl'
+        'ELLEVESTOLV',
   ),
   minuteIncrement: 5,
 );

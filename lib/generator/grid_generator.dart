@@ -9,8 +9,8 @@ import 'package:wordclock/languages/all.dart';
 
 class GridGenerator {
   /// Generates a grid of characters for the word clock.
-  /// returns the full string of letters.
-  static String generate({
+  /// returns the list of cells.
+  static List<String> generate({
     required int width,
     int? seed,
     WordClockLanguage? language,
@@ -25,7 +25,7 @@ class GridGenerator {
       graph,
       random: seed != null ? random : null,
     );
-    return GridLayout.generateString(
+    return GridLayout.generateCells(
       width,
       sortedNodes,
       graph,

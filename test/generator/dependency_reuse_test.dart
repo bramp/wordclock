@@ -80,13 +80,13 @@ void main() {
     final graph = DependencyGraphBuilder.build(language: lang);
     final sorted = TopologicalSorter.sort(graph);
 
-    final grid = GridLayout.generateString(
+    final grid = GridLayout.generateCells(
       7,
       sorted,
       graph,
       Random(42),
       paddingAlphabet: "X",
-    );
+    ).join('');
 
     expect(grid, contains("ABC"));
     expect(grid, contains("DEF"));
@@ -120,13 +120,13 @@ void main() {
     final graph = DependencyGraphBuilder.build(language: lang);
     final sorted = TopologicalSorter.sort(graph);
 
-    final grid = GridLayout.generateString(
+    final grid = GridLayout.generateCells(
       10,
       sorted,
       graph,
       Random(42),
       paddingAlphabet: "X",
-    );
+    ).join('');
 
     // Since there is no dependency between PAST and P, they can be adjacent.
     // The greedy sort will likely put them together if they are ready.
@@ -165,13 +165,13 @@ void main() {
     final graph = DependencyGraphBuilder.build(language: lang);
     final sorted = TopologicalSorter.sort(graph);
 
-    final grid = GridLayout.generateString(
+    final grid = GridLayout.generateCells(
       15,
       sorted,
       graph,
       Random(42),
       paddingAlphabet: "X",
-    );
+    ).join('');
 
     // Line 1: FIRST (5 chars) + 10 padding at end
     // Line 2: MIDDLE (6) + gap (1) + WORD (4) = 11 chars. 4 padding distributed.
@@ -205,7 +205,7 @@ void main() {
       id: 'en-test',
       languageCode: 'en-US',
       displayName: 'EnglishTest',
-      timeToWords: const NativeEnglishTimeToWords(),
+      timeToWords: NativeEnglishTimeToWords(),
       paddingAlphabet: 'ABC',
     );
     final graph = DependencyGraphBuilder.build(language: lang);

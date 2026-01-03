@@ -72,9 +72,9 @@ class LetterGrid extends StatelessWidget {
             crossAxisCount: grid.width,
             childAspectRatio: width / height,
             padding: EdgeInsets.zero,
-            children: List.generate(grid.letters.length, (index) {
+            children: List.generate(grid.cells.length, (index) {
               final isActive = activeIndices.contains(index);
-              final char = grid.letters[index];
+              final char = grid.cells[index];
 
               return ClockLetter(
                 char: char,

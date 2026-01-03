@@ -34,7 +34,7 @@ final class WordClockLanguage {
   /// The minute increment this language supports (e.g., 1 or 5).
   final int minuteIncrement;
 
-  const WordClockLanguage({
+  WordClockLanguage({
     required this.id,
     required this.languageCode,
     required this.displayName,
