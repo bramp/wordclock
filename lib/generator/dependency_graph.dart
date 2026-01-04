@@ -26,24 +26,36 @@ class DependencyGraphBuilder {
       return assignedIndices[key]!;
     }
 
-    // 1. Pre-collect all unique words from all possible phrases
-    final allWords = WordClockUtils.collectAllWords(language);
+    // 1. Pre-collect units (either words or characters) from all phrases
+    final Set<String> allUnits = {};
+    if (language.atomizePhrases) {
+      // Treat every unique character as a unit
+      WordClockUtils.forEachTime(language, (time, phrase) {
+        for (int i = 0; i < phrase.length; i++) {
+          if (phrase[i] != ' ') {
+            allUnits.add(phrase[i]);
+          }
+        }
+      });
+    } else {
+      allUnits.addAll(WordClockUtils.collectAllWords(language));
+    }
 
     // 2. Sort by length descending to maximize sub-string reuse
-    final sortedWords = allWords.toList()
+    final sortedUnits = allUnits.toList()
       ..sort((a, b) => b.length.compareTo(a.length));
 
-    // 3. Cache for word nodes: word -> list of versions (each version is a list of nodes)
-    final Map<String, List<List<Node>>> wordCache = {};
+    // 3. Cache for unit nodes: unit -> list of versions (each version is a list of nodes)
+    final Map<String, List<List<Node>>> unitCache = {};
 
-    List<Node> createNewWordNodes(String word, int retryIndex) {
+    List<Node> createNewUnitNodes(String unit, int retryIndex) {
       return List.generate(
-        word.length,
+        unit.length,
         (i) => Node(
-          word[i],
-          word,
+          unit[i],
+          unit,
           i,
-          getGlobalIndex(word[i], word, i, retryIndex),
+          getGlobalIndex(unit[i], unit, i, retryIndex),
         ),
       );
     }
@@ -59,37 +71,43 @@ class DependencyGraphBuilder {
       }
     }
 
-    // 4. Initialize cache with longest words first to allow sub-string reuse
-    for (final word in sortedWords) {
+    // 4. Initialize cache with longest units first to allow sub-string reuse
+    for (final unit in sortedUnits) {
       bool found = false;
-      for (final entry in wordCache.entries) {
-        final cachedWord = entry.key;
-        final index = cachedWord.indexOf(word);
+      for (final entry in unitCache.entries) {
+        final cachedUnit = entry.key;
+        final index = cachedUnit.indexOf(unit);
         if (index != -1) {
-          // Reuse the first version of the cached word
-          wordCache[word] = [
-            entry.value.first.sublist(index, index + word.length),
+          // Reuse the first version of the cached unit
+          unitCache[unit] = [
+            entry.value.first.sublist(index, index + unit.length),
           ];
           found = true;
           break;
         }
       }
       if (!found) {
-        final nodes = createNewWordNodes(word, 0);
-        wordCache[word] = [nodes];
+        final nodes = createNewUnitNodes(unit, 0);
+        unitCache[unit] = [nodes];
         ensureInternalEdges(nodes);
       }
     }
 
-    // 5. Build the graph by linking words in phrases
+    // 5. Build the graph by linking units in phrases
     WordClockUtils.forEachTime(language, (time, phrase) {
-      final words = phrase.split(' ').where((w) => w.isNotEmpty).toList();
+      List<String> units;
+      if (language.atomizePhrases) {
+        units = phrase.split('').where((c) => c != ' ').toList();
+      } else {
+        units = phrase.split(' ').where((w) => w.isNotEmpty).toList();
+      }
+
       Node? prevNode;
 
-      for (final word in words) {
-        // Find a version of this word that doesn't create a cycle
+      for (final unit in units) {
+        // Find a version of this unit that doesn't create a cycle
         List<Node>? selectedNodes;
-        for (final version in wordCache[word]!) {
+        for (final version in unitCache[unit]!) {
           if (prevNode == null ||
               !_pathExists(graph, version.first, prevNode)) {
             selectedNodes = version;
@@ -99,13 +117,13 @@ class DependencyGraphBuilder {
 
         if (selectedNodes == null) {
           // Create a new version (retry)
-          int retryIndex = wordCache[word]!.length;
-          selectedNodes = createNewWordNodes(word, retryIndex);
-          wordCache[word]!.add(selectedNodes);
+          int retryIndex = unitCache[unit]!.length;
+          selectedNodes = createNewUnitNodes(unit, retryIndex);
+          unitCache[unit]!.add(selectedNodes);
           ensureInternalEdges(selectedNodes);
         }
 
-        // Link prevNode to the start of the word
+        // Link prevNode to the start of the unit
         if (prevNode != null) {
           graph[prevNode]!.add(selectedNodes.first);
         }

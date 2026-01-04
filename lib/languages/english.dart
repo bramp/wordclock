@@ -54,17 +54,16 @@ final englishLanguage = WordClockLanguage(
   defaultGrid: WordGrid.fromLetters(
     width: 11,
     letters:
-        "ITEISLFIVEF"
-        "HALFQUARTER"
-        "ETENDTWENTY"
-        "TWENTYFIVEC"
-        "APASTETODCC"
-        "EIGHTELEVEN"
-        "FIVEXFOURPM"
-        "FFNINEMONEU"
-        "SEVENSIXTEN"
-        "THREETWELVE"
-        "RTWOMO'CLOCK",
+        "ITEISDTENLF"
+        "ARQUARTERFM"
+        "TWENTYFIVED"
+        "TOHALFCPAST"
+        "TWELVEEIGHT"
+        "FIVETWONINE"
+        "LSEVENMEONE"
+        "XELEVENFTEN"
+        "RCSIXPTHREE"
+        "FOURDO'CLOCK",
   ),
   timeCheckGrid: WordGrid.fromLetters(
     width: 11,

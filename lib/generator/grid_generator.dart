@@ -14,6 +14,7 @@ class GridGenerator {
     required int width,
     int? seed,
     WordClockLanguage? language,
+    int targetHeight = 0,
   }) {
     final Random random = seed != null ? Random(seed) : Random(0);
     final lang = language ?? WordClockLanguages.byId['en']!;
@@ -32,6 +33,7 @@ class GridGenerator {
       random,
       paddingAlphabet: padding,
       requiresPadding: lang.requiresPadding,
+      targetHeight: targetHeight,
     );
   }
 }

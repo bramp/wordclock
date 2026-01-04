@@ -42,6 +42,10 @@ final class WordClockLanguage {
   /// between them in the grid. Languages like Japanese and Chinese typically don't.
   final bool requiresPadding;
 
+  /// Whether phrases should be split into individual character nodes (atoms)
+  /// for the dependency graph. This increases character reuse.
+  final bool atomizePhrases;
+
   WordClockLanguage({
     required this.id,
     required this.languageCode,
@@ -55,5 +59,6 @@ final class WordClockLanguage {
     this.padding,
     this.minuteIncrement = 5,
     this.requiresPadding = true,
+    this.atomizePhrases = false,
   }) : _defaultGrid = defaultGrid;
 }

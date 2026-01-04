@@ -11,6 +11,7 @@ class GridLayout {
     Random random, {
     required String paddingAlphabet,
     bool requiresPadding = true,
+    int targetHeight = 0,
   }) {
     final paddingCells = WordGrid.splitIntoCells(paddingAlphabet);
     final session = _GridLayoutSession(
@@ -20,6 +21,7 @@ class GridLayout {
       random: random,
       paddingCells: paddingCells,
       requiresPadding: requiresPadding,
+      targetHeight: targetHeight,
     );
     return session.generate();
   }
@@ -45,6 +47,7 @@ class _GridLayoutSession {
   final Random random;
   final List<String> paddingCells;
   final bool requiresPadding;
+  final int targetHeight;
 
   final List<String> _cells = [];
   List<_GridItem> _currentLineItems = [];
@@ -60,6 +63,7 @@ class _GridLayoutSession {
     required this.random,
     required this.paddingCells,
     this.requiresPadding = true,
+    this.targetHeight = 0,
   }) {
     _firstNode = orderedResult.isNotEmpty ? orderedResult.first : null;
     _lastNode = orderedResult.isNotEmpty ? orderedResult.last : null;
@@ -69,9 +73,23 @@ class _GridLayoutSession {
     int i = 0;
     Node? lastWordLastNode;
 
+    // Estimate line length (in cells) to hit targetHeight
+    double targetCellsPerLine = width.toDouble();
+    if (targetHeight > 0) {
+      int totalCells =
+          orderedResult.length -
+          orderedResult.where((n) => _isApostrophe(n.char)).length;
+      targetCellsPerLine = totalCells / targetHeight;
+      // Ensure we don't try to fit more than fits
+      if (targetCellsPerLine > width) targetCellsPerLine = width.toDouble();
+    }
+
     while (i < orderedResult.length) {
       final wordNodes = _findNextWordBlock(i);
-      final int wordLength = wordNodes.length;
+      // Word length in cells
+      final int wordCellLength = wordNodes
+          .where((n) => !_isApostrophe(n.char))
+          .length;
 
       // Check if we need a gap between lastWordLastNode and wordNodes.first
       if (requiresPadding &&
@@ -80,22 +98,43 @@ class _GridLayoutSession {
         _addGapIfNecessary();
       }
 
-      // Check fit for the ENTIRE word
-      if (_currentLineLength + wordLength > width) {
+      // Decide whether to wrap to next line.
+      bool shouldWrap = false;
+      if (_currentLineLength + wordCellLength > width) {
+        shouldWrap = true;
+      } else if (targetHeight > 0 && _currentLineLength > 0) {
+        if (_currentLineLength >= targetCellsPerLine) {
+          shouldWrap = true;
+        }
+      }
+
+      if (shouldWrap) {
         _flushLine(isLastLine: false);
       }
 
       // Add word characters
       for (final wn in wordNodes) {
         _currentLineItems.add(_GridItem(wn.char, wn));
+        if (!_isApostrophe(wn.char)) {
+          _currentLineLength += 1;
+        }
       }
-      _currentLineLength += wordLength;
       lastWordLastNode = wordNodes.last;
 
-      i += wordLength;
+      i += wordNodes.length;
     }
 
     _flushLine(isLastLine: true);
+
+    // Add extra padding lines if we are still short of targetHeight
+    if (targetHeight > 0) {
+      int currentHeight = _cells.length ~/ width;
+      while (currentHeight < targetHeight) {
+        _cells.addAll(GridLayout._generatePadding(width, random, paddingCells));
+        currentHeight++;
+      }
+    }
+
     return _cells;
   }
 
@@ -218,6 +257,8 @@ class _GridLayoutSession {
     }
     return units;
   }
+
+  bool _isApostrophe(String char) => char == "'" || char == "’";
 }
 
 /// Represents a single character in the grid during the layout process.

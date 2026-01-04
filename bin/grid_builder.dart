@@ -124,18 +124,17 @@ void main(List<String> args) {
     int finalSeed = seed ?? 0;
 
     if (targetHeight > 0) {
-      // Search for a seed that matches targetHeight
+      // Search for a seed that hits targetHeight
       bool found = false;
       final startSeed = seed ?? 0;
-      // Limit iterations to prevent infinite loop
-      for (int s = startSeed; s < startSeed + 10000; s++) {
+      for (int s = startSeed; s < startSeed + 100; s++) {
         cells = GridGenerator.generate(
           width: gridWidth,
           seed: s,
           language: language,
+          targetHeight: targetHeight,
         );
-        final h = cells.length ~/ gridWidth;
-        if (h == targetHeight) {
+        if (cells.length ~/ gridWidth == targetHeight) {
           finalSeed = s;
           found = true;
           break;
@@ -143,13 +142,7 @@ void main(List<String> args) {
       }
       if (!found) {
         print(
-          'Warning: Could not find grid with height $targetHeight within 10000 seeds starting from $startSeed.',
-        );
-        // Fallback to initial generation
-        cells = GridGenerator.generate(
-          width: gridWidth,
-          seed: startSeed,
-          language: language,
+          'Warning: Could not find grid with height $targetHeight within 100 seeds starting from $startSeed.',
         );
       }
     } else {
@@ -160,27 +153,25 @@ void main(List<String> args) {
       );
     }
 
-    final height = cells.length ~/ gridWidth;
-
-    print('\n/// AUTOMATICALLY GENERATED PREVIEW');
-    print('/// Seed: $finalSeed');
-    print('  defaultGrid: WordGrid.fromLetters(');
-    print('    width: $gridWidth,');
-
     // Check if merging produces a different length
     final mergedCells = WordGrid.splitIntoCells(
       cells.join(''),
       mergeApostrophes: true,
     );
-    if (mergedCells.length != cells.length) {
-      print('    mergeApostrophes: false,');
-    }
 
+    final currentHeight = mergedCells.length ~/ gridWidth;
+
+    print('\n/// AUTOMATICALLY GENERATED PREVIEW');
+    print('/// Seed: $finalSeed');
+    print('  defaultGrid: WordGrid.fromLetters(');
+    print('    width: $gridWidth,');
     print('    letters:');
-    for (int i = 0; i < height; i++) {
+    for (int i = 0; i < currentHeight; i++) {
       // Manual escaping logic if needed, but here simple quote escaping
       // Note: we assume no newlines in cells
-      final line = cells.sublist(i * gridWidth, (i + 1) * gridWidth).join('');
+      final line = mergedCells
+          .sublist(i * gridWidth, (i + 1) * gridWidth)
+          .join('');
       final escapedLine = line.replaceAll('"', r'\"');
       print('        "$escapedLine"');
     }
