@@ -32,31 +32,22 @@ final englishLanguage = WordClockLanguage(
   displayName: 'English',
   description: null,
   timeToWords: EnglishTimeToWords(),
-  paddingAlphabet: 'LASAMPMACDCXSFERUSEK',
-  timeCheckGrid: WordGrid.fromLetters(
+  paddingAlphabet: 'ACDEFLMPRSUX',
+  defaultGrid: WordGrid.fromLetters(
     width: 11,
     letters:
-        'ITLISASAMPM'
-        'ACQUARTERDC'
-        'TWENTYFIVEX'
-        'HALFSTENFTO'
-        'PASTERUNINE'
-        'ONESIXTHREE'
-        'FOURFIVETWO'
-        'EIGHTELEVEN'
-        'SEVENTWELVE'
-        'TENSEO\'CLOCK',
+        "ITEISLFIVEF"
+        "HALFQUARTER"
+        "ETENDTWENTY"
+        "TWENTYFIVEC"
+        "APASTETODCC"
+        "EIGHTELEVEN"
+        "FIVEXFOURPM"
+        "FFNINEMONEU"
+        "SEVENSIXTEN"
+        "THREETWELVE"
+        "RTWOMO'CLOCK",
   ),
-  minuteIncrement: 5,
-);
-
-final englishDigitalLanguage = WordClockLanguage(
-  id: 'E3',
-  languageCode: 'en-US-x-digital',
-  displayName: 'English',
-  description: 'Digital',
-  timeToWords: EnglishDigitalTimeToWords(),
-  paddingAlphabet: 'LASAMPMACDCXSFERUSEK',
   timeCheckGrid: WordGrid.fromLetters(
     width: 11,
     letters:
