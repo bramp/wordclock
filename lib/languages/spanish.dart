@@ -13,20 +13,18 @@ final spanishLanguage = WordClockLanguage(
   defaultGrid: WordGrid.fromLetters(
     width: 11,
     letters:
-        "ESLLANUNAEP"
-        "SONSOOLASOM"
-        "CUATRODOCEO"
-        "SDOSSNUEVEM"
-        "OOCHOLONCES"
-        "SEISEOSIETE"
-        "TRESPMENOSY"
-        "CINCOAMENOS"
-        "YMSSDIEZIPM"
-        "MMENOSPYPPO"
+        "SONTRESPLAS"
+        "SIETECUATRO"
+        "LDOCEOOCHOI"
+        "SEISPONUEVE"
+        "TRESONCEDOS"
+        "UNAAMENOSYO"
+        "VEINTICINCO"
+        "MENOSYIDIEZ"
+        "MENOSYNDIEZ"
+        "VEINTICINCO"
         "CINCOCUARTO"
-        "EDIEZMEDIAP"
-        "EVEINTESLPM"
-        "VEINTICINCO",
+        "MEDIAVEINTE",
   ),
   timeCheckGrid: WordGrid.fromLetters(
     width: 11,

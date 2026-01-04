@@ -130,7 +130,6 @@ class SettingsController extends ChangeNotifier {
 
   Set<int> _calculateAllActiveIndices() {
     final Set<int> all = {};
-    // We only need to check one day
     WordClockUtils.forEachTime(_currentLanguage, (_, phrase) {
       final units = _currentLanguage.tokenize(phrase);
       all.addAll(_currentGrid.getIndices(units));

@@ -1,6 +1,20 @@
 import 'package:wordclock/generator/graph_types.dart';
 
+/// An exporter that converts a [Graph] into a DOT format string,
+/// which can be visualized using Graphviz.
 class DotExporter {
+  /// Exports the given [graph] to a DOT string.
+  ///
+  /// The output includes:
+  /// - Nodes grouped into clusters by their word.
+  /// - Sequential edges within words.
+  /// - Dependency edges between words.
+  ///
+  /// Example:
+  /// ```dart
+  /// final dot = DotExporter.export(graph);
+  /// // Use 'dot -Tpng graph.dot -o graph.png' to visualize.
+  /// ```
   static String export(Graph graph) {
     final sb = StringBuffer();
     sb.writeln('digraph G {');
@@ -51,6 +65,10 @@ class DotExporter {
     return sb.toString();
   }
 
+  /// Generates a unique identifier for a [Node] to be used in the DOT file.
+  ///
+  /// Uses the node's hash code to ensure uniqueness while remaining a valid
+  /// DOT identifier.
   static String _nodeId(Node node) {
     return 'n${node.hashCode.toString().replaceAll('-', 'n')}';
   }

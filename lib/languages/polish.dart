@@ -3,7 +3,7 @@ import 'package:wordclock/logic/polish_time_to_words.dart';
 import 'package:wordclock/model/word_grid.dart';
 
 final polishLanguage = WordClockLanguage(
-  id: 'pl',
+  id: 'PL',
   languageCode: 'pl-PL',
   displayName: 'Polski',
   englishName: 'Polish',

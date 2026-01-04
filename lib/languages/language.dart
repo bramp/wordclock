@@ -63,9 +63,15 @@ final class WordClockLanguage {
   }) : _defaultGrid = defaultGrid;
 
   /// Tokenizes a phrase into units based on this language's configuration.
+  ///
+  /// Examples:
+  ///   atomizePhrases = false:
+  ///     tokenize('IT IS FIVE') => ['IT', 'IS', 'FIVE']
+  ///   atomizePhrases = true:
+  ///     tokenize('IT IS FIVE') => ['I', 'T', 'I', 'S', 'F', 'I', 'V', 'E']
   List<String> tokenize(String phrase) {
     if (atomizePhrases) {
-      return phrase.replaceAll(' ', '').split('');
+      return WordGrid.splitIntoCells(phrase.replaceAll(' ', ''));
     }
     return phrase.split(' ').where((w) => w.isNotEmpty).toList();
   }

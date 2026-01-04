@@ -1,6 +1,21 @@
 import 'package:wordclock/generator/graph_types.dart';
 
+/// An exporter that converts a [Graph] into a Mermaid diagram string.
+///
+/// Mermaid diagrams can be rendered in many Markdown viewers (like GitHub).
 class MermaidExporter {
+  /// Exports the given [graph] to a Mermaid flowchart string.
+  ///
+  /// The output includes:
+  /// - Nodes grouped into subgraphs by their word.
+  /// - Sequential arrows within words.
+  /// - Dependency arrows between words.
+  ///
+  /// Example:
+  /// ```dart
+  /// final mermaid = MermaidExporter.export(graph);
+  /// // Paste the output into a Mermaid-compatible Markdown viewer.
+  /// ```
   static String export(Graph graph) {
     final sb = StringBuffer();
     sb.writeln('graph LR');
@@ -46,6 +61,9 @@ class MermaidExporter {
     return sb.toString();
   }
 
+  /// Generates a unique identifier for a [Node] to be used in the Mermaid diagram.
+  ///
+  /// Mermaid IDs must be alphanumeric and unique.
   static String _nodeId(Node node) {
     // Mermaid IDs can't have certain characters, and should be unique
     return 'n${node.hashCode.toString().replaceAll('-', 'n')}';

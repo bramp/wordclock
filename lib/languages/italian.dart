@@ -13,20 +13,19 @@ final italianLanguage = WordClockLanguage(
   defaultGrid: WordGrid.fromLetters(
     width: 11,
     letters:
-        "SONOLLEZKZO"
-        "BDODICIDUEB"
-        "CNOVECOTTOB"
-        "QUATTROSEIR"
-        "SETTEETRELA"
-        "OUNDICIKÈCB"
-        "L’UNAAEMENOA"
-        "OKCINQUESCE"
-        "MENOZDIECIS"
-        "EOMEZZAMENO"
+        "ÈOL’UNASONOL"
+        "LEKCQUATTRO"
+        "SEIOTTONOVE"
+        "SETTETREDUE"
+        "DODICIKMENO"
+        "VENTICINQUE"
+        "AELBMENOCBZ"
+        "DIECIRMENOE"
+        "UNDICIZMENO"
+        "ERUNAQUARTO"
+        "VENTICINQUE"
         "CINQUEDIECI"
-        "EUNOSQUARTO"
-        "RRZZEVENTIE"
-        "VENTICINQUE",
+        "ZMEZZAVENTI",
   ),
   timeCheckGrid: WordGrid.fromLetters(
     width: 11,

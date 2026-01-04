@@ -10,21 +10,20 @@ final englishAlternativeLanguage = WordClockLanguage(
   description: 'Alternative',
   timeToWords: EnglishAlternativeTimeToWords(),
   paddingAlphabet: 'ACDEFLMPRSUX',
-  // Seed: 1
+  // Seed: 53
   defaultGrid: WordGrid.fromLetters(
     width: 11,
     letters:
-        "QUITFISXPFF"
-        "FHALFARTERM"
-        "QUARTERTENC"
-        "TWENTYFIVEE"
-        "PXFPASTATOF"
-        "EIGHTELEVEN"
-        "DSIXDDFOURR"
-        "NINETWELVES"
-        "THREEXFIVEA"
-        "ONESEVENTWO"
-        "ALO'CLOCKTEN",
+        "QUITRISDALC"
+        "QUARTERRTER"
+        "TWENTYFIVEM"
+        "TENXFTOHALF"
+        "PASTMTHREEF"
+        "TENEONEFIVE"
+        "NINEELEVENE"
+        "SEVENTWELVE"
+        "SIXTWOEIGHT"
+        "FOURUO'CLOCK",
   ),
   timeCheckGrid: WordGrid.fromLetters(
     width: 11,

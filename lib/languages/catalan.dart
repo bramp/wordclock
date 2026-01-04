@@ -13,17 +13,17 @@ final catalanLanguage = WordClockLanguage(
   defaultGrid: WordGrid.fromLetters(
     width: 11,
     letters:
-        "SÓNODOSLESZ"
-        "DOTZETRESNP"
-        "QUARTSÉSDLA"
-        "UNZNQUARTDI"
-        "MENYSZCINCU"
-        "D'EONZEUNADE"
-        "RODEUDOTZEU"
-        "DDUESPANOUR"
-        "QUATREEASET"
-        "SISTRESVUIT"
-        "IMENYSACINC",
+        "ÉSOLANUNAZR"
+        "SÓNUDOSLESO"
+        "TRESMQUARTS"
+        "DOTZEEMENYS"
+        "ZPCINCCINCP"
+        "DEUVUITPSET"
+        "UQUATREDUES"
+        "ANDOTZEMDEU"
+        "SISNOUTRESD'"
+        "ONZEEUMENYS"
+        "ERIACINCUNA",
   ),
   timeCheckGrid: WordGrid.fromLetters(
     width: 11,

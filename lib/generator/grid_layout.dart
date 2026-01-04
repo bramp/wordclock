@@ -2,8 +2,35 @@ import 'dart:math';
 import 'package:wordclock/generator/graph_types.dart';
 import 'package:wordclock/model/word_grid.dart';
 
+/// A layout engine that arranges character nodes into a grid.
+///
+/// It supports two modes:
+/// 1. **Greedy**: Fills lines as much as possible, moving to the next line
+///    when an atom (word) doesn't fit.
+/// 2. **Balanced (DP)**: Attempts to distribute atoms across a fixed number
+///    of lines ([targetHeight]) to minimize the variance in line lengths.
 class GridLayout {
   /// Generates a list of cells of the given [width] from the [orderedResult] nodes.
+  ///
+  /// Parameters:
+  /// - [width]: The fixed width of the grid.
+  /// - [orderedResult]: A topologically sorted list of character nodes.
+  /// - [graph]: The dependency graph used to identify mandatory gaps.
+  /// - [random]: Random number generator for padding.
+  /// - [paddingAlphabet]: Characters to use for filling empty spaces.
+  /// - [requiresPadding]: Whether to insert gaps between words in a phrase.
+  /// - [targetHeight]: If > 0, attempts to fit the grid into exactly this many rows.
+  ///
+  /// Example:
+  /// ```dart
+  /// final cells = GridLayout.generateCells(
+  ///   11,
+  ///   nodes,
+  ///   graph,
+  ///   random,
+  ///   paddingAlphabet: 'ABCDEFGHIJKLMNOPQRSTUVWXYZ',
+  /// );
+  /// ```
   static List<String> generateCells(
     int width,
     List<Node> orderedResult,
@@ -26,6 +53,9 @@ class GridLayout {
     return session.generate();
   }
 
+  /// Generates a random sequence of padding characters of the given [length].
+  ///
+  /// If [paddingCells] is empty, it returns a list of spaces.
   static List<String> _generatePadding(
     int length,
     Random random,
@@ -40,6 +70,9 @@ class GridLayout {
 }
 
 /// Internal state for a single grid generation pass.
+///
+/// This class encapsulates the logic for packing atoms into lines,
+/// handling mandatory gaps, and applying padding.
 class _GridLayoutSession {
   final int width;
   final List<Node> orderedResult;
@@ -69,6 +102,11 @@ class _GridLayoutSession {
     _lastNode = orderedResult.isNotEmpty ? orderedResult.last : null;
   }
 
+  /// Orchestrates the generation process.
+  ///
+  /// It first identifies "atom blocks" (sequences of characters that must stay
+  /// together), then uses either a Dynamic Programming approach (if [targetHeight]
+  /// is set) or a greedy approach to pack them into lines.
   List<String> generate() {
     // 1. Collect all atom blocks.
     final List<List<Node>> atomBlocks = [];
@@ -98,16 +136,21 @@ class _GridLayoutSession {
 
     // 3. Helper to calculate cell length of a block.
     int getCellLength(List<Node> block) {
-      return block.where((n) => !_isApostrophe(n.char)).length;
+      return block.length;
     }
 
     final List<int> blockCellLengths = atomBlocks.map(getCellLength).toList();
 
+    int totalMandatoryGaps = gapAfter.where((g) => g).length;
+
     double targetCellsPerLine = 0;
     if (targetHeight > 0) {
-      int totalCells =
-          orderedResult.length -
-          orderedResult.where((n) => _isApostrophe(n.char)).length;
+      int totalCells = orderedResult.length;
+
+      // ignore: avoid_print
+      print(
+        'GridLayout: totalCells=$totalCells, mandatoryGaps=$totalMandatoryGaps, targetHeight=$targetHeight',
+      );
 
       targetCellsPerLine = totalCells / targetHeight;
       // Ensure we don't try to fit more than fits
@@ -194,10 +237,7 @@ class _GridLayoutSession {
       for (int i = start; i < end; i++) {
         // Add atom characters
         for (final wn in atomBlocks[i]) {
-          _currentLineItems.add(_GridItem(wn.char, wn));
-          if (!_isApostrophe(wn.char)) {
-            _currentLineLength += 1;
-          }
+          _addItem(wn.char, wn);
         }
         // Add gap if needed and NOT at end of line
         if (i < end - 1 && gapAfter[i]) {
@@ -210,6 +250,9 @@ class _GridLayoutSession {
     return _cells;
   }
 
+  /// Packs atoms into lines using a greedy approach.
+  ///
+  /// This is used when [targetHeight] is not specified or when balanced packing fails.
   List<String> _generateGreedy(
     List<List<Node>> atomBlocks,
     List<bool> gapAfter,
@@ -235,10 +278,7 @@ class _GridLayoutSession {
       }
 
       for (final wn in atomBlocks[i]) {
-        _currentLineItems.add(_GridItem(wn.char, wn));
-        if (!_isApostrophe(wn.char)) {
-          _currentLineLength += 1;
-        }
+        _addItem(wn.char, wn);
       }
     }
 
@@ -256,12 +296,20 @@ class _GridLayoutSession {
   }
 
   /// Finds the next contiguous block of nodes belonging to the same atom (word or character).
+  ///
+  /// An atom block is a sequence of nodes that must stay together on the same line.
+  /// It checks for:
+  /// 1. Same word.
+  /// 2. Sequential character indices.
+  /// 3. Direct edge in the dependency graph.
   List<Node> _findNextAtomBlock(int startIndex) {
     int j = startIndex + 1;
     while (j < orderedResult.length) {
       final prev = orderedResult[j - 1];
       final curr = orderedResult[j];
-      if (prev.word != curr.word || !graph[prev]!.contains(curr)) {
+      if (prev.word != curr.word ||
+          prev.charIndex + 1 != curr.charIndex ||
+          !graph[prev]!.contains(curr)) {
         break;
       }
       j++;
@@ -270,20 +318,38 @@ class _GridLayoutSession {
   }
 
   /// Adds a mandatory gap between atoms if they are in the same phrase.
+  ///
+  /// If the gap doesn't fit on the current line, it flushes the line first.
   void _addGapIfNecessary() {
     if (_currentLineItems.isNotEmpty) {
       if (_currentLineLength + 1 > width) {
         _flushLine(isLastLine: false);
       } else {
-        _currentLineItems.add(
-          _GridItem(GridLayout._generatePadding(1, random, paddingCells).first),
-        );
-        _currentLineLength += 1;
+        _addPadding(1);
       }
     }
   }
 
+  /// Adds a single character item to the current line.
+  void _addItem(String char, Node? node) {
+    _currentLineItems.add(_GridItem(char, node));
+    _currentLineLength += 1;
+  }
+
+  /// Adds random padding characters to the current line.
+  void _addPadding(int length) {
+    final padding = GridLayout._generatePadding(length, random, paddingCells);
+    for (final p in padding) {
+      _currentLineItems.add(_GridItem(p));
+      _currentLineLength += 1;
+    }
+  }
+
   /// Flushes the current line to the buffer, applying padding and pinning.
+  ///
+  /// If the line is shorter than [width], it fills the remaining space with padding.
+  /// It also handles "pinning" the first and last nodes of the entire grid to the
+  /// top-left and bottom-right corners respectively, if possible.
   void _flushLine({required bool isLastLine}) {
     if (_currentLineItems.isEmpty) return;
 
@@ -374,8 +440,6 @@ class _GridLayoutSession {
     }
     return atoms;
   }
-
-  bool _isApostrophe(String char) => char == "'" || char == "’";
 }
 
 /// Represents a single character in the grid during the layout process.

@@ -1,7 +1,31 @@
 import 'dart:math';
 import 'package:wordclock/generator/graph_types.dart';
 
+/// A utility for performing a topological sort on a [Graph].
+///
+/// The sort determines a linear ordering of nodes such that for every directed
+/// edge $u \to v$, node $u$ comes before $v$ in the ordering.
 class TopologicalSorter {
+  /// Performs a topological sort on the given [graph].
+  ///
+  /// This implementation uses Kahn's algorithm with a greedy heuristic:
+  /// when multiple nodes are "ready" (have an in-degree of 0), it prioritizes
+  /// the children of the node just processed. This helps keep characters of
+  /// the same word together in the final grid.
+  ///
+  /// Parameters:
+  /// - [graph]: The dependency graph to sort.
+  /// - [random]: Optional random number generator for shuffling ready nodes,
+  ///   allowing for different valid grid layouts from the same graph.
+  ///
+  /// Returns a list of [Node]s in topological order.
+  ///
+  /// Throws an [Exception] if a cycle is detected in the graph.
+  ///
+  /// Example:
+  /// ```dart
+  /// final sortedNodes = TopologicalSorter.sort(graph, random: Random(42));
+  /// ```
   static List<Node> sort(Graph graph, {Random? random}) {
     final Map<Node, int> inDegree = {};
     for (var node in graph.keys) {
@@ -55,6 +79,7 @@ class TopologicalSorter {
         if (random != null) {
           newlyReady.shuffle(random);
         }
+        // TODO Should readyNodes also be shuffled?
         readyNodes.insertAll(0, newlyReady);
       }
     }
