@@ -1,9 +1,4 @@
-import 'dart:math';
-
-import 'package:wordclock/generator/dependency_graph.dart';
 import 'package:wordclock/generator/grid_layout.dart';
-import 'package:wordclock/generator/topological_sort.dart';
-
 import 'package:wordclock/languages/language.dart';
 import 'package:wordclock/languages/all.dart';
 
@@ -11,49 +6,37 @@ import 'package:wordclock/languages/all.dart';
 class GridGenerator {
   /// Generates a list of characters (cells) for a word clock grid.
   ///
-  /// The generation process follows these steps:
-  /// 1. Builds a dependency graph of all words/phrases in the [language].
-  /// 2. Performs a topological sort on the graph to determine a valid linear order.
-  /// 3. Uses [GridLayout] to arrange these nodes into a grid of the specified [width].
-  /// 4. Fills any gaps with characters from the language's padding alphabet.
+  /// Uses a constraint-based algorithm that places words on a 2D grid with
+  /// overlap support, optimizing for compact placement while respecting
+  /// phrase ordering and spacing constraints.
   ///
   /// Parameters:
   /// - [width]: The fixed width of the grid.
   /// - [seed]: Optional seed for random number generation (ensures reproducibility).
   /// - [language]: The language logic to use (defaults to English).
-  /// - [targetHeight]: Optional target height for the grid.
+  /// - [targetHeight]: Target height for the grid (defaults to 10).
   ///
   /// Example:
   /// ```dart
   /// final cells = GridGenerator.generate(
   ///   width: 11,
-  ///   language: English(),
+  ///   language: catalanLanguage,
   ///   seed: 42,
+  ///   targetHeight: 10,
   /// );
   /// ```
   static List<String> generate({
     required int width,
     int? seed,
     WordClockLanguage? language,
-    int targetHeight = 0,
+    int targetHeight = 10,
   }) {
-    final Random random = seed != null ? Random(seed) : Random(0);
     final lang = language ?? WordClockLanguages.byId['en']!;
-    final padding = lang.paddingAlphabet;
 
-    // 1. Build Dependency Graph
-    final graph = DependencyGraphBuilder.build(language: lang);
-    final sortedNodes = TopologicalSorter.sort(
-      graph,
-      random: seed != null ? random : null,
-    );
     return GridLayout.generateCells(
-      width,
-      sortedNodes,
-      graph,
-      random,
-      paddingAlphabet: padding,
-      requiresPadding: lang.requiresPadding,
+      width: width,
+      language: lang,
+      seed: seed ?? 0,
       targetHeight: targetHeight,
     );
   }
