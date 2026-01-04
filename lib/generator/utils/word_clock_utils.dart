@@ -6,16 +6,9 @@ class WordClockUtils {
   /// for the dependency graph and grid layout.
   static Set<String> collectAllWords(WordClockLanguage language) {
     final words = <String>{};
-    final timeConverter = language.timeToWords;
-    final increment = language.minuteIncrement;
-
-    for (int h = 0; h < 24; h++) {
-      for (int m = 0; m < 60; m += increment) {
-        final time = DateTime(2025, 1, 1, h, m);
-        final phrase = timeConverter.convert(time);
-        words.addAll(phrase.split(' ').where((w) => w.isNotEmpty));
-      }
-    }
+    forEachTime(language, (time, phrase) {
+      words.addAll(language.tokenize(phrase));
+    });
     return words;
   }
 

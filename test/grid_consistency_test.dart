@@ -29,7 +29,8 @@ void _checkGrid(WordClockLanguage lang, WordGrid grid) {
     if (phrase.isEmpty) return;
 
     try {
-      final indices = grid.getIndices(phrase);
+      final units = lang.tokenize(phrase);
+      final indices = grid.getIndices(units);
       expect(
         indices,
         isNotEmpty,

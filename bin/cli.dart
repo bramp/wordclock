@@ -79,7 +79,8 @@ void _processLanguage(String lang, int width, int? seed, DateTime now) {
   final phrase = language.timeToWords.convert(now);
   print('Phrase: "$phrase"');
 
-  final activeIndices = grid.getIndices(phrase);
+  final units = language.tokenize(phrase);
+  final activeIndices = grid.getIndices(units);
   _printGrid(grid, activeIndices);
 }
 

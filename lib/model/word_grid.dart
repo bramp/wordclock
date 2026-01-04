@@ -51,31 +51,32 @@ class WordGrid {
     return result;
   }
 
-  /// Calculates the set of indices to light up for the given [phrase].
-  Set<int> getIndices(String phrase) {
-    final words = phrase.split(' ');
+  /// Calculates the set of indices to light up for the given [searchUnits].
+  Set<int> getIndices(List<String> searchUnits) {
     final activeIndices = <int>{};
     int lastEndIndex = -1;
 
-    for (final wordStr in words) {
-      if (wordStr.isEmpty) continue;
+    for (final unit in searchUnits) {
+      if (unit.isEmpty) continue;
 
-      // Find the first occurrence of the word in the cells strictly after the last one ended.
-      final indices = findWordIndices(wordStr, lastEndIndex + 1);
-      final actualIndices =
-          indices ?? findWordIndices(wordStr, 0, reverse: true);
+      // Find the first occurrence of the unit in the cells strictly after the last one ended.
+      var indices = findWordIndices(unit, lastEndIndex + 1);
+      if (indices == null && lastEndIndex != -1) {
+        // Fallback: search from beginning (allowing reverse lookup)
+        indices = findWordIndices(unit, 0, reverse: true);
+      }
 
-      if (actualIndices == null) {
+      if (indices == null) {
         // In debug mode, this will throw. In release, it does nothing and we skip.
         assert(
           false,
-          "Programming Error: Word '$wordStr' not found in grid. Full phrase: '$phrase'",
+          "Programming Error: Unit '$unit' not found in grid. Search units: $searchUnits",
         );
         continue;
       }
 
-      activeIndices.addAll(actualIndices);
-      lastEndIndex = actualIndices.last;
+      activeIndices.addAll(indices);
+      lastEndIndex = indices.last;
     }
     return activeIndices;
   }

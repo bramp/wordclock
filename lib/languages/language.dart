@@ -46,14 +46,14 @@ final class WordClockLanguage {
   /// for the dependency graph. This increases character reuse.
   final bool atomizePhrases;
 
-  WordClockLanguage({
+  const WordClockLanguage({
     required this.id,
     required this.languageCode,
     required this.displayName,
-    required this.englishName,
-    this.description,
+    this.englishName = '',
+    this.description = '',
     required this.timeToWords,
-    required this.paddingAlphabet,
+    this.paddingAlphabet = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ',
     WordGrid? defaultGrid,
     this.timeCheckGrid,
     this.padding,
@@ -61,4 +61,12 @@ final class WordClockLanguage {
     this.requiresPadding = true,
     this.atomizePhrases = false,
   }) : _defaultGrid = defaultGrid;
+
+  /// Tokenizes a phrase into units based on this language's configuration.
+  List<String> tokenize(String phrase) {
+    if (atomizePhrases) {
+      return phrase.replaceAll(' ', '').split('');
+    }
+    return phrase.split(' ').where((w) => w.isNotEmpty).toList();
+  }
 }

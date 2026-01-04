@@ -70,63 +70,184 @@ class _GridLayoutSession {
   }
 
   List<String> generate() {
-    int i = 0;
-    Node? lastAtomLastNode;
+    // 1. Collect all atom blocks.
+    final List<List<Node>> atomBlocks = [];
+    int idx = 0;
+    while (idx < orderedResult.length) {
+      final block = _findNextAtomBlock(idx);
+      atomBlocks.add(block);
+      idx += block.length;
+    }
 
-    // Estimate line length (in cells) to hit targetHeight
-    double targetCellsPerLine = width.toDouble();
+    if (atomBlocks.isEmpty) {
+      // Return empty grid or padding-only grid based on targetHeight.
+      return List.filled(width * targetHeight, ' ');
+    }
+
+    // 2. Determine mandatory gaps between atom blocks.
+    final List<bool> gapAfter = List.filled(atomBlocks.length, false);
+    if (requiresPadding) {
+      for (int i = 0; i < atomBlocks.length - 1; i++) {
+        final lastOfPrev = atomBlocks[i].last;
+        final firstOfNext = atomBlocks[i + 1].first;
+        if (graph[lastOfPrev]!.contains(firstOfNext)) {
+          gapAfter[i] = true;
+        }
+      }
+    }
+
+    // 3. Helper to calculate cell length of a block.
+    int getCellLength(List<Node> block) {
+      return block.where((n) => !_isApostrophe(n.char)).length;
+    }
+
+    final List<int> blockCellLengths = atomBlocks.map(getCellLength).toList();
+
+    double targetCellsPerLine = 0;
     if (targetHeight > 0) {
       int totalCells =
           orderedResult.length -
           orderedResult.where((n) => _isApostrophe(n.char)).length;
+
+      // ignore: avoid_print
+      print('GridLayout: totalCells=$totalCells, targetHeight=$targetHeight');
+
       targetCellsPerLine = totalCells / targetHeight;
       // Ensure we don't try to fit more than fits
       if (targetCellsPerLine > width) targetCellsPerLine = width.toDouble();
     }
+    // 4. Balanced packing using DP? Actually, since we want to hit a specific
+    // targetHeight, let's use a simpler heuristic or a target-aware greedy.
+    // If targetHeight is not set, we just use greedy.
+    if (targetHeight <= 0) {
+      return _generateGreedy(atomBlocks, gapAfter, blockCellLengths);
+    }
 
-    while (i < orderedResult.length) {
-      final atomNodes = _findNextAtomBlock(i);
-      // Atom length in cells
-      final int atomCellLength = atomNodes
-          .where((n) => !_isApostrophe(n.char))
-          .length;
+    // High level DP approach:
+    // cost[i][h] = min cost to pack first i blocks into h lines.
+    // cost[i][h] = min_{j < i} (cost[j][h-1] + line_cost(blocks j..i-1))
+    // where line_cost = (width - usedCells)^2 or something similar.
 
-      // Check if we need a gap between lastAtomLastNode and atomNodes.first
-      if (requiresPadding &&
-          lastAtomLastNode != null &&
-          graph[lastAtomLastNode]!.contains(atomNodes.first)) {
-        _addGapIfNecessary();
-      }
+    final int n = atomBlocks.length;
+    final int h = targetHeight;
 
-      // Decide whether to wrap to next line.
-      bool shouldWrap = false;
-      if (_currentLineLength + atomCellLength > width) {
-        shouldWrap = true;
-      } else if (targetHeight > 0 && _currentLineLength > 0) {
-        if (_currentLineLength >= targetCellsPerLine) {
-          shouldWrap = true;
+    // cost[blocks_count][lines_count]
+    final List<List<double>> dp = List.generate(
+      n + 1,
+      (_) => List.filled(h + 1, double.infinity),
+    );
+    final List<List<int>> parent = List.generate(
+      n + 1,
+      (_) => List.filled(h + 1, -1),
+    );
+
+    dp[0][0] = 0;
+
+    double lineCost(int start, int end) {
+      int cells = 0;
+      for (int k = start; k < end; k++) {
+        cells += blockCellLengths[k];
+        if (k < end - 1 && gapAfter[k]) {
+          cells += 1; // Mandatory gap
         }
       }
+      if (cells > width) return double.infinity;
+      // We want lines to be balanced. Ideal length is totalCells / targetHeight.
+      return pow((width - cells), 2).toDouble();
+    }
 
-      if (shouldWrap) {
+    for (int line = 1; line <= h; line++) {
+      for (int i = 1; i <= n; i++) {
+        for (int j = 0; j < i; j++) {
+          if (dp[j][line - 1] == double.infinity) continue;
+          double lc = lineCost(j, i);
+          if (lc == double.infinity) continue;
+          double totalCost = dp[j][line - 1] + lc;
+          if (totalCost < dp[i][line]) {
+            dp[i][line] = totalCost;
+            parent[i][line] = j;
+          }
+        }
+      }
+    }
+
+    // If we couldn't find a way to pack into exactly `h` lines, fallback to greedy.
+    if (dp[n][h] == double.infinity) {
+      // ignore: avoid_print
+      print(
+        'Warning: Balanced packing failed for targetHeight $h, falling back to greedy.',
+      );
+      return _generateGreedy(atomBlocks, gapAfter, blockCellLengths);
+    }
+
+    // Backtrack to find split points.
+    final List<int> splits = [];
+    int currN = n;
+    for (int currH = h; currH > 0; currH--) {
+      splits.add(currN);
+      currN = parent[currN][currH];
+    }
+    splits.add(0);
+    final splitPoints = splits.reversed.toList();
+
+    // Reconstruct lines.
+    for (int k = 0; k < splitPoints.length - 1; k++) {
+      final start = splitPoints[k];
+      final end = splitPoints[k + 1];
+      for (int i = start; i < end; i++) {
+        // Add atom characters
+        for (final wn in atomBlocks[i]) {
+          _currentLineItems.add(_GridItem(wn.char, wn));
+          if (!_isApostrophe(wn.char)) {
+            _currentLineLength += 1;
+          }
+        }
+        // Add gap if needed and NOT at end of line
+        if (i < end - 1 && gapAfter[i]) {
+          _addGapIfNecessary();
+        }
+      }
+      _flushLine(isLastLine: (k == splitPoints.length - 2));
+    }
+
+    return _cells;
+  }
+
+  List<String> _generateGreedy(
+    List<List<Node>> atomBlocks,
+    List<bool> gapAfter,
+    List<int> blockCellLengths,
+  ) {
+    _cells.clear();
+    _currentLineItems = [];
+    _currentLineLength = 0;
+
+    for (int i = 0; i < atomBlocks.length; i++) {
+      final int atomCellLength = blockCellLengths[i];
+      final bool needsGap = i > 0 && gapAfter[i - 1];
+
+      int spaceNeeded = atomCellLength;
+      if (needsGap) spaceNeeded += 1;
+
+      if (_currentLineLength + spaceNeeded > width) {
         _flushLine(isLastLine: false);
       }
 
-      // Add atom characters to GridItems
-      for (final wn in atomNodes) {
+      if (i > 0 && gapAfter[i - 1]) {
+        _addGapIfNecessary();
+      }
+
+      for (final wn in atomBlocks[i]) {
         _currentLineItems.add(_GridItem(wn.char, wn));
         if (!_isApostrophe(wn.char)) {
           _currentLineLength += 1;
         }
       }
-      lastAtomLastNode = atomNodes.last;
-
-      i += atomNodes.length;
     }
 
     _flushLine(isLastLine: true);
 
-    // Add extra padding rows if we are still short of targetHeight
+    // Add extra padding rows if short
     if (targetHeight > 0) {
       int currentHeight = _cells.length ~/ width;
       while (currentHeight < targetHeight) {
@@ -134,7 +255,6 @@ class _GridLayoutSession {
         currentHeight++;
       }
     }
-
     return _cells;
   }
 

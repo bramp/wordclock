@@ -1,6 +1,7 @@
 import 'package:clock/clock.dart';
 import 'package:flutter/material.dart';
 import 'package:wordclock/model/adjustable_clock.dart';
+import 'package:wordclock/generator/utils/word_clock_utils.dart';
 import 'package:wordclock/settings/theme_settings.dart';
 import 'package:wordclock/generator/grid_generator.dart';
 import 'package:wordclock/model/word_grid.dart';
@@ -130,16 +131,10 @@ class SettingsController extends ChangeNotifier {
   Set<int> _calculateAllActiveIndices() {
     final Set<int> all = {};
     // We only need to check one day
-    final base = DateTime(2024, 1, 1, 0, 0);
-    for (int h = 0; h < 24; h++) {
-      // Step by minuteIncrement to be efficient and match clock behavior
-      final step = _currentLanguage.minuteIncrement;
-      for (int m = 0; m < 60; m += step) {
-        final time = base.add(Duration(hours: h, minutes: m));
-        final phrase = _currentLanguage.timeToWords.convert(time);
-        all.addAll(_currentGrid.getIndices(phrase));
-      }
-    }
+    WordClockUtils.forEachTime(_currentLanguage, (_, phrase) {
+      final units = _currentLanguage.tokenize(phrase);
+      all.addAll(_currentGrid.getIndices(units));
+    });
     return all;
   }
 }

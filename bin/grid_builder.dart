@@ -62,6 +62,7 @@ void main(List<String> args) {
 
     for (final lang in WordClockLanguages.all) {
       final issues = <String>[];
+      final int? cliHeight = targetHeight > 0 ? targetHeight : null;
 
       // Check Default Grid
       if (lang.defaultGrid == null) {
@@ -72,7 +73,7 @@ void main(List<String> args) {
           g,
           lang,
           expectedWidth: gridWidth,
-          expectedHeight: targetHeight > 0 ? targetHeight : null,
+          expectedHeight: cliHeight ?? g.height,
         );
         for (final issue in gridIssues) {
           issues.add('DefaultGrid: $issue');
@@ -86,7 +87,7 @@ void main(List<String> args) {
           g,
           lang,
           expectedWidth: gridWidth,
-          expectedHeight: targetHeight > 0 ? targetHeight : null,
+          expectedHeight: cliHeight ?? g.height,
         );
         for (final issue in gridIssues) {
           issues.add('TimeCheckGrid: $issue');
@@ -211,19 +212,21 @@ List<String> _validateGrid(
   final reportedPaddingIssues = <String>{};
 
   WordClockUtils.forEachTime(language, (time, phrase) {
-    final atoms = phrase.split(' ').where((w) => w.isNotEmpty).toList();
+    final units = language.tokenize(phrase);
     int lastEndIndex = -1;
 
-    for (int i = 0; i < atoms.length; i++) {
-      final atom = atoms[i];
+    for (int i = 0; i < units.length; i++) {
+      final unit = units[i];
 
-      // Find atom strictly after lastEndIndex (mimics WordGrid.getIndices)
-      var atomIndices = grid.findWordIndices(atom, lastEndIndex + 1);
-      atomIndices ??= grid.findWordIndices(atom, 0, reverse: true);
+      // Find unit strictly after lastEndIndex (mimics WordGrid.getIndices)
+      var unitIndices = grid.findWordIndices(unit, lastEndIndex + 1);
+      if (unitIndices == null && lastEndIndex != -1) {
+        unitIndices = grid.findWordIndices(unit, 0, reverse: true);
+      }
 
-      if (atomIndices == null) {
-        if (reportedMissingAtoms.add(atom)) {
-          issues.add('Missing atom "$atom" (in phrase "$phrase")');
+      if (unitIndices == null) {
+        if (reportedMissingAtoms.add(unit)) {
+          issues.add('Missing atom "$unit" (in phrase "$phrase")');
         }
         // Cannot continue checking sequence for this phrase
         break;
@@ -231,24 +234,24 @@ List<String> _validateGrid(
 
       // Check Padding (Check 4)
       if (language.requiresPadding && i > 0) {
-        final matchIndex = atomIndices.first;
-        // Previous atom ended at lastEndIndex. Current atom starts at matchIndex.
+        final matchIndex = unitIndices.first;
+        // Previous unit ended at lastEndIndex. Current unit starts at matchIndex.
         if (matchIndex == lastEndIndex + 1) {
           // Check if they are on the same row
           final prevRow = lastEndIndex ~/ width;
           final currRow = matchIndex ~/ width;
           if (prevRow == currRow) {
-            final pairKey = '${atoms[i - 1]}->$atom';
+            final pairKey = '${units[i - 1]}->$unit';
             if (reportedPaddingIssues.add(pairKey)) {
               issues.add(
-                'No padding/newline between "${atoms[i - 1]}" and "$atom" in grid.',
+                'No padding/newline between "${units[i - 1]}" and "$unit" in grid.',
               );
             }
           }
         }
       }
 
-      lastEndIndex = atomIndices.last;
+      lastEndIndex = unitIndices.last;
     }
   });
 
