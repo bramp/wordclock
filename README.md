@@ -81,13 +81,13 @@ Generates a character grid for a specific language or visualizes the word depend
 **Generate a grid:**
 
 ```bash
-dart run bin/grid_builder.dart --language=en --width=11 --seed=42
+dart run bin/grid_builder.dart --lang=en --width=11 --seed=42
 ```
 
 **Visualize the dependency graph (Mermaid):**
 
 ```bash
-dart run bin/grid_builder.dart --language=en --mermaid
+dart run bin/grid_builder.dart --lang=en --mermaid
 ```
 
 _Copy the output into a [Mermaid Live Editor](https://mermaid.live/) or use a VS Code extension to view the railroad-style diagram._
@@ -95,7 +95,7 @@ _Copy the output into a [Mermaid Live Editor](https://mermaid.live/) or use a VS
 **Visualize the dependency graph (Graphviz DOT):**
 
 ```bash
-dart run bin/grid_builder.dart --language=en --dot > graph.dot
+dart run bin/grid_builder.dart --lang=en --dot > graph.dot
 dot -Tpng graph.dot -o graph.png
 ```
 

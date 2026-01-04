@@ -35,8 +35,8 @@ void main(List<String> args) {
       final h = int.tryParse(arg.substring(9));
       if (h != null) targetHeight = h;
     }
-    if (arg.startsWith('--language=')) {
-      final inputId = arg.substring(11);
+    if (arg.startsWith('--lang=')) {
+      final inputId = arg.substring(7);
       final match = WordClockLanguages.all
           .where((l) => l.id.toLowerCase() == inputId.toLowerCase())
           .toList();
