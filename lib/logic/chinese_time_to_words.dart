@@ -23,51 +23,28 @@ class ChineseSimplifiedTimeToWords implements TimeToWords {
     };
     if (conditional != null) return '$intro $conditional';
 
-    String hStr = switch (h) {
-      0 => '午夜 十二点', // Midnight
-      12 => '下午 十二点', // Noon (Prefix Afternoon as per 12:00 failure)
-      1 => '上午 一点', // 1 AM
-      2 => '上午 二点', // 2 AM
-      3 => '上午 三点', // 3 AM
-      4 => '上午 四点', // 4 AM
-      5 => '上午 五点', // 5 AM
-      6 => '上午 六点', // 6 AM
-      7 => '上午 七点', // 7 AM
-      8 => '上午 八点', // 8 AM
-      9 => '上午 九点', // 9 AM
-      10 => '上午 十点', // 10 AM
-      11 => '上午 十一点', // 11 AM
-      13 => '下午 一点', // 1 PM
-      14 => '下午 二点', // 2 PM
-      15 => '下午 三点', // 3 PM
-      16 => '下午 四点', // 4 PM
-      17 => '下午 五点', // 5 PM
-      18 => '下午 六点', // 6 PM
-      19 => '下午 七点', // 7 PM
-      20 => '下午 八点', // 8 PM
-      21 => '下午 九点', // 9 PM
-      22 => '下午 十点', // 10 PM
-      23 => '下午 十一点', // 11 PM
+    String period = switch (h) {
+      0 => '午夜',
+      < 12 => '上午',
+      _ => '下午',
+    };
+
+    String hStr = switch (h % 12) {
+      0 => '十二点',
+      1 => '一点',
+      2 => '二点',
+      3 => '三点',
+      4 => '四点',
+      5 => '五点',
+      6 => '六点',
+      7 => '七点',
+      8 => '八点',
+      9 => '九点',
+      10 => '十点',
+      11 => '十一点',
       _ => '',
     };
-    // Fallback to %12 if needed (engine logic)
-    if (hStr.isEmpty) {
-      hStr = switch (h % 12) {
-        0 => '十二点',
-        1 => '一点',
-        2 => '两点',
-        3 => '三点',
-        4 => '四点',
-        5 => '五点',
-        6 => '六点',
-        7 => '七点',
-        8 => '八点',
-        9 => '九点',
-        10 => '十点',
-        11 => '十一点',
-        _ => '',
-      };
-    }
+    hStr = '$period $hStr';
 
     String mStr = switch (m) {
       0 => '',
@@ -90,6 +67,7 @@ class ChineseSimplifiedTimeToWords implements TimeToWords {
 
     // Engine order is Intro -> Exact -> Delta
     // Hours 2, 4, 6, 10 are split in grid/conditionals -> Space. Others merged -> No Space.
+    // TODO This seems odd, we should double check this is actualy needed.
     final List<int> splitHours = [2, 4, 6, 10];
     final separator = (m == 30 && !splitHours.contains(h % 12)) ? '' : ' ';
     return '$intro $hStr$separator$mStr'.trim().replaceAll('  ', ' ');
@@ -114,53 +92,28 @@ class ChineseTraditionalTimeToWords implements TimeToWords {
     };
     if (conditional != null) return '現在 時間 $conditional';
 
-    String hStr = switch (h) {
-      0 => '午夜 十二點', // Midnight
-      12 => '下午 十二點', // Noon
-      1 => '上午 一點',
-      2 => '上午 二點',
-      3 => '上午 三點',
-      4 => '上午 四點',
-      5 => '上午 五點',
-      6 => '上午 六點',
-      7 => '上午 七點',
-      8 => '上午 八點',
-      9 => '上午 九點',
-      10 => '上午 十點',
-      11 => '上午 十一點',
-      13 => '下午 一點',
-      14 => '下午 二點',
-      15 => '下午 三點',
-      16 => '下午 四點',
-      17 => '下午 五點',
-      18 => '下午 六點',
-      19 => '下午 七點',
-      20 => '下午 八點',
-      21 => '下午 九點',
-      22 => '下午 十點',
-      23 => '下午 十一點',
+    String period = switch (h) {
+      0 => '午夜',
+      < 12 => '上午',
+      _ => '下午',
+    };
+
+    String hStr = switch (h % 12) {
+      0 => '十二點',
+      1 => '一點',
+      2 => '二點',
+      3 => '三點',
+      4 => '四點',
+      5 => '五點',
+      6 => '六點',
+      7 => '七點',
+      8 => '八點',
+      9 => '九點',
+      10 => '十點',
+      11 => '十一點',
       _ => '',
     };
-    if (hStr.isEmpty) {
-      hStr = switch (h % 12) {
-        0 => '十二點',
-        1 => '一點',
-        2 => '二點',
-        3 => '三點',
-        4 => '四點',
-        5 => '五點',
-        6 => '六點',
-        7 => '七點',
-        8 => '八點',
-        9 => '九點',
-        10 => '十點',
-        11 => '十一點',
-        _ => '',
-      };
-    }
-
-    // Fix for 00:xx (h=0) normal case: needs '午夜 十二點' to match conditional/scriptable style?
-    if (h == 0) hStr = '午夜 十二點';
+    hStr = '$period $hStr';
 
     String mStr = switch (m) {
       0 => '',
