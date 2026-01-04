@@ -10,6 +10,7 @@ final danishLanguage = WordClockLanguage(
   description: null,
   timeToWords: DanishTimeToWords(),
   paddingAlphabet: 'AEIJKLMNOPRSTV',
+  // Seed: 0
   defaultGrid: WordGrid.fromLetters(
     width: 11,
     letters:

@@ -10,6 +10,7 @@ final swedishLanguage = WordClockLanguage(
   description: null,
   timeToWords: SwedishTimeToWords(),
   paddingAlphabet: 'AEFIKLMNOPQRSTUVXYZ',
+  // Seed: 0
   defaultGrid: WordGrid.fromLetters(
     width: 11,
     letters:

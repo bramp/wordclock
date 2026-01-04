@@ -109,9 +109,6 @@ class _GridLayoutSession {
           orderedResult.length -
           orderedResult.where((n) => _isApostrophe(n.char)).length;
 
-      // ignore: avoid_print
-      print('GridLayout: totalCells=$totalCells, targetHeight=$targetHeight');
-
       targetCellsPerLine = totalCells / targetHeight;
       // Ensure we don't try to fit more than fits
       if (targetCellsPerLine > width) targetCellsPerLine = width.toDouble();

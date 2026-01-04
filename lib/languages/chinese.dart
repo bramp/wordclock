@@ -10,6 +10,7 @@ final chineseSimplifiedLanguage = WordClockLanguage(
   description: 'Simplified',
   timeToWords: ChineseSimplifiedTimeToWords(),
   paddingAlphabet: '一七三二五八六分十整是昼点',
+  // Seed: 0
   defaultGrid: WordGrid.fromLetters(
     width: 11,
     letters:
@@ -51,6 +52,7 @@ final chineseTraditionalLanguage = WordClockLanguage(
   description: 'Traditional',
   timeToWords: ChineseTraditionalTimeToWords(),
   paddingAlphabet: '一七三二五八六分十整是晝點',
+  // Seed: 0
   defaultGrid: WordGrid.fromLetters(
     width: 11,
     letters:
