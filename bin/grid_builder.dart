@@ -3,6 +3,7 @@ import 'package:wordclock/generator/dependency_graph.dart';
 import 'package:wordclock/generator/dot_exporter.dart';
 import 'package:wordclock/generator/grid_generator.dart';
 import 'package:wordclock/generator/mermaid_exporter.dart';
+import 'package:wordclock/generator/topological_sort.dart';
 import 'package:wordclock/generator/utils/word_clock_utils.dart';
 import 'package:wordclock/languages/language.dart';
 import 'package:wordclock/languages/all.dart';
@@ -43,7 +44,7 @@ void main(List<String> args) {
     ..addOption(
       'height',
       abbr: 'h',
-      defaultsTo: '0',
+      defaultsTo: '10',
       help: 'Target height of the grid.',
     )
     ..addOption(
@@ -180,26 +181,98 @@ void _generateAndPrintGrid(Config config) {
     int finalSeed = config.seed ?? 0;
 
     if (config.targetHeight > 0) {
-      // Search for a seed that hits targetHeight
-      bool found = false;
+      // 1. Build graph once to check feasibility
+      final graph = DependencyGraphBuilder.build(language: config.language);
+      final sortedNodes = TopologicalSorter.sort(graph);
+
+      // Calculate effective cell count (nodes might represent multi-character cells like "D'")
+      final uniquePositions = <String>{};
+      for (final node in sortedNodes) {
+        uniquePositions.add('${node.word}_${node.charIndex}');
+      }
+      final totalCells = uniquePositions.length;
+      final capacity = config.gridWidth * config.targetHeight;
+
+      print(
+        'Target: ${config.gridWidth}x${config.targetHeight} ($capacity cells)',
+      );
+      print(
+        'Required: $totalCells unique positions (${sortedNodes.length} nodes)',
+      );
+      print('');
+      print('Note: The grid builder does NOT support physical word overlap.');
+      print(
+        '      TimeCheckGrids may be more compact due to hand-optimized word placement.',
+      );
+      print('      If target height cannot be achieved, consider:');
+      print('      1. Using the closest height the builder can achieve');
+      print('      2. Increasing grid width');
+      print('      3. Hand-crafting the grid with overlapping words');
+      print('');
+
+      if (totalCells > capacity) {
+        print(
+          'Warning: Target height ${config.targetHeight} may be impossible.',
+        );
+        print(
+          '         Need at least $totalCells cells, but grid only has $capacity.',
+        );
+      }
+
+      // Search for a seed that hits targetHeight or gets close
+      bool foundExact = false;
+      int bestSeed = config.seed ?? 0;
+      int bestHeight = 9999;
+      int bestHeightDiff = 9999;
+
       final startSeed = config.seed ?? 0;
-      for (int s = startSeed; s < startSeed + 1000; s++) {
+      final maxSearches = 5000; // Search more thoroughly
+
+      for (int s = startSeed; s < startSeed + maxSearches; s++) {
         cells = GridGenerator.generate(
           width: config.gridWidth,
           seed: s,
           language: config.language,
           targetHeight: config.targetHeight,
         );
-        if (cells.length ~/ config.gridWidth == config.targetHeight) {
+        final currentHeight = cells.length ~/ config.gridWidth;
+        final heightDiff = (currentHeight - config.targetHeight).abs();
+
+        if (s % 10 == 0 || heightDiff < bestHeightDiff) {
+          print('Searching for grid... (Seed: $s, Height: $currentHeight)');
+        }
+
+        if (currentHeight == config.targetHeight) {
           finalSeed = s;
-          found = true;
+          bestHeight = currentHeight;
+          foundExact = true;
           break;
         }
+
+        // Track best alternative
+        if (heightDiff < bestHeightDiff) {
+          bestSeed = s;
+          bestHeight = currentHeight;
+          bestHeightDiff = heightDiff;
+        }
       }
-      if (!found) {
-        print(
-          'Warning: Could not find grid with height ${config.targetHeight} within 1000 seeds starting from $startSeed.',
+
+      if (!foundExact) {
+        finalSeed = bestSeed;
+        // Regenerate with best seed
+        cells = GridGenerator.generate(
+          width: config.gridWidth,
+          seed: bestSeed,
+          language: config.language,
+          targetHeight: config.targetHeight,
         );
+        bestHeight = cells.length ~/ config.gridWidth;
+        print(
+          'Warning: Could not find exact height ${config.targetHeight} within $maxSearches seeds.',
+        );
+        print('Best result: Height $bestHeight (seed $bestSeed)');
+      } else {
+        print('Found exact match at seed $finalSeed');
       }
     } else {
       cells = GridGenerator.generate(
