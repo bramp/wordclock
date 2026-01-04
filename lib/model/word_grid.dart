@@ -13,14 +13,14 @@ class WordGrid {
   /// Creates a WordGrid from a string of letters.
   /// Note: This is not a const constructor as it performs merging logic.
   WordGrid.fromLetters({required this.width, required String letters})
-    : cells = _splitIntoCells(letters) {
+    : cells = splitIntoCells(letters) {
     assert(
       cells.length % width == 0,
       'Letters length (${cells.length} after merging) must be a multiple of width ($width)',
     );
   }
 
-  static List<String> _splitIntoCells(String letters) {
+  static List<String> splitIntoCells(String letters) {
     final List<String> result = [];
     for (int i = 0; i < letters.length; i++) {
       final char = letters[i];

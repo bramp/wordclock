@@ -8,7 +8,19 @@ final norwegianLanguage = WordClockLanguage(
   displayName: 'Norsk',
   description: null,
   timeToWords: NorwegianTimeToWords(),
-  paddingAlphabet: 'VMHPÅSUFISLPÅSIDOSNNSTOXAMBPMZBlEGENZNAXS',
+  paddingAlphabet: 'ABDEFGHILMNOPSUVXZl',
+  defaultGrid: WordGrid.fromLetters(
+    width: 11,
+    letters:
+        "KLOKKENEERZ"
+        "FEMKVARTTlU"
+        "OVERPÅUHALV"
+        "ZLELLEVEETT"
+        "FEMlVFlRENI"
+        "VNSEKSSYVTO"
+        "TOLVAITRETl"
+        "FGZHHFGÅTTE",
+  ),
   timeCheckGrid: WordGrid.fromLetters(
     width: 11,
     letters:

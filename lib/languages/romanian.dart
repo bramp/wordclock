@@ -8,7 +8,26 @@ final romanianLanguage = WordClockLanguage(
   displayName: 'Română',
   description: null,
   timeToWords: RomanianTimeToWords(),
-  paddingAlphabet: 'ZPMONAMLABOVU',
+  paddingAlphabet: 'ABLMNOPUVZ',
+  defaultGrid: WordGrid.fromLetters(
+    width: 11,
+    letters:
+        "ESTEOORAZNZ"
+        "DOUĂPBSPREB"
+        "LNOUĂBOPTNU"
+        "PATRUTREIMM"
+        "UNSPREZECEA"
+        "UPUNUŞAPTEN"
+        "VŞASELFĂRĂA"
+        "ZECELPŞIZLV"
+        "NMVDOUĂZECI"
+        "TREIZECIAŞI"
+        "ACINCIVFĂRĂ"
+        "ŞIUDOUĂZECI"
+        "TREIZECILŞI"
+        "CINCIMUNUMV"
+        "ZZSFERTZECE",
+  ),
   timeCheckGrid: WordGrid.fromLetters(
     width: 11,
     letters:

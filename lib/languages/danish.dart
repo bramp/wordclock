@@ -8,7 +8,20 @@ final danishLanguage = WordClockLanguage(
   displayName: 'Dansk',
   description: null,
   timeToWords: DanishTimeToWords(),
-  paddingAlphabet: 'VOSKAMOJEVATAVEMILPMMONALSRRMEA',
+  paddingAlphabet: 'AEIJKLMNOPRSTV',
+  defaultGrid: WordGrid.fromLetters(
+    width: 11,
+    letters:
+        "KLOKKENPERL"
+        "SFEMKVARTTI"
+        "RMTYVEINION"
+        "EMINUTTERSI"
+        "SOVERSHALVL"
+        "ELLEVEETFEM"
+        "IFIRENIOTTE"
+        "SEKSSYVTITO"
+        "VAIITOLVTRE",
+  ),
   timeCheckGrid: WordGrid.fromLetters(
     width: 11,
     letters:

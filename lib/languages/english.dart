@@ -8,7 +8,23 @@ final englishAlternativeLanguage = WordClockLanguage(
   displayName: 'English',
   description: 'Alternative',
   timeToWords: EnglishAlternativeTimeToWords(),
-  paddingAlphabet: 'LASAMPMCDCXSFERUSEK',
+  paddingAlphabet: 'ACDEFLMPRSUX',
+  defaultGrid: WordGrid.fromLetters(
+    width: 11,
+    letters:
+        "ITEISLAFPME"
+        "QUARTERFIVE"
+        "HALFEUTENRA"
+        "CXTWENTYPMS"
+        "TWENTYFIVEA"
+        "UMPASTRTOUD"
+        "EIGHTELEVEN"
+        "FIVEFOURFFL"
+        "RLNINEMONEU"
+        "SEVENSIXTEN"
+        "THREETWELVE"
+        "FTWOUO'CLOCK",
+  ),
   timeCheckGrid: WordGrid.fromLetters(
     width: 11,
     letters:

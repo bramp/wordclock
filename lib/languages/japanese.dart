@@ -8,7 +8,21 @@ final japaneseLanguage = WordClockLanguage(
   displayName: '日本語',
   description: null,
   timeToWords: JapaneseTimeToWords(),
-  paddingAlphabet: '六午前午後一七八分時九二五二一六九四三五分八二六七九時六一八四六九三六二四三一五',
+  paddingAlphabet: '一七三九二五八六分前十午四後時',
+  defaultGrid: WordGrid.fromLetters(
+    width: 11,
+    letters:
+        "現在の時刻は一一時時二"
+        "一時半七時七時半三時八"
+        "三時半時九時九時半二時"
+        "二時半七五時五時半八時"
+        "八時半六時六時半十一時"
+        "十一時半十二時十二時半"
+        "十時十時半四時時まで前"
+        "あと後四二十五分二十分"
+        "五分十五分十分四時半八"
+        "時六五分後分十一八です",
+  ),
   timeCheckGrid: WordGrid.fromLetters(
     width: 11,
     letters:

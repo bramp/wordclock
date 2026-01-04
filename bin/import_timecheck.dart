@@ -88,26 +88,24 @@ void main() async {
       }).toList();
     }
 
-    /// Computes the list of padding characters (unused by any word).
+    /// Computes the list of padding cells (unused by any word).
     List<TimeCheckWord> computePadding(
-      String grid,
+      List<dynamic> gridRows,
       int width,
       List<TimeCheckWord> intro,
       Map<int, List<TimeCheckWord>> exact,
       Map<int, List<TimeCheckWord>> delta,
       Map<int, Map<int, List<TimeCheckWord>>> conditional,
     ) {
-      if (grid.isEmpty || width <= 0) return [];
-
-      final totalChars = grid.length;
-      final covered = List<bool>.filled(totalChars, false);
+      final totalRows = gridRows.length;
+      final covered = List<bool>.filled(totalRows * width, false);
 
       void mark(List<TimeCheckWord>? words) {
         if (words == null) return;
         for (final word in words) {
           final start = word.row * width + word.col;
           for (int i = 0; i < word.span; i++) {
-            if (start + i < totalChars) {
+            if (start + i < totalRows * width) {
               covered[start + i] = true;
             }
           }
@@ -128,16 +126,15 @@ void main() async {
       }
 
       final padding = <TimeCheckWord>[];
-      for (int i = 0; i < totalChars; i++) {
-        if (!covered[i]) {
-          padding.add(
-            TimeCheckWord(
-              text: grid[i],
-              row: i ~/ width,
-              col: i % width,
-              span: 1,
-            ),
-          );
+      for (int r = 0; r < totalRows; r++) {
+        final row = gridRows[r] as List;
+        for (int c = 0; c < width; c++) {
+          final idx = r * width + c;
+          if (!covered[idx]) {
+            padding.add(
+              TimeCheckWord(text: row[c].toString(), row: r, col: c, span: 1),
+            );
+          }
         }
       }
       return padding;
@@ -160,7 +157,7 @@ void main() async {
     );
 
     final padding = computePadding(
-      gridStr,
+      gridRows,
       width,
       intro,
       exact,

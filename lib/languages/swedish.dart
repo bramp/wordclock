@@ -8,7 +8,19 @@ final swedishLanguage = WordClockLanguage(
   displayName: 'Svenska',
   description: null,
   timeToWords: SwedishTimeToWords(),
-  paddingAlphabet: 'TKYSNQENZOLVIPMKAMUSVLXMYKYSFLORI',
+  paddingAlphabet: 'AEFIKLMNOPQRSTUVXYZ',
+  defaultGrid: WordGrid.fromLetters(
+    width: 11,
+    letters:
+        "KLOCKANIÄRY"
+        "FEMKVARTTIO"
+        "TJUGOUIÖVER"
+        "HALVUYELVAO"
+        "ETTZFEMFYRA"
+        "NIOSEXVSJUP"
+        "TIOTOLVTREQ"
+        "UPANTVÅÄTTA",
+  ),
   timeCheckGrid: WordGrid.fromLetters(
     width: 11,
     letters:

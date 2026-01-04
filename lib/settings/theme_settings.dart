@@ -43,10 +43,7 @@ class ThemeSettings {
   );
 
   static const whiteTheme = ThemeSettings(
-    activeGradientColors: [
-      Colors.white,
-      Colors.white,
-    ],
+    activeGradientColors: [Colors.white, Colors.white],
     inactiveColor: Color.fromRGBO(255, 255, 255, 0.1),
     backgroundColor: Colors.black,
   );

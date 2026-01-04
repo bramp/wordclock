@@ -8,20 +8,37 @@ final hebrewLanguage = WordClockLanguage(
   displayName: 'עברית',
   description: null,
   timeToWords: HebrewTimeToWords(),
-  paddingAlphabet: 'ררראמאררששארמאארשותבא',
+  paddingAlphabet: 'mאבוחיםמעצרשתحروब',
+  defaultGrid: WordGrid.fromLetters(
+    width: 11,
+    letters:
+        "רשעתחאबהעשה"
+        "םהנ׀משהרשעm"
+        "םײתשעבראעבש"
+        "ש׀לשבשמחששر"
+        "השימח׀बעשתm"
+        "מהרשעויצחור"
+        "יםםיעבראबחם"
+        "יתםיעבראורو"
+        "םירשעםירשעו"
+        "עותबצםישימח"
+        "תיתצםישימחו"
+        "םישןלשרשמחו"
+        "בmबאबובעברו",
+  ),
   timeCheckGrid: WordGrid.fromLetters(
     width: 11,
     letters:
         'רשעתחארהעשה'
         'הרשערםײתשרא'
         'מארעבראש׀לש'
-        'הנ׀משעבששmח'
+        'הנ׀משעבששמח'
         'השימח׀רעשתש'
-        'שארmםירשעוא'
+        'שארמםירשעוא'
         'הרשעוםישןלש'
-        'עबרוםיעבראו'
-        'יצحוםישיmחו'
-        'אשmחورשותבא',
+        'עברוםיעבראו'
+        'יצחוםישימחו'
+        'אשמחורשותבא',
   ),
   minuteIncrement: 5,
 );

@@ -9,7 +9,7 @@ import 'package:wordclock/languages/english.dart';
 import 'package:wordclock/languages/french.dart';
 import 'package:wordclock/languages/german.dart';
 import 'package:wordclock/languages/greek.dart';
-import 'package:wordclock/languages/hebrew.dart';
+// import 'package:wordclock/languages/hebrew.dart';
 import 'package:wordclock/languages/italian.dart';
 import 'package:wordclock/languages/japanese.dart';
 import 'package:wordclock/languages/norwegian.dart';

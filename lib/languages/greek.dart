@@ -8,7 +8,25 @@ final greekLanguage = WordClockLanguage(
   displayName: 'Ελληνικά',
   description: null,
   timeToWords: GreekTimeToWords(),
-  paddingAlphabet: 'ΧTPHEXEPEHEP',
+  paddingAlphabet: 'AEHKPTXΔΧ',
+  defaultGrid: WordGrid.fromLetters(
+    width: 11,
+    letters:
+        "HKΩPATEINAI"
+        "ENNIAENTEKA"
+        "ΔEΞIEΦTAMIA"
+        "PHOΧTΩXKHEΧ"
+        "ETEΣΣEPIΣXX"
+        "PTPEIΣEΔYOX"
+        "ΔΩΔEKAΔΧKAI"
+        "ΠAPAΔEIKOΣI"
+        "ΔPΠENTETKAI"
+        "ΠAPAXΧΔEKAH"
+        "PKAIΔKΔMIΣH"
+        "ΠAPAΔEIKOΣI"
+        "EΠENTEKEEΧK"
+        "TETAPTOΔEKA",
+  ),
   timeCheckGrid: WordGrid.fromLetters(
     width: 11,
     letters:

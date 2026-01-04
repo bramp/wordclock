@@ -69,7 +69,8 @@ void main(List<String> args) {
     print('  letters:');
     for (int i = 0; i < height; i++) {
       final line = cells.sublist(i * gridWidth, (i + 1) * gridWidth).join('');
-      print("    '$line'");
+      final escapedLine = line.replaceAll('"', r'\"');
+      print('    "$escapedLine"');
     }
     print('  ),');
     print(');');

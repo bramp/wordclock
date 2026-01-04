@@ -8,7 +8,21 @@ final dutchLanguage = WordClockLanguage(
   displayName: 'Nederlands',
   description: null,
   timeToWords: DutchTimeToWords(),
-  paddingAlphabet: 'KAATZMESPMTHGSAMCOPM',
+  paddingAlphabet: 'ACEGHKMOPSTZ',
+  defaultGrid: WordGrid.fromLetters(
+    width: 11,
+    letters:
+        "HETGISKHOMG"
+        "KWARTCTIENK"
+        "AVIJFGGOVER"
+        "PVOOREHALFC"
+        "ACHTDRIEELF"
+        "NEGENOTIENM"
+        "ATWAALFTWEE"
+        "VIERVIJFZES"
+        "HZEVENMÉÉNE"
+        "TMPTPPPHUUR",
+  ),
   timeCheckGrid: WordGrid.fromLetters(
     width: 11,
     letters:

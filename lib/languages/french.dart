@@ -8,7 +8,27 @@ final frenchLanguage = WordClockLanguage(
   displayName: 'Français',
   description: null,
   timeToWords: FrenchTimeToWords(),
-  paddingAlphabet: 'NORORPMDUSPAM',
+  paddingAlphabet: 'ADEMNOPRSTU',
+  defaultGrid: WordGrid.fromLetters(
+    width: 11,
+    letters:
+        "ILEESTEDEUX"
+        "UHUITTOMIDI"
+        "MINUITANEUF"
+        "MONZEQUATRE"
+        "DDSEPTSIXAT"
+        "USPTROISUAR"
+        "DHEURESUNEA"
+        "HEURESMOINS"
+        "CINQTHEURES"
+        "MOINSNTDIXM"
+        "HEURESUEETN"
+        "DEMIDEMIETU"
+        "RMOINSTCINQ"
+        "DIXLETQUART"
+        "NVINGTTANDP"
+        "OVINGT-CINQ",
+  ),
   timeCheckGrid: WordGrid.fromLetters(
     width: 11,
     letters:

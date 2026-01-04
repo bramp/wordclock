@@ -8,21 +8,38 @@ final italianLanguage = WordClockLanguage(
   displayName: 'Italiano',
   description: null,
   timeToWords: ItalianTimeToWords(),
-  paddingAlphabet: 'RBORERAEOEENIA',
+  paddingAlphabet: 'ABCEKLORSZ',
+  defaultGrid: WordGrid.fromLetters(
+    width: 11,
+    letters:
+        "SONOLLEZKZO"
+        "BDODICIDUEB"
+        "CNOVECOTTOB"
+        "QUATTROSEIR"
+        "SETTEETRELA"
+        "OUNDICIKÈCB"
+        "L’UNAAEMENOA"
+        "OKCINQUESCE"
+        "MENOZDIECIS"
+        "EOMEZZAMENO"
+        "CINQUEDIECI"
+        "EUNOSQUARTO"
+        "RRZZEVENTIE"
+        "VENTICINQUE",
+  ),
   timeCheckGrid: WordGrid.fromLetters(
     width: 11,
     letters:
         'SONORLEBORE'
-        'ÈRL’UNASDUE'
-        'ZTREOTTONOV'
-        'EDIECIUNDIC'
-        'IDODICISETT'
-        'EQUATTROCSE'
-        'ICINQUEAMEN'
-        'OEKUNLQUART'
-        'OVENTICINQU'
-        'EDIECILMEZZ'
-        'A',
+        'ÈRL’UNASDUEZ'
+        'TREOTTONOVE'
+        'DIECIUNDICI'
+        'DODICISETTE'
+        'QUATTROCSEI'
+        'CINQUEAMENO'
+        'EKUNLQUARTO'
+        'VENTICINQUE'
+        'DIECILMEZZA',
   ),
   minuteIncrement: 5,
 );

@@ -8,7 +8,27 @@ final portugueseLanguage = WordClockLanguage(
   displayName: 'Português',
   description: null,
   timeToWords: PortugueseTimeToWords(),
-  paddingAlphabet: 'LYHZLYCAVPMOY',
+  paddingAlphabet: 'ACEHLMOPVYZ',
+  defaultGrid: WordGrid.fromLetters(
+    width: 11,
+    letters:
+        "SÃOEDUASELP"
+        "MHNOVEOITOA"
+        "HONZEQUATRO"
+        "MCSEISSETEC"
+        "TRÊSÉAMEIAY"
+        "NOITEMEIOAO"
+        "VDIAOUMAZPE"
+        "HORAMENOSLP"
+        "VINTEVCEYVE"
+        "CINCOLMENOS"
+        "VINTEPEZDEZ"
+        "HORASMENOSC"
+        "VINTEOEYDEZ"
+        "HMEIAUMAZZV"
+        "QUARTOVINTE"
+        "HLYAEHCINCO",
+  ),
   timeCheckGrid: WordGrid.fromLetters(
     width: 11,
     letters:

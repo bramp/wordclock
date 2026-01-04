@@ -8,7 +8,29 @@ final russianLanguage = WordClockLanguage(
   displayName: 'Русский',
   description: null,
   timeToWords: RussianTimeToWords(),
-  paddingAlphabet: 'ДЕАМЯР',
+  paddingAlphabet: 'АДМРЯ',
+  defaultGrid: WordGrid.fromLetters(
+    width: 11,
+    letters:
+        "ВОАСЕМЬДВАЯ"
+        "ДВЕОДИНЯЯДД"
+        "НАДЦАТЬЧАСЯ"
+        "ТРИЧЕРТЫМРЕ"
+        "ЧАСАШЕСТЬМЯ"
+        "ЧАСОВРМДВАД"
+        "ПЯТНАДСОРОК"
+        "АТРИДРЦАТЬР"
+        "АПЯТЬДДЕСЯТ"
+        "ЧАСОВМАДЕДА"
+        "ВЯТЬРЧАСОВД"
+        "ДЕЯМРСЯТЬРД"
+        "ЧАСОВДЯДВАД"
+        "АДЕРМММСЯТЬ"
+        "ПЯТНАДСОРОК"
+        "ТРИДМЦАТЬЯР"
+        "ПЯТЬРДЕСЯТР"
+        "ЯПЯТЬЯМИНУТ",
+  ),
   timeCheckGrid: WordGrid.fromLetters(
     width: 11,
     letters:

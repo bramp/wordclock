@@ -154,4 +154,3 @@ class EnglishAlternativeTimeToWords extends _BaseEnglishTimeToWords {
     _ => "",
   };
 }
-

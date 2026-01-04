@@ -7,7 +7,7 @@ final polishLanguage = WordClockLanguage(
   languageCode: 'pl-PL',
   displayName: 'Polski',
   timeToWords: PolishTimeToWords(),
-  paddingAlphabet: 'AĄBCĆDEĘFGHIJKLŁMNŃOÓPQRSŚTUVWXYZŹŻ',
+  paddingAlphabet: 'ABCDEFGHIJKLMNOPQRSTUWXYZÓĄĆĘŃŚŻ',
   minuteIncrement: 5,
   defaultGrid: WordGrid.fromLetters(
     width: 11,

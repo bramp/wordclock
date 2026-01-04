@@ -8,7 +8,30 @@ final czechLanguage = WordClockLanguage(
   displayName: 'Čeština',
   description: null,
   timeToWords: CzechTimeToWords(),
-  paddingAlphabet: 'ANEED',
+  paddingAlphabet: 'ADEN',
+  defaultGrid: WordGrid.fromLetters(
+    width: 11,
+    letters:
+        "JENDEVĚTDAN"
+        "DDDVANÁCTNE"
+        "EDJEDENÁCTD"
+        "JEDNANOSMED"
+        "ASEDMAŠESTE"
+        "JSOUEDVĚTŘI"
+        "ČTYŘIAEADAE"
+        "EDVACETNULA"
+        "EAEPADESÁTN"
+        "NTŘICETDEDD"
+        "ČTYŘICETDNA"
+        "NNPĚTDANDEN"
+        "DESETDESETN"
+        "DVACETENULA"
+        "EPADESÁTAAN"
+        "NNPATNÁCTAN"
+        "ENNTŘICETNN"
+        "ČTYŘICETNED"
+        "AEEEENDNPĚT",
+  ),
   timeCheckGrid: WordGrid.fromLetters(
     width: 11,
     letters:

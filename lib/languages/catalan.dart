@@ -8,7 +8,22 @@ final catalanLanguage = WordClockLanguage(
   displayName: 'Català',
   description: null,
   timeToWords: CatalanTimeToWords(),
-  paddingAlphabet: 'RMANCINCUE\'TUONZSAUNPIC',
+  paddingAlphabet: 'ADEMNOPRUZ',
+  defaultGrid: WordGrid.fromLetters(
+    width: 11,
+    letters:
+        "SÓNODOSLESZ"
+        "DOTZETRESNP"
+        "QUARTSÉSDLA"
+        "UNZNQUARTDI"
+        "MENYSZCINCU"
+        "D'EONZEUNADE"
+        "RODEUDOTZEU"
+        "DDUESPANOUR"
+        "QUATREEASET"
+        "SISTRESVUIT"
+        "IMENYSACINC",
+  ),
   timeCheckGrid: WordGrid.fromLetters(
     width: 11,
     letters:
@@ -16,13 +31,12 @@ final catalanLanguage = WordClockLanguage(
         'DOSLESNTRES'
         'CINCQUARTSU'
         'MENYSIECINC'
-        'DED\'RUNAONZ'
-        'EDUESTRESET'
-        'DQUATREDOTZ'
-        'EVUITNOUONZ'
-        'ESISAMDEUNP'
-        'MMENYSIACIN'
-        'C',
+        'DED\'RUNAONZE'
+        'DUESTRESETD'
+        'QUATREDOTZE'
+        'VUITNOUONZE'
+        'SISAMDEUNPM'
+        'MENYSIACINC',
   ),
   minuteIncrement: 5,
 );

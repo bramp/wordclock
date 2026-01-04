@@ -1,5 +1,6 @@
 import 'dart:math';
 import 'package:wordclock/generator/graph_types.dart';
+import 'package:wordclock/model/word_grid.dart';
 
 class GridLayout {
   /// Generates a list of cells of the given [width] from the [orderedResult] nodes.
@@ -10,12 +11,13 @@ class GridLayout {
     Random random, {
     required String paddingAlphabet,
   }) {
+    final paddingCells = WordGrid.splitIntoCells(paddingAlphabet);
     final session = _GridLayoutSession(
       width: width,
       orderedResult: orderedResult,
       graph: graph,
       random: random,
-      paddingAlphabet: paddingAlphabet,
+      paddingCells: paddingCells,
     );
     return session.generate();
   }
@@ -23,12 +25,12 @@ class GridLayout {
   static List<String> _generatePadding(
     int length,
     Random random,
-    String alphabet,
+    List<String> paddingCells,
   ) {
-    if (alphabet.isEmpty) return List.filled(length, ' ');
+    if (paddingCells.isEmpty) return List.filled(length, ' ');
     return List.generate(
       length,
-      (index) => alphabet[random.nextInt(alphabet.length)],
+      (index) => paddingCells[random.nextInt(paddingCells.length)],
     );
   }
 }
@@ -39,7 +41,7 @@ class _GridLayoutSession {
   final List<Node> orderedResult;
   final Graph graph;
   final Random random;
-  final String paddingAlphabet;
+  final List<String> paddingCells;
 
   final List<String> _cells = [];
   List<_GridItem> _currentLineItems = [];
@@ -53,7 +55,7 @@ class _GridLayoutSession {
     required this.orderedResult,
     required this.graph,
     required this.random,
-    required this.paddingAlphabet,
+    required this.paddingCells,
   }) {
     _firstNode = orderedResult.isNotEmpty ? orderedResult.first : null;
     _lastNode = orderedResult.isNotEmpty ? orderedResult.last : null;
@@ -113,9 +115,7 @@ class _GridLayoutSession {
         _flushLine(isLastLine: false);
       } else {
         _currentLineItems.add(
-          _GridItem(
-            GridLayout._generatePadding(1, random, paddingAlphabet).first,
-          ),
+          _GridItem(GridLayout._generatePadding(1, random, paddingCells).first),
         );
         _currentLineLength += 1;
       }
@@ -134,13 +134,13 @@ class _GridLayoutSession {
         _currentLineItems.first.node == _firstNode) {
       lineCells.addAll(_currentLineItems.map((e) => e.char));
       lineCells.addAll(
-        GridLayout._generatePadding(paddingTotal, random, paddingAlphabet),
+        GridLayout._generatePadding(paddingTotal, random, paddingCells),
       );
     }
     // 2. PIN BOTTOM-RIGHT
     else if (isLastLine && _containsNode(_lastNode)) {
       lineCells.addAll(
-        GridLayout._generatePadding(paddingTotal, random, paddingAlphabet),
+        GridLayout._generatePadding(paddingTotal, random, paddingCells),
       );
       lineCells.addAll(_currentLineItems.map((e) => e.char));
     }
@@ -172,12 +172,12 @@ class _GridLayoutSession {
     final List<String> lineCells = [];
     for (int s = 0; s < units.length; s++) {
       lineCells.addAll(
-        GridLayout._generatePadding(slotPaddings[s], random, paddingAlphabet),
+        GridLayout._generatePadding(slotPaddings[s], random, paddingCells),
       );
       lineCells.addAll(units[s]);
     }
     lineCells.addAll(
-      GridLayout._generatePadding(slotPaddings.last, random, paddingAlphabet),
+      GridLayout._generatePadding(slotPaddings.last, random, paddingCells),
     );
     return lineCells;
   }

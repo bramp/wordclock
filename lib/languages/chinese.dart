@@ -8,7 +8,22 @@ final chineseSimplifiedLanguage = WordClockLanguage(
   displayName: 'Chinese',
   description: 'Simplified',
   timeToWords: ChineseSimplifiedTimeToWords(),
-  paddingAlphabet: '是昼六八一七六五点一六三整三二十分八',
+  paddingAlphabet: '一七三二五八六分十整是昼点',
+  defaultGrid: WordGrid.fromLetters(
+    width: 11,
+    letters:
+        "现在点时间整上午下午分"
+        "一点一点半七点七点半七"
+        "三点一三点半九点九点半"
+        "二点是六五点五点半八点"
+        "八点三十分六点五十一点"
+        "十一点半昼十点四点五一"
+        "三十分午夜分十二点分八"
+        "三十五分二十五分二十分"
+        "五十五分五十分整十五分"
+        "七十分四十五分五四十分"
+        "一昼八整零五分十二点半",
+  ),
   timeCheckGrid: WordGrid.fromLetters(
     width: 11,
     letters:
@@ -32,7 +47,22 @@ final chineseTraditionalLanguage = WordClockLanguage(
   displayName: 'Chinese',
   description: 'Traditional',
   timeToWords: ChineseTraditionalTimeToWords(),
-  paddingAlphabet: '是晝六八一七六五點一六三整三二十分八',
+  paddingAlphabet: '一七三二五八六分十整是晝點',
+  defaultGrid: WordGrid.fromLetters(
+    width: 11,
+    letters:
+        "現在點時間整上午下午分"
+        "一點一點半七點七點半七"
+        "三點一三點半九點九點半"
+        "二點是六五點五點半八點"
+        "八點三十分六點五十一點"
+        "十一點半晝十點四點五一"
+        "三十分午夜分十二點分八"
+        "三十五分二十五分二十分"
+        "五十五分五十分整十五分"
+        "七十分四十五分五四十分"
+        "一晝八整零五分十二點半",
+  ),
   timeCheckGrid: WordGrid.fromLetters(
     width: 11,
     letters:

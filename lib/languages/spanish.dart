@@ -8,7 +8,25 @@ final spanishLanguage = WordClockLanguage(
   displayName: 'Español',
   description: null,
   timeToWords: SpanishTimeToWords(),
-  paddingAlphabet: 'EIOAMANPMLASLO',
+  paddingAlphabet: 'AEILMNOPS',
+  defaultGrid: WordGrid.fromLetters(
+    width: 11,
+    letters:
+        "ESLLANUNAEP"
+        "SONSOOLASOM"
+        "CUATRODOCEO"
+        "SDOSSNUEVEM"
+        "OOCHOLONCES"
+        "SEISEOSIETE"
+        "TRESPMENOSY"
+        "CINCOAMENOS"
+        "YMSSDIEZIPM"
+        "MMENOSPYPPO"
+        "CINCOCUARTO"
+        "EDIEZMEDIAP"
+        "EVEINTESLPM"
+        "VEINTICINCO",
+  ),
   timeCheckGrid: WordGrid.fromLetters(
     width: 11,
     letters:
