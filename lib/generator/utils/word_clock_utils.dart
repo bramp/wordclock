@@ -2,7 +2,8 @@ import 'package:wordclock/languages/language.dart';
 
 class WordClockUtils {
   /// Generates the set of all unique words required to display any time
-  /// supported by the language.
+  /// supported by the language. These words typically serve as the "atoms"
+  /// for the dependency graph and grid layout.
   static Set<String> collectAllWords(WordClockLanguage language) {
     final words = <String>{};
     final timeConverter = language.timeToWords;

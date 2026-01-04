@@ -71,7 +71,7 @@ class _GridLayoutSession {
 
   List<String> generate() {
     int i = 0;
-    Node? lastWordLastNode;
+    Node? lastAtomLastNode;
 
     // Estimate line length (in cells) to hit targetHeight
     double targetCellsPerLine = width.toDouble();
@@ -85,22 +85,22 @@ class _GridLayoutSession {
     }
 
     while (i < orderedResult.length) {
-      final wordNodes = _findNextWordBlock(i);
-      // Word length in cells
-      final int wordCellLength = wordNodes
+      final atomNodes = _findNextAtomBlock(i);
+      // Atom length in cells
+      final int atomCellLength = atomNodes
           .where((n) => !_isApostrophe(n.char))
           .length;
 
-      // Check if we need a gap between lastWordLastNode and wordNodes.first
+      // Check if we need a gap between lastAtomLastNode and atomNodes.first
       if (requiresPadding &&
-          lastWordLastNode != null &&
-          graph[lastWordLastNode]!.contains(wordNodes.first)) {
+          lastAtomLastNode != null &&
+          graph[lastAtomLastNode]!.contains(atomNodes.first)) {
         _addGapIfNecessary();
       }
 
       // Decide whether to wrap to next line.
       bool shouldWrap = false;
-      if (_currentLineLength + wordCellLength > width) {
+      if (_currentLineLength + atomCellLength > width) {
         shouldWrap = true;
       } else if (targetHeight > 0 && _currentLineLength > 0) {
         if (_currentLineLength >= targetCellsPerLine) {
@@ -112,21 +112,21 @@ class _GridLayoutSession {
         _flushLine(isLastLine: false);
       }
 
-      // Add word characters
-      for (final wn in wordNodes) {
+      // Add atom characters to GridItems
+      for (final wn in atomNodes) {
         _currentLineItems.add(_GridItem(wn.char, wn));
         if (!_isApostrophe(wn.char)) {
           _currentLineLength += 1;
         }
       }
-      lastWordLastNode = wordNodes.last;
+      lastAtomLastNode = atomNodes.last;
 
-      i += wordNodes.length;
+      i += atomNodes.length;
     }
 
     _flushLine(isLastLine: true);
 
-    // Add extra padding lines if we are still short of targetHeight
+    // Add extra padding rows if we are still short of targetHeight
     if (targetHeight > 0) {
       int currentHeight = _cells.length ~/ width;
       while (currentHeight < targetHeight) {
@@ -138,8 +138,8 @@ class _GridLayoutSession {
     return _cells;
   }
 
-  /// Finds the next contiguous block of nodes belonging to the same word.
-  List<Node> _findNextWordBlock(int startIndex) {
+  /// Finds the next contiguous block of nodes belonging to the same atom (word or character).
+  List<Node> _findNextAtomBlock(int startIndex) {
     int j = startIndex + 1;
     while (j < orderedResult.length) {
       final prev = orderedResult[j - 1];
@@ -152,7 +152,7 @@ class _GridLayoutSession {
     return orderedResult.sublist(startIndex, j);
   }
 
-  /// Adds a mandatory gap between words if they are in the same phrase.
+  /// Adds a mandatory gap between atoms if they are in the same phrase.
   void _addGapIfNecessary() {
     if (_currentLineItems.isNotEmpty) {
       if (_currentLineLength + 1 > width) {
@@ -203,10 +203,10 @@ class _GridLayoutSession {
     return _currentLineItems.any((item) => item.node == node);
   }
 
-  /// Randomly distributes padding across all slots (before, after, and between units).
+  /// Randomly distributes padding across all slots (before, after, and between atoms).
   List<String> _distributePadding(int paddingTotal) {
-    final units = _groupItemsIntoUnits();
-    final int numSlots = units.length + 1;
+    final atoms = _groupItemsIntoAtoms();
+    final int numSlots = atoms.length + 1;
     final slotPaddings = List.filled(numSlots, 0);
 
     for (int p = 0; p < paddingTotal; p++) {
@@ -214,11 +214,11 @@ class _GridLayoutSession {
     }
 
     final List<String> lineCells = [];
-    for (int s = 0; s < units.length; s++) {
+    for (int s = 0; s < atoms.length; s++) {
       lineCells.addAll(
         GridLayout._generatePadding(slotPaddings[s], random, paddingCells),
       );
-      lineCells.addAll(units[s]);
+      lineCells.addAll(atoms[s]);
     }
     lineCells.addAll(
       GridLayout._generatePadding(slotPaddings.last, random, paddingCells),
@@ -226,36 +226,36 @@ class _GridLayoutSession {
     return lineCells;
   }
 
-  /// Groups items into "units" (contiguous words or single gaps) that shouldn't be split by padding.
-  List<List<String>> _groupItemsIntoUnits() {
-    List<List<String>> units = [];
-    List<String> currentUnit = [];
-    String? currentWord;
+  /// Groups GridItems into "atoms" (contiguous words or single gaps) that shouldn't be split by padding.
+  List<List<String>> _groupItemsIntoAtoms() {
+    List<List<String>> atoms = [];
+    List<String> currentAtom = [];
+    String? currentAtomName;
 
     for (final item in _currentLineItems) {
       if (item.node == null) {
-        if (currentUnit.isNotEmpty) {
-          units.add(currentUnit);
-          currentUnit = [];
-          currentWord = null;
+        if (currentAtom.isNotEmpty) {
+          atoms.add(currentAtom);
+          currentAtom = [];
+          currentAtomName = null;
         }
-        units.add([item.char]);
+        atoms.add([item.char]);
       } else {
-        if (currentWord != null && item.node!.word == currentWord) {
-          currentUnit.add(item.char);
+        if (currentAtomName != null && item.node!.word == currentAtomName) {
+          currentAtom.add(item.char);
         } else {
-          if (currentUnit.isNotEmpty) {
-            units.add(currentUnit);
+          if (currentAtom.isNotEmpty) {
+            atoms.add(currentAtom);
           }
-          currentUnit = [item.char];
-          currentWord = item.node!.word;
+          currentAtom = [item.char];
+          currentAtomName = item.node!.word;
         }
       }
     }
-    if (currentUnit.isNotEmpty) {
-      units.add(currentUnit);
+    if (currentAtom.isNotEmpty) {
+      atoms.add(currentAtom);
     }
-    return units;
+    return atoms;
   }
 
   bool _isApostrophe(String char) => char == "'" || char == "’";

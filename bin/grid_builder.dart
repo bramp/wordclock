@@ -207,23 +207,23 @@ List<String> _validateGrid(
   }
 
   // We use Sets to avoid reporting the same issue multiple times
-  final reportedMissingWords = <String>{};
+  final reportedMissingAtoms = <String>{};
   final reportedPaddingIssues = <String>{};
 
   WordClockUtils.forEachTime(language, (time, phrase) {
-    final words = phrase.split(' ').where((w) => w.isNotEmpty).toList();
+    final atoms = phrase.split(' ').where((w) => w.isNotEmpty).toList();
     int lastEndIndex = -1;
 
-    for (int i = 0; i < words.length; i++) {
-      final word = words[i];
+    for (int i = 0; i < atoms.length; i++) {
+      final atom = atoms[i];
 
-      // Find word strictly after lastEndIndex (mimics WordGrid.getIndices)
-      var wordIndices = grid.findWordIndices(word, lastEndIndex + 1);
-      wordIndices ??= grid.findWordIndices(word, 0, reverse: true);
+      // Find atom strictly after lastEndIndex (mimics WordGrid.getIndices)
+      var atomIndices = grid.findWordIndices(atom, lastEndIndex + 1);
+      atomIndices ??= grid.findWordIndices(atom, 0, reverse: true);
 
-      if (wordIndices == null) {
-        if (reportedMissingWords.add(word)) {
-          issues.add('Missing word "$word" (in phrase "$phrase")');
+      if (atomIndices == null) {
+        if (reportedMissingAtoms.add(atom)) {
+          issues.add('Missing atom "$atom" (in phrase "$phrase")');
         }
         // Cannot continue checking sequence for this phrase
         break;
@@ -231,24 +231,24 @@ List<String> _validateGrid(
 
       // Check Padding (Check 4)
       if (language.requiresPadding && i > 0) {
-        final matchIndex = wordIndices.first;
-        // Previous word ended at lastEndIndex. Current word starts at matchIndex.
+        final matchIndex = atomIndices.first;
+        // Previous atom ended at lastEndIndex. Current atom starts at matchIndex.
         if (matchIndex == lastEndIndex + 1) {
           // Check if they are on the same row
           final prevRow = lastEndIndex ~/ width;
           final currRow = matchIndex ~/ width;
           if (prevRow == currRow) {
-            final pairKey = '${words[i - 1]}->$word';
+            final pairKey = '${atoms[i - 1]}->$atom';
             if (reportedPaddingIssues.add(pairKey)) {
               issues.add(
-                'No padding/newline between "${words[i - 1]}" and "$word" in grid.',
+                'No padding/newline between "${atoms[i - 1]}" and "$atom" in grid.',
               );
             }
           }
         }
       }
 
-      lastEndIndex = wordIndices.last;
+      lastEndIndex = atomIndices.last;
     }
   });
 

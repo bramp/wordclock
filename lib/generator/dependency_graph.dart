@@ -26,36 +26,36 @@ class DependencyGraphBuilder {
       return assignedIndices[key]!;
     }
 
-    // 1. Pre-collect units (either words or characters) from all phrases
-    final Set<String> allUnits = {};
+    // 1. Pre-collect atoms (either words or characters) from all phrases
+    final Set<String> allAtoms = {};
     if (language.atomizePhrases) {
-      // Treat every unique character as a unit
+      // Treat every unique character as an atom
       WordClockUtils.forEachTime(language, (time, phrase) {
         for (int i = 0; i < phrase.length; i++) {
           if (phrase[i] != ' ') {
-            allUnits.add(phrase[i]);
+            allAtoms.add(phrase[i]);
           }
         }
       });
     } else {
-      allUnits.addAll(WordClockUtils.collectAllWords(language));
+      allAtoms.addAll(WordClockUtils.collectAllWords(language));
     }
 
     // 2. Sort by length descending to maximize sub-string reuse
-    final sortedUnits = allUnits.toList()
+    final sortedAtoms = allAtoms.toList()
       ..sort((a, b) => b.length.compareTo(a.length));
 
-    // 3. Cache for unit nodes: unit -> list of versions (each version is a list of nodes)
-    final Map<String, List<List<Node>>> unitCache = {};
+    // 3. Cache for atom nodes: atom -> list of versions (each version is a list of nodes)
+    final Map<String, List<List<Node>>> atomCache = {};
 
-    List<Node> createNewUnitNodes(String unit, int retryIndex) {
+    List<Node> createNewAtomNodes(String atom, int retryIndex) {
       return List.generate(
-        unit.length,
+        atom.length,
         (i) => Node(
-          unit[i],
-          unit,
+          atom[i],
+          atom,
           i,
-          getGlobalIndex(unit[i], unit, i, retryIndex),
+          getGlobalIndex(atom[i], atom, i, retryIndex),
         ),
       );
     }
@@ -71,43 +71,43 @@ class DependencyGraphBuilder {
       }
     }
 
-    // 4. Initialize cache with longest units first to allow sub-string reuse
-    for (final unit in sortedUnits) {
+    // 4. Initialize cache with longest atoms first to allow sub-string reuse
+    for (final atom in sortedAtoms) {
       bool found = false;
-      for (final entry in unitCache.entries) {
-        final cachedUnit = entry.key;
-        final index = cachedUnit.indexOf(unit);
+      for (final entry in atomCache.entries) {
+        final cachedAtom = entry.key;
+        final index = cachedAtom.indexOf(atom);
         if (index != -1) {
-          // Reuse the first version of the cached unit
-          unitCache[unit] = [
-            entry.value.first.sublist(index, index + unit.length),
+          // Reuse the first version of the cached atom
+          atomCache[atom] = [
+            entry.value.first.sublist(index, index + atom.length),
           ];
           found = true;
           break;
         }
       }
       if (!found) {
-        final nodes = createNewUnitNodes(unit, 0);
-        unitCache[unit] = [nodes];
+        final nodes = createNewAtomNodes(atom, 0);
+        atomCache[atom] = [nodes];
         ensureInternalEdges(nodes);
       }
     }
 
-    // 5. Build the graph by linking units in phrases
+    // 5. Build the graph by linking atoms in phrases
     WordClockUtils.forEachTime(language, (time, phrase) {
-      List<String> units;
+      List<String> atoms;
       if (language.atomizePhrases) {
-        units = phrase.split('').where((c) => c != ' ').toList();
+        atoms = phrase.split('').where((c) => c != ' ').toList();
       } else {
-        units = phrase.split(' ').where((w) => w.isNotEmpty).toList();
+        atoms = phrase.split(' ').where((w) => w.isNotEmpty).toList();
       }
 
       Node? prevNode;
 
-      for (final unit in units) {
-        // Find a version of this unit that doesn't create a cycle
+      for (final atom in atoms) {
+        // Find a version of this atom that doesn't create a cycle
         List<Node>? selectedNodes;
-        for (final version in unitCache[unit]!) {
+        for (final version in atomCache[atom]!) {
           if (prevNode == null ||
               !_pathExists(graph, version.first, prevNode)) {
             selectedNodes = version;
@@ -117,13 +117,13 @@ class DependencyGraphBuilder {
 
         if (selectedNodes == null) {
           // Create a new version (retry)
-          int retryIndex = unitCache[unit]!.length;
-          selectedNodes = createNewUnitNodes(unit, retryIndex);
-          unitCache[unit]!.add(selectedNodes);
+          int retryIndex = atomCache[atom]!.length;
+          selectedNodes = createNewAtomNodes(atom, retryIndex);
+          atomCache[atom]!.add(selectedNodes);
           ensureInternalEdges(selectedNodes);
         }
 
-        // Link prevNode to the start of the unit
+        // Link prevNode to the start of the atom
         if (prevNode != null) {
           graph[prevNode]!.add(selectedNodes.first);
         }
