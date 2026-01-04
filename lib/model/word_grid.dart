@@ -25,14 +25,11 @@ class WordGrid {
     required String letters,
     this.mergeApostrophes = true,
   }) : cells = splitIntoCells(letters, mergeApostrophes: mergeApostrophes) {
-    if (cells.length % width != 0) {
-      // TODO: Revert to throw after fixing grids
-      // ignore: avoid_print
-      print(
-        'WARNING: Letters length (${cells.length} after merging) must be a multiple of width ($width). '
-        'Original length: ${letters.length}. Merge apostrophes: $mergeApostrophes',
-      );
-    }
+    assert(
+      cells.length % width == 0,
+      'Letters length (${cells.length} after merging) must be a multiple of width ($width). '
+      'Original length: ${letters.length}. Merge apostrophes: $mergeApostrophes',
+    );
   }
 
   static List<String> splitIntoCells(
@@ -64,15 +61,11 @@ class WordGrid {
       if (wordStr.isEmpty) continue;
 
       // Find the first occurrence of the word in the cells strictly after the last one ended.
-      // We look for a sequence of cells that, when joined, match the word.
-      int matchIndex = _findWord(wordStr, lastEndIndex + 1);
+      final indices = findWordIndices(wordStr, lastEndIndex + 1);
+      final actualIndices =
+          indices ?? findWordIndices(wordStr, 0, reverse: true);
 
-      // If not found sequentially, fallback to finding the last occurrence in the grid
-      if (matchIndex == -1) {
-        matchIndex = _findWord(wordStr, 0, reverse: true);
-      }
-
-      if (matchIndex == -1) {
+      if (actualIndices == null) {
         // In debug mode, this will throw. In release, it does nothing and we skip.
         assert(
           false,
@@ -81,20 +74,28 @@ class WordGrid {
         continue;
       }
 
-      // Add indices for all cells that matched the word.
-      // Note: A single word might span multiple cells, or even a single cell might contain a word.
-      // But typically, a word is a sequence of cells.
-      int cellsUsed = 0;
-      String matched = "";
-      while (matched.length < wordStr.length &&
-          (matchIndex + cellsUsed) < cells.length) {
-        activeIndices.add(matchIndex + cellsUsed);
-        matched += cells[matchIndex + cellsUsed];
-        cellsUsed++;
-      }
-      lastEndIndex = matchIndex + cellsUsed - 1;
+      activeIndices.addAll(actualIndices);
+      lastEndIndex = actualIndices.last;
     }
     return activeIndices;
+  }
+
+  /// Finds the indices used by a single [word] starting from [start].
+  /// Returns null if not found.
+  List<int>? findWordIndices(String word, int start, {bool reverse = false}) {
+    final matchIndex = _findWord(word, start, reverse: reverse);
+    if (matchIndex == -1) return null;
+
+    final indices = <int>[];
+    int cellsUsed = 0;
+    String matched = "";
+    while (matched.length < word.length &&
+        (matchIndex + cellsUsed) < cells.length) {
+      indices.add(matchIndex + cellsUsed);
+      matched += cells[matchIndex + cellsUsed];
+      cellsUsed++;
+    }
+    return indices;
   }
 
   int _findWord(String word, int start, {bool reverse = false}) {

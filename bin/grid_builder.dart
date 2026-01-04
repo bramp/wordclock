@@ -2,6 +2,7 @@ import 'package:wordclock/generator/dependency_graph.dart';
 import 'package:wordclock/generator/dot_exporter.dart';
 import 'package:wordclock/generator/grid_generator.dart';
 import 'package:wordclock/generator/mermaid_exporter.dart';
+import 'package:wordclock/generator/utils/word_clock_utils.dart';
 import 'package:wordclock/languages/language.dart';
 import 'package:wordclock/languages/all.dart';
 import 'package:wordclock/model/word_grid.dart';
@@ -211,112 +212,54 @@ List<String> _validateGrid(
 
   final height = cells.length ~/ width;
   if (expectedHeight != null && height != expectedHeight) {
-    // Only report height mismatch if grid is not jagged,
-    // or if it is jagged, report based on integer division but it might be misleading.
-    // The jagged error usually takes precedence in user's mind.
     issues.add('Height $height != expected $expectedHeight.');
   }
-
-  final timeConverter = language.timeToWords;
-  final increment = language.minuteIncrement;
 
   // We use Sets to avoid reporting the same issue multiple times
   final reportedMissingWords = <String>{};
   final reportedPaddingIssues = <String>{};
 
-  for (int h = 0; h < 24; h++) {
-    for (int m = 0; m < 60; m += increment) {
-      final time = DateTime(2025, 1, 1, h, m);
-      String phrase;
-      try {
-        phrase = timeConverter.convert(time);
-      } catch (e) {
-        issues.add('Error converting time $time: $e');
-        continue;
+  WordClockUtils.forEachTime(language, (time, phrase) {
+    final words = phrase.split(' ').where((w) => w.isNotEmpty).toList();
+    int lastEndIndex = -1;
+
+    for (int i = 0; i < words.length; i++) {
+      final word = words[i];
+
+      // Find word strictly after lastEndIndex (mimics WordGrid.getIndices)
+      var wordIndices = grid.findWordIndices(word, lastEndIndex + 1);
+      wordIndices ??= grid.findWordIndices(word, 0, reverse: true);
+
+      if (wordIndices == null) {
+        if (reportedMissingWords.add(word)) {
+          issues.add('Missing word "$word" (in phrase "$phrase")');
+        }
+        // Cannot continue checking sequence for this phrase
+        break;
       }
 
-      final words = phrase.split(' ').where((w) => w.isNotEmpty).toList();
-      int lastEndIndex = -1;
-
-      for (int i = 0; i < words.length; i++) {
-        final word = words[i];
-
-        // Find word strictly after lastEndIndex (mimics WordGrid.getIndices)
-        int matchIndex = _findWordInGrid(cells, word, lastEndIndex + 1);
-        if (matchIndex == -1) {
-          // Fallback: search from start (reverse)
-          matchIndex = _findWordInGrid(cells, word, 0, reverse: true);
-        }
-
-        if (matchIndex == -1) {
-          if (reportedMissingWords.add(word)) {
-            issues.add('Missing word "$word" (in phrase "$phrase")');
-          }
-          // Cannot continue checking sequence for this phrase
-          break;
-        }
-
-        // Calculate how many cells this word actually consumes
-        int cellLength = 0;
-        String builtWord = "";
-        while (builtWord.length < word.length &&
-            matchIndex + cellLength < cells.length) {
-          builtWord += cells[matchIndex + cellLength];
-          cellLength++;
-        }
-
-        // Check Padding (Check 4)
-        if (i > 0) {
-          // Previous word ended at lastEndIndex.
-          // Current word starts at matchIndex.
-          // If they are physically adjacent:
-          if (matchIndex == lastEndIndex + 1) {
-            // Check if they are on the same row
-            final prevRow = lastEndIndex ~/ width;
-            final currRow = matchIndex ~/ width;
-            if (prevRow == currRow) {
-              final pairKey = '${words[i - 1]}->$word';
-              if (reportedPaddingIssues.add(pairKey)) {
-                issues.add(
-                  'No padding/newline between "${words[i - 1]}" and "$word" in grid.',
-                );
-              }
+      // Check Padding (Check 4)
+      if (i > 0) {
+        final matchIndex = wordIndices.first;
+        // Previous word ended at lastEndIndex. Current word starts at matchIndex.
+        if (matchIndex == lastEndIndex + 1) {
+          // Check if they are on the same row
+          final prevRow = lastEndIndex ~/ width;
+          final currRow = matchIndex ~/ width;
+          if (prevRow == currRow) {
+            final pairKey = '${words[i - 1]}->$word';
+            if (reportedPaddingIssues.add(pairKey)) {
+              issues.add(
+                'No padding/newline between "${words[i - 1]}" and "$word" in grid.',
+              );
             }
           }
         }
-
-        lastEndIndex = matchIndex + cellLength - 1;
       }
+
+      lastEndIndex = wordIndices.last;
     }
-  }
+  });
 
   return issues.toList();
-}
-
-int _findWordInGrid(
-  List<String> cells,
-  String word,
-  int start, {
-  bool reverse = false,
-}) {
-  if (reverse) {
-    for (int i = cells.length - 1; i >= 0; i--) {
-      if (_matchAt(cells, word, i)) return i;
-    }
-  } else {
-    for (int i = start; i < cells.length; i++) {
-      if (_matchAt(cells, word, i)) return i;
-    }
-  }
-  return -1;
-}
-
-bool _matchAt(List<String> cells, String word, int index) {
-  String found = "";
-  int i = index;
-  while (found.length < word.length && i < cells.length) {
-    found += cells[i];
-    i++;
-  }
-  return found == word;
 }

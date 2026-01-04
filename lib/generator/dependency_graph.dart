@@ -1,12 +1,11 @@
 import 'dart:collection';
 import 'package:wordclock/generator/graph_types.dart';
+import 'package:wordclock/generator/utils/word_clock_utils.dart';
 import 'package:wordclock/languages/language.dart';
 
 class DependencyGraphBuilder {
   static Graph build({required WordClockLanguage language}) {
     final Graph graph = {};
-    final timeConverter = language.timeToWords;
-    final increment = language.minuteIncrement;
 
     // Global character counts to keep Node indices unique but stable
     final Map<String, int> charCounts = {};
@@ -28,14 +27,7 @@ class DependencyGraphBuilder {
     }
 
     // 1. Pre-collect all unique words from all possible phrases
-    final Set<String> allWords = {};
-    for (int h = 0; h < 24; h++) {
-      for (int m = 0; m < 60; m += increment) {
-        final time = DateTime(2025, 1, 1, h, m);
-        final phrase = timeConverter.convert(time);
-        allWords.addAll(phrase.split(' ').where((w) => w.isNotEmpty));
-      }
-    }
+    final allWords = WordClockUtils.collectAllWords(language);
 
     // 2. Sort by length descending to maximize sub-string reuse
     final sortedWords = allWords.toList()
@@ -90,41 +82,37 @@ class DependencyGraphBuilder {
     }
 
     // 5. Build the graph by linking words in phrases
-    for (int h = 0; h < 24; h++) {
-      for (int m = 0; m < 60; m += increment) {
-        final time = DateTime(2025, 1, 1, h, m);
-        final phrase = timeConverter.convert(time);
+    WordClockUtils.forEachTime(language, (time, phrase) {
+      final words = phrase.split(' ').where((w) => w.isNotEmpty).toList();
+      Node? prevNode;
 
-        final words = phrase.split(' ').where((w) => w.isNotEmpty).toList();
-        Node? prevNode;
-
-        for (final word in words) {
-          // Find a version of this word that doesn't create a cycle
-          List<Node>? selectedNodes;
-          for (final version in wordCache[word]!) {
-            if (prevNode == null ||
-                !_pathExists(graph, version.first, prevNode)) {
-              selectedNodes = version;
-              break;
-            }
+      for (final word in words) {
+        // Find a version of this word that doesn't create a cycle
+        List<Node>? selectedNodes;
+        for (final version in wordCache[word]!) {
+          if (prevNode == null ||
+              !_pathExists(graph, version.first, prevNode)) {
+            selectedNodes = version;
+            break;
           }
-
-          if (selectedNodes == null) {
-            // Create a new version (retry)
-            int retryIndex = wordCache[word]!.length;
-            selectedNodes = createNewWordNodes(word, retryIndex);
-            wordCache[word]!.add(selectedNodes);
-            ensureInternalEdges(selectedNodes);
-          }
-
-          // Link prevNode to the start of the word
-          if (prevNode != null) {
-            graph[prevNode]!.add(selectedNodes.first);
-          }
-          prevNode = selectedNodes.last;
         }
+
+        if (selectedNodes == null) {
+          // Create a new version (retry)
+          int retryIndex = wordCache[word]!.length;
+          selectedNodes = createNewWordNodes(word, retryIndex);
+          wordCache[word]!.add(selectedNodes);
+          ensureInternalEdges(selectedNodes);
+        }
+
+        // Link prevNode to the start of the word
+        if (prevNode != null) {
+          graph[prevNode]!.add(selectedNodes.first);
+        }
+        prevNode = selectedNodes.last;
       }
-    }
+    });
+
     return graph;
   }
 
