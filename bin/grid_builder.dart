@@ -1,3 +1,4 @@
+import 'package:args/args.dart';
 import 'package:wordclock/generator/dependency_graph.dart';
 import 'package:wordclock/generator/dot_exporter.dart';
 import 'package:wordclock/generator/grid_generator.dart';
@@ -9,136 +10,187 @@ import 'package:wordclock/model/word_grid.dart';
 
 // ignore_for_file: avoid_print
 
+class Config {
+  final int gridWidth;
+  final int? seed;
+  final WordClockLanguage language;
+  final bool outputDot;
+  final bool outputMermaid;
+  final int targetHeight;
+  final bool checkAll;
+
+  Config({
+    required this.gridWidth,
+    this.seed,
+    required this.language,
+    required this.outputDot,
+    required this.outputMermaid,
+    required this.targetHeight,
+    required this.checkAll,
+  });
+}
+
 void main(List<String> args) {
-  int gridWidth = 11; // Default
-  int? seed;
-  WordClockLanguage language = WordClockLanguages.byId['EN']!;
-  bool outputDot = false;
-  bool outputMermaid = false;
+  final parser = ArgParser()
+    ..addFlag('check-all', help: 'Check all languages for grid issues.')
+    ..addOption('seed', help: 'Seed for the random number generator.')
+    ..addOption(
+      'width',
+      abbr: 'w',
+      defaultsTo: '11',
+      help: 'Width of the grid.',
+    )
+    ..addOption(
+      'height',
+      abbr: 'h',
+      defaultsTo: '0',
+      help: 'Target height of the grid.',
+    )
+    ..addOption(
+      'lang',
+      abbr: 'l',
+      defaultsTo: 'EN',
+      help: 'Language ID to use.',
+    )
+    ..addFlag('dot', help: 'Output the dependency graph in DOT format.')
+    ..addFlag('mermaid', help: 'Output the dependency graph in Mermaid format.')
+    ..addFlag(
+      'help',
+      abbr: '?',
+      negatable: false,
+      help: 'Show this help message.',
+    );
 
-  int targetHeight = 0;
-
-  bool checkAll = false;
-
-  for (final arg in args) {
-    if (arg == '--check-all') {
-      checkAll = true;
-    }
-    if (arg.startsWith('--seed=')) {
-      seed = int.tryParse(arg.substring(7));
-    }
-    if (arg.startsWith('--width=')) {
-      final w = int.tryParse(arg.substring(8));
-      if (w != null) gridWidth = w;
-    }
-    if (arg.startsWith('--height=')) {
-      final h = int.tryParse(arg.substring(9));
-      if (h != null) targetHeight = h;
-    }
-    if (arg.startsWith('--lang=')) {
-      final inputId = arg.substring(7);
-      final match = WordClockLanguages.all
-          .where((l) => l.id.toLowerCase() == inputId.toLowerCase())
-          .toList();
-      if (match.isNotEmpty) {
-        language = match.first;
-      } else {
-        print('Error: Unknown language ID "$inputId".');
-        print('Available IDs: ${WordClockLanguages.byId.keys.join(', ')}');
-        return;
-      }
-    }
-    if (arg == '--dot') {
-      outputDot = true;
-    }
-    if (arg == '--mermaid') {
-      outputMermaid = true;
-    }
-  }
-
-  if (checkAll) {
-    if (targetHeight == 0) targetHeight = 10;
-    print('# Grid Status Report (Target Width: $gridWidth)\n');
-
-    final languages = WordClockLanguages.all.toList()
-      ..sort((a, b) => a.id.toLowerCase().compareTo(b.id.toLowerCase()));
-
-    for (final lang in languages) {
-      final issues = <String>[];
-      final int? cliHeight = targetHeight > 0 ? targetHeight : null;
-
-      // Check Default Grid
-      if (lang.defaultGrid == null) {
-        issues.add('Missing defaultGrid.');
-      } else {
-        final g = lang.defaultGrid!;
-        final gridIssues = _validateGrid(
-          g,
-          lang,
-          expectedWidth: gridWidth,
-          expectedHeight: cliHeight ?? g.height,
-        );
-        for (final issue in gridIssues) {
-          issues.add('DefaultGrid: $issue');
-        }
-      }
-
-      // Check TimeCheck Grid
-      if (lang.timeCheckGrid != null) {
-        final g = lang.timeCheckGrid!;
-        final gridIssues = _validateGrid(
-          g,
-          lang,
-          expectedWidth: gridWidth,
-          expectedHeight: cliHeight ?? g.height,
-        );
-        for (final issue in gridIssues) {
-          issues.add('TimeCheckGrid: $issue');
-        }
-      }
-
-      const String reset = '\x1B[0m';
-      const String red = '\x1B[31m';
-      const String green = '\x1B[32m';
-
-      if (issues.isEmpty) {
-        print('$green- [x] **${lang.id}** (${lang.englishName}): OK.$reset');
-      } else {
-        print('$red- [ ] **${lang.id}** (${lang.englishName}):$reset');
-        for (final issue in issues) {
-          print('$red    - $issue$reset');
-        }
-      }
-    }
+  final ArgResults results;
+  try {
+    results = parser.parse(args);
+  } catch (e) {
+    print(e);
+    print(parser.usage);
     return;
   }
 
-  if (outputDot || outputMermaid) {
-    final graph = DependencyGraphBuilder.build(language: language);
-    if (outputDot) {
-      print(DotExporter.export(graph));
-    } else if (outputMermaid) {
-      print(MermaidExporter.export(graph));
-    }
+  if (results['help'] as bool) {
+    print(parser.usage);
     return;
   }
 
+  final inputId = results['lang'] as String;
+  final match = WordClockLanguages.all
+      .where((l) => l.id.toLowerCase() == inputId.toLowerCase())
+      .toList();
+
+  if (match.isEmpty) {
+    print('Error: Unknown language ID "$inputId".');
+    print('Available IDs: ${WordClockLanguages.byId.keys.join(', ')}');
+    return;
+  }
+
+  final config = Config(
+    gridWidth: int.parse(results['width'] as String),
+    seed: int.tryParse(results['seed'] ?? ''),
+    language: match.first,
+    outputDot: results['dot'] as bool,
+    outputMermaid: results['mermaid'] as bool,
+    targetHeight: int.parse(results['height'] as String),
+    checkAll: results['check-all'] as bool,
+  );
+
+  if (config.checkAll) {
+    _runCheckAll(config);
+    return;
+  }
+
+  if (config.outputDot || config.outputMermaid) {
+    _exportGraph(config);
+    return;
+  }
+
+  _generateAndPrintGrid(config);
+}
+
+void _runCheckAll(Config config) {
+  int targetHeight = config.targetHeight == 0 ? 10 : config.targetHeight;
+  print('# Grid Status Report (Target Width: ${config.gridWidth})\n');
+
+  final languages = WordClockLanguages.all.toList()
+    ..sort((a, b) => a.id.toLowerCase().compareTo(b.id.toLowerCase()));
+
+  for (final lang in languages) {
+    final issues = <String>[];
+    final int? cliHeight = targetHeight > 0 ? targetHeight : null;
+
+    // Check Default Grid
+    if (lang.defaultGrid == null) {
+      issues.add('Missing defaultGrid.');
+    } else {
+      final g = lang.defaultGrid!;
+      final gridIssues = _validateGrid(
+        g,
+        lang,
+        expectedWidth: config.gridWidth,
+        expectedHeight: cliHeight ?? g.height,
+      );
+      for (final issue in gridIssues) {
+        issues.add('DefaultGrid: $issue');
+      }
+    }
+
+    // Check TimeCheck Grid
+    if (lang.timeCheckGrid != null) {
+      final g = lang.timeCheckGrid!;
+      final gridIssues = _validateGrid(
+        g,
+        lang,
+        expectedWidth: config.gridWidth,
+        expectedHeight: cliHeight ?? g.height,
+      );
+      for (final issue in gridIssues) {
+        issues.add('TimeCheckGrid: $issue');
+      }
+    }
+
+    const String reset = '\x1B[0m';
+    const String red = '\x1B[31m';
+    const String green = '\x1B[32m';
+
+    if (issues.isEmpty) {
+      print('$green- [x] **${lang.id}** (${lang.englishName}): OK.$reset');
+    } else {
+      print('$red- [ ] **${lang.id}** (${lang.englishName}):$reset');
+      for (final issue in issues) {
+        print('$red    - $issue$reset');
+      }
+    }
+  }
+}
+
+void _exportGraph(Config config) {
+  final graph = DependencyGraphBuilder.build(language: config.language);
+  if (config.outputDot) {
+    print(DotExporter.export(graph));
+  } else if (config.outputMermaid) {
+    print(MermaidExporter.export(graph));
+  }
+}
+
+void _generateAndPrintGrid(Config config) {
   try {
     List<String> cells = [];
-    int finalSeed = seed ?? 0;
+    int finalSeed = config.seed ?? 0;
 
-    if (targetHeight > 0) {
+    if (config.targetHeight > 0) {
       // Search for a seed that hits targetHeight
       bool found = false;
-      final startSeed = seed ?? 0;
-      for (int s = startSeed; s < startSeed + 100; s++) {
+      final startSeed = config.seed ?? 0;
+      for (int s = startSeed; s < startSeed + 1000; s++) {
         cells = GridGenerator.generate(
-          width: gridWidth,
+          width: config.gridWidth,
           seed: s,
-          language: language,
-          targetHeight: targetHeight,
+          language: config.language,
+          targetHeight: config.targetHeight,
         );
-        if (cells.length ~/ gridWidth == targetHeight) {
+        if (cells.length ~/ config.gridWidth == config.targetHeight) {
           finalSeed = s;
           found = true;
           break;
@@ -146,14 +198,14 @@ void main(List<String> args) {
       }
       if (!found) {
         print(
-          'Warning: Could not find grid with height $targetHeight within 100 seeds starting from $startSeed.',
+          'Warning: Could not find grid with height ${config.targetHeight} within 1000 seeds starting from $startSeed.',
         );
       }
     } else {
       cells = GridGenerator.generate(
-        width: gridWidth,
+        width: config.gridWidth,
         seed: finalSeed,
-        language: language,
+        language: config.language,
       );
     }
 
@@ -163,18 +215,16 @@ void main(List<String> args) {
       mergeApostrophes: true,
     );
 
-    final currentHeight = mergedCells.length ~/ gridWidth;
+    final currentHeight = mergedCells.length ~/ config.gridWidth;
 
     print('\n/// AUTOMATICALLY GENERATED PREVIEW');
     print('/// Seed: $finalSeed');
     print('  defaultGrid: WordGrid.fromLetters(');
-    print('    width: $gridWidth,');
+    print('    width: ${config.gridWidth},');
     print('    letters:');
     for (int i = 0; i < currentHeight; i++) {
-      // Manual escaping logic if needed, but here simple quote escaping
-      // Note: we assume no newlines in cells
       final line = mergedCells
-          .sublist(i * gridWidth, (i + 1) * gridWidth)
+          .sublist(i * config.gridWidth, (i + 1) * config.gridWidth)
           .join('');
       final escapedLine = line.replaceAll('"', r'\"');
       print('        "$escapedLine"');
