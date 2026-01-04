@@ -13,14 +13,16 @@ final swedishLanguage = WordClockLanguage(
   defaultGrid: WordGrid.fromLetters(
     width: 11,
     letters:
-        "KLOCKANIÄRY"
-        "FEMKVARTTIO"
-        "TJUGOUIÖVER"
-        "HALVUYELVAO"
-        "ETTZFEMFYRA"
-        "NIOSEXVSJUP"
-        "TIOTOLVTREQ"
-        "UPANTVÅÄTTA",
+        "KLOCKANQUPA"
+        "ÄRNMKVARTMK"
+        "SFEMQTTJUGO"
+        "ZIOQKIEÖVER"
+        "RAHALVPOFEM"
+        "STIOQTOLVKO"
+        "LELVANLESEX"
+        "AÄTTAPFYRAA"
+        "FNYETTTRESO"
+        "LVNIOTVÅSJU",
   ),
   timeCheckGrid: WordGrid.fromLetters(
     width: 11,
