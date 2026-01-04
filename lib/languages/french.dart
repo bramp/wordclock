@@ -13,21 +13,16 @@ final frenchLanguage = WordClockLanguage(
   defaultGrid: WordGrid.fromLetters(
     width: 11,
     letters:
-        "ILOESTDDEUX"
-        "QUATREONZEA"
-        "SIXNEUFSEPT"
-        "UNENMINUITP"
-        "TUHUITTROIS"
-        "NDSTNHEURES"
-        "TMIDIMMOINS"
-        "NVINGT-CINQ"
-        "UTRRHEUREST"
-        "MOINSMDIXSM"
-        "HEURESAMNET"
-        "PDEMIEMOINS"
-        "LEOQUARTDIX"
-        "VINGT-CINQM"
-        "PRCINQVINGT",
+        "ESTROISIXEE"
+        "ILETNEUFNRP"
+        "HEURESUNEUT"
+        "MOINSEPTOMA"
+        "CINQUARTMME"
+        "DIXDEUXAROD"
+        "VINGT-CINQD"
+        "QUATREMIDIA"
+        "HUITDEMIETA"
+        "ONZEMINUITN",
   ),
   timeCheckGrid: WordGrid.fromLetters(
     width: 11,

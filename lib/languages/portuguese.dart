@@ -13,22 +13,16 @@ final portugueseLanguage = WordClockLanguage(
   defaultGrid: WordGrid.fromLetters(
     width: 11,
     letters:
-        "SÃOEDUASELP"
-        "MHNOVEOITOA"
-        "HONZEQUATRO"
-        "MCSEISSETEC"
-        "TRÊSÉAMEIAY"
-        "NOITEMEIOAO"
-        "VDIAOUMAZPE"
-        "HORAMENOSLP"
-        "VINTEVCEYVE"
-        "CINCOLMENOS"
-        "VINTEPEZDEZ"
-        "HORASMENOSC"
-        "VINTEOEYDEZ"
-        "HMEIAUMAZZV"
-        "QUARTOVINTE"
-        "HLYAEHCINCO",
+        "SÃOITONOITE"
+        "EMENOSHORAS"
+        "CINCONZEEEL"
+        "VINTEUMAPOZ"
+        "DEZNOVEMEIO"
+        "QUARTOYDIAM"
+        "UMEIAHAHHEA"
+        "ÉQUATROPMCC"
+        "DUASEISAYAL"
+        "TRÊSETEOPMY",
   ),
   timeCheckGrid: WordGrid.fromLetters(
     width: 11,

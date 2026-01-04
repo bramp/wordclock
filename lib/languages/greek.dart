@@ -13,20 +13,16 @@ final greekLanguage = WordClockLanguage(
   defaultGrid: WordGrid.fromLetters(
     width: 11,
     letters:
-        "HKΩPATEINAI"
-        "ENNIAENTEKA"
-        "ΔEΞIEΦTAMIA"
-        "PHOΧTΩXKHEΧ"
-        "ETEΣΣEPIΣXX"
-        "PTPEIΣEΔYOX"
-        "ΔΩΔEKAΔΧKAI"
-        "ΠAPAΔEIKOΣI"
-        "ΔPΠENTETKAI"
-        "ΠAPAXΧΔEKAH"
-        "PKAIΔKΔMIΣH"
-        "ΠAPAΔEIKOΣI"
-        "EΠENTEKEEΧK"
-        "TETAPTOΔEKA",
+        "EINAIMIΣHKT"
+        "ΩPAEENTEKAΔ"
+        "HKAIΔΩΔEKAX"
+        "ΠENTEIKOΣIX"
+        "ΠAPATPEIΣTP"
+        "ΔEKAEΦTAΔYO"
+        "TETAPTOΧTΩP"
+        "TEΣΣEPIΣΧXP"
+        "ENNIAHXKHEΧ"
+        "MIAΧPTEXEΞI",
   ),
   timeCheckGrid: WordGrid.fromLetters(
     width: 11,

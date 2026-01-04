@@ -94,17 +94,16 @@ final swabianGermanLanguage = WordClockLanguage(
   defaultGrid: WordGrid.fromLetters(
     width: 11,
     letters:
-        "ESEISCHXGIG"
-        "DREIVIERTLÜ"
-        "XFÜNFEDZEHN"
-        "VORNXFNACHA"
-        "HHALBRZWOIE"
-        "ACHTEFÜNFEE"
-        "ELFELNEUNED"
-        "VIEREZWÖLFE"
-        "KTZEHNEOISE"
-        "DREIESECHSE"
-        "GTLNSIEBNEE",
+        "ISCHALBÜAAH"
+        "ESVZEHNEUNE"
+        "FÜNFSIEBNEU"
+        "NACHDFÜNFEÜ"
+        "VORAZWOIEAV"
+        "DREIVIERTLI"
+        "ZWÖLFEACHTE"
+        "SECHSEOISEN"
+        "DREIEEEXGIG"
+        "VIERELFEHÜF",
   ),
   timeCheckGrid: WordGrid.fromLetters(
     width: 11,

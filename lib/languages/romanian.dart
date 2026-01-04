@@ -13,21 +13,16 @@ final romanianLanguage = WordClockLanguage(
   defaultGrid: WordGrid.fromLetters(
     width: 11,
     letters:
-        "ESTEOORAZNZ"
-        "DOUĂPBSPREB"
-        "LNOUĂBOPTNU"
-        "PATRUTREIMM"
-        "UNSPREZECEA"
-        "UPUNUŞAPTEN"
-        "VŞASELFĂRĂA"
-        "ZECELPŞIZLV"
-        "NMVDOUĂZECI"
-        "TREIZECIAŞI"
-        "ACINCIVFĂRĂ"
-        "ŞIUDOUĂZECI"
-        "TREIZECILŞI"
-        "CINCIMUNUMV"
-        "ZZSFERTZECE",
+        "ESTEPATRUNU"
+        "ORAUNŞAPTEO"
+        "ŞISFERTZNZP"
+        "CINCINOUĂBN"
+        "ZECEBBZZVLL"
+        "FĂRĂBNUOVMM"
+        "DOUĂZECIOAB"
+        "TREIZECIPAU"
+        "UNSPREZECEP"
+        "ŞASENLAAOPT",
   ),
   timeCheckGrid: WordGrid.fromLetters(
     width: 11,
