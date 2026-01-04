@@ -5,7 +5,8 @@ import 'package:wordclock/logic/chinese_time_to_words.dart';
 final chineseSimplifiedLanguage = WordClockLanguage(
   id: 'CS',
   languageCode: 'zh-Hans-CN',
-  displayName: 'Chinese',
+  displayName: '简体中文',
+  englishName: 'Chinese',
   description: 'Simplified',
   timeToWords: ChineseSimplifiedTimeToWords(),
   paddingAlphabet: '一七三二五八六分十整是昼点',
@@ -44,7 +45,8 @@ final chineseSimplifiedLanguage = WordClockLanguage(
 final chineseTraditionalLanguage = WordClockLanguage(
   id: 'CT',
   languageCode: 'zh-Hant-TW',
-  displayName: 'Chinese',
+  displayName: '繁體中文',
+  englishName: 'Chinese',
   description: 'Traditional',
   timeToWords: ChineseTraditionalTimeToWords(),
   paddingAlphabet: '一七三二五八六分十整是晝點',

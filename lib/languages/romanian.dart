@@ -6,6 +6,7 @@ final romanianLanguage = WordClockLanguage(
   id: 'RO',
   languageCode: 'ro-RO',
   displayName: 'Română',
+  englishName: 'Romanian',
   description: null,
   timeToWords: RomanianTimeToWords(),
   paddingAlphabet: 'ABLMNOPUVZ',

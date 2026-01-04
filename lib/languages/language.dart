@@ -10,8 +10,12 @@ final class WordClockLanguage {
   /// The BCP 47 language tag (e.g., 'en-US', 'zh-Hans-CN', 'en-US-x-digital').
   final String languageCode;
 
-  /// The name of the language displayed to the user.
+  /// The name of the language displayed to the user (Native Name).
   final String displayName;
+
+  /// The English name of the language (e.g. 'French', 'Japanese').
+  /// TODO: Remove this once we have a proper translation system.
+  final String englishName;
 
   /// A short description of this variant (e.g. 'Standard', 'Alternative').
   final String? description;
@@ -38,6 +42,7 @@ final class WordClockLanguage {
     required this.id,
     required this.languageCode,
     required this.displayName,
+    required this.englishName,
     this.description,
     required this.timeToWords,
     required this.paddingAlphabet,

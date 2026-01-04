@@ -6,6 +6,7 @@ final swedishLanguage = WordClockLanguage(
   id: 'SE',
   languageCode: 'sv-SE',
   displayName: 'Svenska',
+  englishName: 'Swedish',
   description: null,
   timeToWords: SwedishTimeToWords(),
   paddingAlphabet: 'AEFIKLMNOPQRSTUVXYZ',

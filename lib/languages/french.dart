@@ -6,6 +6,7 @@ final frenchLanguage = WordClockLanguage(
   id: 'FR',
   languageCode: 'fr-FR',
   displayName: 'Français',
+  englishName: 'French',
   description: null,
   timeToWords: FrenchTimeToWords(),
   paddingAlphabet: 'ADEMNOPRSTU',

@@ -6,6 +6,7 @@ final norwegianLanguage = WordClockLanguage(
   id: 'NO',
   languageCode: 'nb-NO',
   displayName: 'Norsk',
+  englishName: 'Norwegian',
   description: null,
   timeToWords: NorwegianTimeToWords(),
   paddingAlphabet: 'ABDEFGHILMNOPSUVXZl',

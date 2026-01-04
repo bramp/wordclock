@@ -6,6 +6,7 @@ final czechLanguage = WordClockLanguage(
   id: 'CZ',
   languageCode: 'cs-CZ',
   displayName: 'Čeština',
+  englishName: 'Czech',
   description: null,
   timeToWords: CzechTimeToWords(),
   paddingAlphabet: 'ADEN',

@@ -6,6 +6,7 @@ final dutchLanguage = WordClockLanguage(
   id: 'NL',
   languageCode: 'nl-NL',
   displayName: 'Nederlands',
+  englishName: 'Dutch',
   description: null,
   timeToWords: DutchTimeToWords(),
   paddingAlphabet: 'ACEGHKMOPSTZ',

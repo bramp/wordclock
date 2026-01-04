@@ -6,6 +6,7 @@ final catalanLanguage = WordClockLanguage(
   id: 'CA',
   languageCode: 'ca-ES',
   displayName: 'Català',
+  englishName: 'Catalan',
   description: null,
   timeToWords: CatalanTimeToWords(),
   paddingAlphabet: 'ADEMNOPRUZ',

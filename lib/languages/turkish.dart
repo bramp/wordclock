@@ -6,6 +6,7 @@ final turkishLanguage = WordClockLanguage(
   id: 'TR',
   languageCode: 'tr-TR',
   displayName: 'Türkçe',
+  englishName: 'Turkish',
   description: null,
   timeToWords: TurkishTimeToWords(),
   paddingAlphabet: 'ADIKMPRSY',

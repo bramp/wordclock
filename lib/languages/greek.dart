@@ -6,6 +6,7 @@ final greekLanguage = WordClockLanguage(
   id: 'GR',
   languageCode: 'el-GR',
   displayName: 'Ελληνικά',
+  englishName: 'Greek',
   description: null,
   timeToWords: GreekTimeToWords(),
   paddingAlphabet: 'AEHKPTXΔΧ',

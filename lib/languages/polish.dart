@@ -6,6 +6,7 @@ final polishLanguage = WordClockLanguage(
   id: 'pl',
   languageCode: 'pl-PL',
   displayName: 'Polski',
+  englishName: 'Polish',
   timeToWords: PolishTimeToWords(),
   paddingAlphabet: 'ABCDEFGHIJKLMNOPQRSTUWXYZÓĄĆĘŃŚŻ',
   minuteIncrement: 5,

@@ -6,6 +6,7 @@ final russianLanguage = WordClockLanguage(
   id: 'RU',
   languageCode: 'ru-RU',
   displayName: 'Русский',
+  englishName: 'Russian',
   description: null,
   timeToWords: RussianTimeToWords(),
   paddingAlphabet: 'АДМРЯ',

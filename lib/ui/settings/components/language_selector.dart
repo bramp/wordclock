@@ -95,6 +95,7 @@ class _LanguagePickerSheetState extends State<_LanguagePickerSheet> {
           if (_searchQuery.isEmpty) return true;
           final query = _searchQuery.toLowerCase();
           return l.displayName.toLowerCase().contains(query) ||
+              l.englishName.toLowerCase().contains(query) ||
               (l.description?.toLowerCase().contains(query) ?? false);
         }).toList()..sort((a, b) {
           final nameCompare = a.displayName.compareTo(b.displayName);
@@ -151,13 +152,17 @@ class _LanguagePickerSheetState extends State<_LanguagePickerSheet> {
                   final isSelected =
                       widget.controller.currentLanguage.id == lang.id;
 
+                  final label = lang.displayName == lang.englishName
+                      ? lang.displayName
+                      : '${lang.displayName} (${lang.englishName})';
+
                   return ListTile(
                     contentPadding: const EdgeInsets.symmetric(
                       horizontal: 24,
                       vertical: 4,
                     ),
                     title: Text(
-                      lang.displayName,
+                      label,
                       style: TextStyle(
                         color: isSelected ? Colors.blueAccent : Colors.white,
                         fontWeight: isSelected

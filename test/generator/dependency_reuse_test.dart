@@ -13,6 +13,7 @@ WordClockLanguage createMockLanguage(TimeToWords converter) =>
       id: 'mock',
       languageCode: 'mock',
       displayName: 'Mock',
+      englishName: 'Mock',
       timeToWords: converter,
       paddingAlphabet: 'ABC',
       minuteIncrement: 5,
@@ -205,6 +206,7 @@ void main() {
       id: 'en-test',
       languageCode: 'en-US',
       displayName: 'EnglishTest',
+      englishName: 'EnglishTest',
       timeToWords: NativeEnglishTimeToWords(),
       paddingAlphabet: 'ABC',
     );

@@ -6,6 +6,7 @@ final hebrewLanguage = WordClockLanguage(
   id: 'HE',
   languageCode: 'he-IL',
   displayName: 'עברית',
+  englishName: 'Hebrew',
   description: null,
   timeToWords: HebrewTimeToWords(),
   paddingAlphabet: 'mאבוחיםמעצרשתحروब',

@@ -6,6 +6,7 @@ final spanishLanguage = WordClockLanguage(
   id: 'ES',
   languageCode: 'es-ES',
   displayName: 'Español',
+  englishName: 'Spanish',
   description: null,
   timeToWords: SpanishTimeToWords(),
   paddingAlphabet: 'AEILMNOPS',

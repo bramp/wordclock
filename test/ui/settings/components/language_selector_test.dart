@@ -26,20 +26,21 @@ void main() {
 
     // Now all languages should be visible in the sheet
     // English is present twice (in the selector and in the sheet)
+    // TODO This assumes the app is in English. We should use the current language.
     expect(find.text('English'), findsWidgets);
 
     // Use search to find items instead of scrolling
     await tester.enterText(find.byType(TextField), 'Español');
     await tester.pumpAndSettle();
-    expect(find.widgetWithText(ListTile, 'Español'), findsWidgets);
+    expect(find.widgetWithText(ListTile, 'Español (Spanish)'), findsWidgets);
 
     await tester.enterText(find.byType(TextField), 'Deutsch');
     await tester.pumpAndSettle();
-    expect(find.widgetWithText(ListTile, 'Deutsch'), findsWidgets);
+    expect(find.widgetWithText(ListTile, 'Deutsch (German)'), findsWidgets);
 
     await tester.enterText(find.byType(TextField), '日本語');
     await tester.pumpAndSettle();
-    expect(find.widgetWithText(ListTile, '日本語'), findsWidgets);
+    expect(find.widgetWithText(ListTile, '日本語 (Japanese)'), findsWidgets);
   });
 
   testWidgets('LanguageSelector updates language when tapped', (
@@ -64,7 +65,7 @@ void main() {
     await tester.enterText(find.byType(TextField), '日本語');
     await tester.pumpAndSettle();
 
-    final jpItem = find.widgetWithText(ListTile, '日本語').last;
+    final jpItem = find.widgetWithText(ListTile, '日本語 (Japanese)').last;
     await tester.tap(jpItem);
     await tester.pumpAndSettle();
 

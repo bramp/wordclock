@@ -6,6 +6,7 @@ final japaneseLanguage = WordClockLanguage(
   id: 'JP',
   languageCode: 'ja-JP',
   displayName: '日本語',
+  englishName: 'Japanese',
   description: null,
   timeToWords: JapaneseTimeToWords(),
   paddingAlphabet: '一七三九二五八六分前十午四後時',

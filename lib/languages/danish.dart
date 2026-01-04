@@ -6,6 +6,7 @@ final danishLanguage = WordClockLanguage(
   id: 'DK',
   languageCode: 'da-DK',
   displayName: 'Dansk',
+  englishName: 'Danish',
   description: null,
   timeToWords: DanishTimeToWords(),
   paddingAlphabet: 'AEIJKLMNOPRSTV',
