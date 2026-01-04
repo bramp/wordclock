@@ -60,7 +60,10 @@ void main(List<String> args) {
     if (targetHeight == 0) targetHeight = 10;
     print('# Grid Status Report (Target Width: $gridWidth)\n');
 
-    for (final lang in WordClockLanguages.all) {
+    final languages = WordClockLanguages.all.toList()
+      ..sort((a, b) => a.id.toLowerCase().compareTo(b.id.toLowerCase()));
+
+    for (final lang in languages) {
       final issues = <String>[];
       final int? cliHeight = targetHeight > 0 ? targetHeight : null;
 
