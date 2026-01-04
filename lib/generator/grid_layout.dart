@@ -10,6 +10,7 @@ class GridLayout {
     Graph graph,
     Random random, {
     required String paddingAlphabet,
+    bool requiresPadding = true,
   }) {
     final paddingCells = WordGrid.splitIntoCells(paddingAlphabet);
     final session = _GridLayoutSession(
@@ -18,6 +19,7 @@ class GridLayout {
       graph: graph,
       random: random,
       paddingCells: paddingCells,
+      requiresPadding: requiresPadding,
     );
     return session.generate();
   }
@@ -42,6 +44,7 @@ class _GridLayoutSession {
   final Graph graph;
   final Random random;
   final List<String> paddingCells;
+  final bool requiresPadding;
 
   final List<String> _cells = [];
   List<_GridItem> _currentLineItems = [];
@@ -56,6 +59,7 @@ class _GridLayoutSession {
     required this.graph,
     required this.random,
     required this.paddingCells,
+    this.requiresPadding = true,
   }) {
     _firstNode = orderedResult.isNotEmpty ? orderedResult.first : null;
     _lastNode = orderedResult.isNotEmpty ? orderedResult.last : null;
@@ -70,7 +74,8 @@ class _GridLayoutSession {
       final int wordLength = wordNodes.length;
 
       // Check if we need a gap between lastWordLastNode and wordNodes.first
-      if (lastWordLastNode != null &&
+      if (requiresPadding &&
+          lastWordLastNode != null &&
           graph[lastWordLastNode]!.contains(wordNodes.first)) {
         _addGapIfNecessary();
       }

@@ -31,6 +31,7 @@ class GridGenerator {
       graph,
       random,
       paddingAlphabet: padding,
+      requiresPadding: lang.requiresPadding,
     );
   }
 }

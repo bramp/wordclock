@@ -40,6 +40,7 @@ final chineseSimplifiedLanguage = WordClockLanguage(
         '二十分八四十分三十五分',
   ),
   minuteIncrement: 5,
+  requiresPadding: false,
 );
 
 final chineseTraditionalLanguage = WordClockLanguage(
@@ -80,4 +81,5 @@ final chineseTraditionalLanguage = WordClockLanguage(
         '二十分八四十分三十五分',
   ),
   minuteIncrement: 5,
+  requiresPadding: false,
 );

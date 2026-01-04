@@ -239,7 +239,7 @@ List<String> _validateGrid(
       }
 
       // Check Padding (Check 4)
-      if (i > 0) {
+      if (language.requiresPadding && i > 0) {
         final matchIndex = wordIndices.first;
         // Previous word ended at lastEndIndex. Current word starts at matchIndex.
         if (matchIndex == lastEndIndex + 1) {

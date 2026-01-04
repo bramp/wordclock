@@ -38,6 +38,10 @@ final class WordClockLanguage {
   /// The minute increment this language supports (e.g., 1 or 5).
   final int minuteIncrement;
 
+  /// Whether words in the same phrase require at least one cell of padding (or a newline)
+  /// between them in the grid. Languages like Japanese and Chinese typically don't.
+  final bool requiresPadding;
+
   WordClockLanguage({
     required this.id,
     required this.languageCode,
@@ -50,5 +54,6 @@ final class WordClockLanguage {
     this.timeCheckGrid,
     this.padding,
     this.minuteIncrement = 5,
+    this.requiresPadding = true,
   }) : _defaultGrid = defaultGrid;
 }

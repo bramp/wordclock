@@ -39,4 +39,5 @@ final japaneseLanguage = WordClockLanguage(
         '六十五分二四三一五です',
   ),
   minuteIncrement: 5,
+  requiresPadding: false,
 );
