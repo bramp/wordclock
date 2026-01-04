@@ -18,7 +18,7 @@ void main() {
     expect(result.exitCode, 0, reason: "Grid Builder failed to run");
     expect(
       result.stdout,
-      contains('static final english11x'),
+      contains('defaultGrid: WordGrid.fromLetters('),
       reason: "Output missing GridDefinition",
     );
   });
