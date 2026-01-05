@@ -1,0 +1,70 @@
+<svg width="512" height="512" viewBox="0 0 512 512" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <!-- Radiant Gradient (Pink to Cyan) across the whole icon -->
+    <linearGradient id="dot-gradient" x1="0%" y1="0%" x2="100%" y2="100%" gradientUnits="userSpaceOnUse">
+        <stop offset="0%" style="stop-color:#FF00CC;stop-opacity:1" /> <!-- Pink -->
+        <stop offset="50%" style="stop-color:#333399;stop-opacity:1" /> <!-- Blue -->
+        <stop offset="100%" style="stop-color:#00CCFF;stop-opacity:1" /> <!-- Cyan -->
+    </linearGradient>
+
+    <!-- Glow Filter for Lit Dots -->
+    <filter id="glow" x="-50%" y="-50%" width="200%" height="200%">
+      <feGaussianBlur stdDeviation="8" result="coloredBlur"/>
+      <feMerge>
+        <feMergeNode in="coloredBlur"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+  </defs>
+
+  <!-- Background -->
+  <rect x="0" y="0" width="512" height="512" fill="#000000"/>
+
+  <!--
+    5x5 Grid of Dots
+    Grid Cell Size: 512 / 5 = 102.4
+    Dot Center Offset: 51.2
+
+    Previous radius: 40
+    New radius to reduce gap: 46 (gap will be ~10px total, 5px per side)
+
+    Scale: 0.9 (User preference)
+  -->
+
+  <g stroke="none" transform="translate(256, 256) scale(0.94) translate(-256, -256)">
+    <!-- Row 0: First 3 Lit (0, 1, 2) -->
+    <circle cx="51.2"  cy="51.2" r="44" fill="url(#dot-gradient)" filter="url(#glow)" />
+    <circle cx="153.6" cy="51.2" r="44" fill="url(#dot-gradient)" filter="url(#glow)" />
+    <circle cx="256.0" cy="51.2" r="44" fill="url(#dot-gradient)" filter="url(#glow)" />
+    <circle cx="358.4" cy="51.2" r="44" fill="#222" />
+    <circle cx="460.8" cy="51.2" r="44" fill="#222" />
+
+    <!-- Row 1: All Dark -->
+    <circle cx="51.2"  cy="153.6" r="44" fill="#222" />
+    <circle cx="153.6" cy="153.6" r="44" fill="#222" />
+    <circle cx="256.0" cy="153.6" r="44" fill="#222" />
+    <circle cx="358.4" cy="153.6" r="44" fill="#222" />
+    <circle cx="460.8" cy="153.6" r="44" fill="#222" />
+
+    <!-- Row 2: Middle 3 Lit (1, 2, 3) -->
+    <circle cx="51.2"  cy="256.0" r="44" fill="#222" />
+    <circle cx="153.6" cy="256.0" r="44" fill="url(#dot-gradient)" filter="url(#glow)"/>
+    <circle cx="256.0" cy="256.0" r="44" fill="url(#dot-gradient)" filter="url(#glow)"/>
+    <circle cx="358.4" cy="256.0" r="44" fill="url(#dot-gradient)" filter="url(#glow)"/>
+    <circle cx="460.8" cy="256.0" r="44" fill="#222" />
+
+    <!-- Row 3: All Dark -->
+    <circle cx="51.2"  cy="358.4" r="44" fill="#222" />
+    <circle cx="153.6" cy="358.4" r="44" fill="#222" />
+    <circle cx="256.0" cy="358.4" r="44" fill="#222" />
+    <circle cx="358.4" cy="358.4" r="44" fill="#222" />
+    <circle cx="460.8" cy="358.4" r="44" fill="#222" />
+
+    <!-- Row 4: Last 3 Lit (2, 3, 4) -->
+    <circle cx="51.2"  cy="460.8" r="44" fill="#222" />
+    <circle cx="153.6" cy="460.8" r="44" fill="#222" />
+    <circle cx="256.0" cy="460.8" r="44" fill="url(#dot-gradient)" filter="url(#glow)"/>
+    <circle cx="358.4" cy="460.8" r="44" fill="url(#dot-gradient)" filter="url(#glow)"/>
+    <circle cx="460.8" cy="460.8" r="44" fill="url(#dot-gradient)" filter="url(#glow)"/>
+  </g>
+</svg>
