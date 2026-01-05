@@ -1,10 +1,11 @@
 import 'package:args/args.dart';
-import 'package:wordclock/generator/dependency_graph.dart';
-import 'package:wordclock/generator/dot_exporter.dart';
-import 'package:wordclock/generator/grid_generator.dart';
-import 'package:wordclock/generator/mermaid_exporter.dart';
-import 'package:wordclock/generator/topological_sort.dart';
-import 'package:wordclock/generator/utils/word_clock_utils.dart';
+import 'package:wordclock/generator/backtracking/backtracking_grid_builder.dart';
+import 'package:wordclock/generator/greedy/dependency_graph.dart';
+import 'package:wordclock/generator/greedy/dot_exporter.dart';
+import 'package:wordclock/generator/greedy/greedy_grid_builder.dart';
+import 'package:wordclock/generator/utils/grid_validator.dart';
+import 'package:wordclock/generator/backtracking/word_dependency_graph.dart';
+import 'package:wordclock/generator/backtracking/word_graph_dot_exporter.dart';
 import 'package:wordclock/languages/language.dart';
 import 'package:wordclock/languages/all.dart';
 import 'package:wordclock/model/word_grid.dart';
@@ -16,18 +17,18 @@ class Config {
   final int? seed;
   final WordClockLanguage language;
   final bool outputDot;
-  final bool outputMermaid;
   final int targetHeight;
   final bool checkAll;
+  final String algorithm;
 
   Config({
     required this.gridWidth,
     this.seed,
     required this.language,
     required this.outputDot,
-    required this.outputMermaid,
     required this.targetHeight,
     required this.checkAll,
+    required this.algorithm,
   });
 }
 
@@ -53,8 +54,19 @@ void main(List<String> args) {
       defaultsTo: 'EN',
       help: 'Language ID to use.',
     )
-    ..addFlag('dot', help: 'Output the dependency graph in DOT format.')
-    ..addFlag('mermaid', help: 'Output the dependency graph in Mermaid format.')
+    ..addOption(
+      'algorithm',
+      abbr: 'a',
+      defaultsTo: 'greedy',
+      allowed: ['greedy', 'backtracking'],
+      help:
+          'Grid generation algorithm to use (greedy=fast, backtracking=thorough).',
+    )
+    ..addFlag(
+      'dot',
+      help:
+          'Output the dependency graph in DOT format (character-level for greedy, word-level for backtracking).',
+    )
     ..addFlag(
       'help',
       abbr: '?',
@@ -92,9 +104,9 @@ void main(List<String> args) {
     seed: int.tryParse(results['seed'] ?? ''),
     language: match.first,
     outputDot: results['dot'] as bool,
-    outputMermaid: results['mermaid'] as bool,
     targetHeight: int.parse(results['height'] as String),
     checkAll: results['check-all'] as bool,
+    algorithm: results['algorithm'] as String,
   );
 
   if (config.checkAll) {
@@ -102,7 +114,7 @@ void main(List<String> args) {
     return;
   }
 
-  if (config.outputDot || config.outputMermaid) {
+  if (config.outputDot) {
     _exportGraph(config);
     return;
   }
@@ -167,145 +179,173 @@ void _runCheckAll(Config config) {
 }
 
 void _exportGraph(Config config) {
-  final graph = DependencyGraphBuilder.build(language: config.language);
-  if (config.outputDot) {
+  if (config.algorithm == 'backtracking') {
+    // Export word-level dependency graph for backtracking algorithm
+    final wordGraph = WordDependencyGraphBuilder.build(
+      language: config.language,
+    );
+    print(WordGraphDotExporter.export(wordGraph));
+  } else {
+    // Export character-level dependency graph for greedy algorithm
+    final graph = DependencyGraphBuilder.build(language: config.language);
     print(DotExporter.export(graph));
-  } else if (config.outputMermaid) {
-    print(MermaidExporter.export(graph));
   }
 }
 
 void _generateAndPrintGrid(Config config) {
   try {
-    List<String> cells = [];
-    int finalSeed = config.seed ?? 0;
+    final int finalSeed = config.seed ?? 0;
+    final int targetHeight = config.targetHeight > 0 ? config.targetHeight : 10;
 
-    if (config.targetHeight > 0) {
-      // 1. Build graph once to check feasibility
-      final graph = DependencyGraphBuilder.build(language: config.language);
-      final sortedNodes = TopologicalSorter.sort(graph);
+    print('Using algorithm: ${config.algorithm}');
+    print('Target: ${config.gridWidth}x$targetHeight');
+    print('Seed: $finalSeed');
+    print('');
 
-      // Calculate effective cell count (nodes might represent multi-character cells like "D'")
-      final uniquePositions = <String>{};
-      for (final node in sortedNodes) {
-        uniquePositions.add('${node.word}_${node.charIndex}');
-      }
-      final totalCells = uniquePositions.length;
-      final capacity = config.gridWidth * config.targetHeight;
-
-      print(
-        'Target: ${config.gridWidth}x${config.targetHeight} ($capacity cells)',
-      );
-      print(
-        'Required: $totalCells unique positions (${sortedNodes.length} nodes)',
-      );
-      print('');
-      print('Note: The grid builder does NOT support physical word overlap.');
-      print(
-        '      TimeCheckGrids may be more compact due to hand-optimized word placement.',
-      );
-      print('      If target height cannot be achieved, consider:');
-      print('      1. Using the closest height the builder can achieve');
-      print('      2. Increasing grid width');
-      print('      3. Hand-crafting the grid with overlapping words');
-      print('');
-
-      if (totalCells > capacity) {
-        print(
-          'Warning: Target height ${config.targetHeight} may be impossible.',
-        );
-        print(
-          '         Need at least $totalCells cells, but grid only has $capacity.',
-        );
-      }
-
-      // Search for a seed that hits targetHeight or gets close
-      bool foundExact = false;
-      int bestSeed = config.seed ?? 0;
-      int bestHeight = 9999;
-      int bestHeightDiff = 9999;
-
-      final startSeed = config.seed ?? 0;
-      final maxSearches = 5000; // Search more thoroughly
-
-      for (int s = startSeed; s < startSeed + maxSearches; s++) {
-        cells = GridGenerator.generate(
-          width: config.gridWidth,
-          seed: s,
-          language: config.language,
-          targetHeight: config.targetHeight,
-        );
-        final currentHeight = cells.length ~/ config.gridWidth;
-        final heightDiff = (currentHeight - config.targetHeight).abs();
-
-        if (s % 10 == 0 || heightDiff < bestHeightDiff) {
-          print('Searching for grid... (Seed: $s, Height: $currentHeight)');
-        }
-
-        if (currentHeight == config.targetHeight) {
-          finalSeed = s;
-          bestHeight = currentHeight;
-          foundExact = true;
-          break;
-        }
-
-        // Track best alternative
-        if (heightDiff < bestHeightDiff) {
-          bestSeed = s;
-          bestHeight = currentHeight;
-          bestHeightDiff = heightDiff;
-        }
-      }
-
-      if (!foundExact) {
-        finalSeed = bestSeed;
-        // Regenerate with best seed
-        cells = GridGenerator.generate(
-          width: config.gridWidth,
-          seed: bestSeed,
-          language: config.language,
-          targetHeight: config.targetHeight,
-        );
-        bestHeight = cells.length ~/ config.gridWidth;
-        print(
-          'Warning: Could not find exact height ${config.targetHeight} within $maxSearches seeds.',
-        );
-        print('Best result: Height $bestHeight (seed $bestSeed)');
-      } else {
-        print('Found exact match at seed $finalSeed');
-      }
-    } else {
-      cells = GridGenerator.generate(
-        width: config.gridWidth,
-        seed: finalSeed,
-        language: config.language,
-      );
+    if (config.algorithm == 'backtracking') {
+      _generateWithBacktracking(config);
+      return;
     }
 
-    // Check if merging produces a different length
-    final mergedCells = WordGrid.splitIntoCells(
-      cells.join(''),
-      mergeApostrophes: true,
-    );
-
-    final currentHeight = mergedCells.length ~/ config.gridWidth;
-
-    print('\n/// AUTOMATICALLY GENERATED PREVIEW');
-    print('/// Seed: $finalSeed');
-    print('  defaultGrid: WordGrid.fromLetters(');
-    print('    width: ${config.gridWidth},');
-    print('    letters:');
-    for (int i = 0; i < currentHeight; i++) {
-      final line = mergedCells
-          .sublist(i * config.gridWidth, (i + 1) * config.gridWidth)
-          .join('');
-      final escapedLine = line.replaceAll('"', r'\"');
-      print('        "$escapedLine"');
-    }
-    print('  ),');
+    // Use GreedyGridBuilder
+    _generateWithGreedy(config);
   } catch (e) {
     print('Error generating grid: $e');
   }
+}
+
+void _generateWithGreedy(Config config) {
+  final int finalSeed = config.seed ?? 0;
+  final int targetHeight = config.targetHeight > 0 ? config.targetHeight : 10;
+
+  print('Greedy Grid Builder');
+  print('Note: The greedy algorithm does NOT support physical word overlap.');
+  print(
+    '      TimeCheckGrids may be more compact due to hand-optimized word placement.',
+  );
+  print('');
+
+  final builder = GreedyGridBuilder(
+    width: config.gridWidth,
+    height: targetHeight,
+    language: config.language,
+    seed: finalSeed,
+  );
+
+  final result = builder.build();
+
+  if (result.grid == null) {
+    print('\nFailed to generate grid with greedy algorithm.');
+    if (result.validationIssues.isNotEmpty) {
+      print('Reasons:');
+      for (final issue in result.validationIssues) {
+        print('  - $issue');
+      }
+    }
+    print('\nTry:');
+    print('  - Increasing height');
+    print('  - Increasing width');
+    print('  - Using the backtracking algorithm: --algorithm=backtracking');
+    return;
+  }
+
+  // Print warnings if not optimal
+  if (!result.isOptimal) {
+    print('\n⚠️⚠️⚠️ WARNING: Grid is not optimal ⚠️⚠️⚠️');
+    if (result.placedWords < result.totalWords) {
+      print('  - Only placed ${result.placedWords}/${result.totalWords} words');
+    }
+    if (result.validationIssues.isNotEmpty) {
+      print('  - Validation issues:');
+      for (final issue in result.validationIssues) {
+        print('    * $issue');
+      }
+    }
+    print('⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️\n');
+  } else {
+    print('\n✓✓✓ Grid is optimal! ✓✓✓\n');
+  }
+
+  // Output the grid
+  print('\n/// AUTOMATICALLY GENERATED (Greedy Algorithm)');
+  print('/// Seed: $finalSeed');
+  print('  defaultGrid: WordGrid.fromLetters(');
+  print('    width: ${config.gridWidth},');
+  print('    letters:');
+
+  final cells = result.grid!;
+  for (int i = 0; i < targetHeight; i++) {
+    final line = cells
+        .sublist(i * config.gridWidth, (i + 1) * config.gridWidth)
+        .join('');
+    final escapedLine = line.replaceAll('"', r'\"');
+    print('        "$escapedLine"');
+  }
+  print('  ),');
+}
+
+void _generateWithBacktracking(Config config) {
+  final int finalSeed = config.seed ?? 0;
+  final int targetHeight = config.targetHeight > 0 ? config.targetHeight : 10;
+
+  print('Backtracking Grid Builder');
+  print('Target: ${config.gridWidth}x$targetHeight');
+  print('Seed: $finalSeed');
+  print('');
+
+  final builder = BacktrackingGridBuilder(
+    width: config.gridWidth,
+    height: targetHeight,
+    language: config.language,
+    seed: finalSeed,
+    maxSearchTimeSeconds: 60,
+    maxNodesExplored: 500000,
+  );
+
+  final result = builder.build();
+
+  if (result.grid == null) {
+    print('\nFailed to generate grid with backtracking algorithm.');
+    print('Try:');
+    print('  - Increasing height');
+    print('  - Using a different seed');
+    print('  - Using the greedy algorithm: --algorithm=greedy');
+    return;
+  }
+
+  // Print warnings if not optimal
+  if (!result.isOptimal) {
+    print('\n⚠️⚠️⚠️ WARNING: Grid is not optimal ⚠️⚠️⚠️');
+    if (result.placedWords < result.totalWords) {
+      print('  - Only placed ${result.placedWords}/${result.totalWords} words');
+    }
+    if (result.validationIssues.isNotEmpty) {
+      print('  - Validation issues:');
+      for (final issue in result.validationIssues) {
+        print('    * $issue');
+      }
+    }
+    print('⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️\n');
+  } else {
+    print('\n✓✓✓ Grid is optimal! ✓✓✓\n');
+  }
+
+  // Output the grid
+  print('\n/// AUTOMATICALLY GENERATED (Backtracking Algorithm)');
+  print('/// Seed: $finalSeed');
+  print('  defaultGrid: WordGrid.fromLetters(');
+  print('    width: ${config.gridWidth},');
+  print('    letters:');
+
+  final cells = result.grid!;
+  for (int i = 0; i < targetHeight; i++) {
+    final line = cells
+        .sublist(i * config.gridWidth, (i + 1) * config.gridWidth)
+        .join('');
+    final escapedLine = line.replaceAll('"', r'\"');
+    print('        "$escapedLine"');
+  }
+  print('  ),');
 }
 
 List<String> _validateGrid(
@@ -314,72 +354,11 @@ List<String> _validateGrid(
   int? expectedWidth,
   int? expectedHeight,
 }) {
-  final issues = <String>{};
-  final cells = grid.cells;
-  final width = grid.width;
-
-  if (cells.length % width != 0) {
-    issues.add(
-      'Grid cells length ${cells.length} is not a multiple of width $width.',
-    );
-  }
-
-  if (expectedWidth != null && width != expectedWidth) {
-    issues.add('Width $width != expected $expectedWidth.');
-  }
-
-  final height = cells.length ~/ width;
-  if (expectedHeight != null && height != expectedHeight) {
-    issues.add('Height $height != expected $expectedHeight.');
-  }
-
-  // We use Sets to avoid reporting the same issue multiple times
-  final reportedMissingAtoms = <String>{};
-  final reportedPaddingIssues = <String>{};
-
-  WordClockUtils.forEachTime(language, (time, phrase) {
-    final units = language.tokenize(phrase);
-    int lastEndIndex = -1;
-
-    for (int i = 0; i < units.length; i++) {
-      final unit = units[i];
-
-      // Find unit strictly after lastEndIndex (mimics WordGrid.getIndices)
-      var unitIndices = grid.findWordIndices(unit, lastEndIndex + 1);
-      if (unitIndices == null && lastEndIndex != -1) {
-        unitIndices = grid.findWordIndices(unit, 0, reverse: true);
-      }
-
-      if (unitIndices == null) {
-        if (reportedMissingAtoms.add(unit)) {
-          issues.add('Missing atom "$unit" (in phrase "$phrase")');
-        }
-        // Cannot continue checking sequence for this phrase
-        break;
-      }
-
-      // Check Padding (Check 4)
-      if (language.requiresPadding && i > 0) {
-        final matchIndex = unitIndices.first;
-        // Previous unit ended at lastEndIndex. Current unit starts at matchIndex.
-        if (matchIndex == lastEndIndex + 1) {
-          // Check if they are on the same row
-          final prevRow = lastEndIndex ~/ width;
-          final currRow = matchIndex ~/ width;
-          if (prevRow == currRow) {
-            final pairKey = '${units[i - 1]}->$unit';
-            if (reportedPaddingIssues.add(pairKey)) {
-              issues.add(
-                'No padding/newline between "${units[i - 1]}" and "$unit" in grid.',
-              );
-            }
-          }
-        }
-      }
-
-      lastEndIndex = unitIndices.last;
-    }
-  });
-
-  return issues.toList();
+  // Use the shared GridValidator
+  return GridValidator.validate(
+    grid,
+    language,
+    expectedWidth: expectedWidth,
+    expectedHeight: expectedHeight,
+  );
 }

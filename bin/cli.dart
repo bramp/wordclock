@@ -1,7 +1,7 @@
 // ignore_for_file: avoid_print
 import 'dart:io';
 
-import 'package:wordclock/generator/grid_generator.dart';
+import 'package:wordclock/generator/greedy/grid_generator.dart';
 import 'package:wordclock/languages/all.dart';
 import 'package:wordclock/model/word_grid.dart';
 

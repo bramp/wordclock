@@ -1,4 +1,4 @@
-import 'package:wordclock/generator/graph_types.dart';
+import 'package:wordclock/generator/greedy/graph_types.dart';
 
 /// An exporter that converts a [Graph] into a DOT format string,
 /// which can be visualized using Graphviz.

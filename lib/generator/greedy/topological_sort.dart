@@ -1,5 +1,5 @@
 import 'dart:math';
-import 'package:wordclock/generator/graph_types.dart';
+import 'package:wordclock/generator/greedy/graph_types.dart';
 
 /// A utility for performing a topological sort on a [Graph].
 ///

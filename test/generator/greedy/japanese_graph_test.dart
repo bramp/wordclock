@@ -1,5 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:wordclock/generator/dependency_graph.dart';
+import 'package:wordclock/generator/greedy/dependency_graph.dart';
 import 'package:wordclock/languages/japanese.dart';
 
 void main() {

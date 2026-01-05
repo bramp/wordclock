@@ -28,7 +28,8 @@ class ClockFace extends StatefulWidget {
   State<ClockFace> createState() => _ClockFaceState();
 }
 
-class _ClockFaceState extends State<ClockFace> with SingleTickerProviderStateMixin {
+class _ClockFaceState extends State<ClockFace>
+    with SingleTickerProviderStateMixin {
   late Timer _timer;
   late AnimationController _plasmaController;
 
@@ -45,8 +46,8 @@ class _ClockFaceState extends State<ClockFace> with SingleTickerProviderStateMix
     super.initState();
     // Plasma animation controller
     _plasmaController = AnimationController(
-       vsync: this,
-       duration: const Duration(seconds: 30),
+      vsync: this,
+      duration: const Duration(seconds: 30),
     )..repeat();
 
     // Update every second

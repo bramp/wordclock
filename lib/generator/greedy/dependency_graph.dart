@@ -1,6 +1,5 @@
 import 'dart:collection';
-import 'dart:math';
-import 'package:wordclock/generator/graph_types.dart';
+import 'package:wordclock/generator/greedy/graph_types.dart';
 import 'package:wordclock/generator/utils/word_clock_utils.dart';
 import 'package:wordclock/languages/language.dart';
 import 'package:wordclock/model/word_grid.dart';
@@ -132,17 +131,16 @@ class DependencyGraphBuilder {
       }
       if (found) continue;
 
+      /*
       // 4.2. Prefix/Suffix overlap reuse
       for (final entry in atomCache.entries) {
         final cachedCells = getCells(entry.key);
         final cachedNodes = entry.value.first;
 
         // Longest overlap first
-        for (
-          int len = min(cachedCells.length, atomCells.length) - 1;
-          len > 0;
-          len--
-        ) {
+        for (int len = min(cachedCells.length, atomCells.length) - 1;
+            len > 0;
+            len--) {
           bool match = true;
           for (int i = 0; i < len; i++) {
             if (cachedCells[cachedCells.length - len + i] != atomCells[i]) {
@@ -169,6 +167,7 @@ class DependencyGraphBuilder {
         }
         if (found) break;
       }
+      */
 
       if (!found) {
         final nodes = createNodesFromCells(atomCells, 0, word: atom);

@@ -37,6 +37,7 @@ dependencies:
   cupertino_icons: ^1.0.8
   clock: ^1.1.2
   args: ^2.7.0
+  graphs: ^2.3.2
 
 dev_dependencies:
   flutter_launcher_icons: ^0.14.4
