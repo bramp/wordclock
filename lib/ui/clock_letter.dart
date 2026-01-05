@@ -5,6 +5,7 @@ class ClockLetter extends StatelessWidget {
   final bool isActive;
   final TextStyle activeStyle;
   final TextStyle inactiveStyle;
+  final double fontSize;
   final Duration duration;
   final Curve curve;
 
@@ -14,6 +15,7 @@ class ClockLetter extends StatelessWidget {
     required this.isActive,
     required this.activeStyle,
     required this.inactiveStyle,
+    required this.fontSize,
     this.duration = const Duration(milliseconds: 1000),
     this.curve = Curves.easeInOut,
   });
@@ -32,7 +34,7 @@ class ClockLetter extends StatelessWidget {
           child: Text(
             char,
             // For opacity fade, we always render the "Active" look and just fade its visibility
-            style: activeStyle,
+            style: activeStyle.copyWith(fontSize: fontSize),
           ),
         ),
       );
@@ -43,7 +45,10 @@ class ClockLetter extends StatelessWidget {
         duration: duration,
         curve: curve,
         style: isActive ? activeStyle : inactiveStyle,
-        child: Text(char),
+        child: Text(
+          char,
+          style: TextStyle(fontSize: fontSize),
+        ),
       ),
     );
   }

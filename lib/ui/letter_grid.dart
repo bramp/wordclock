@@ -53,7 +53,7 @@ class LetterGrid extends StatelessWidget {
 
           final activeStyle = TextStyle(
             fontFamily: 'monospace',
-            fontSize: fontSize,
+            // fontSize applied directly to Text via ClockLetter
             fontWeight: FontWeight.w900,
             color: activeColor,
             shadows: shadows,
@@ -61,7 +61,7 @@ class LetterGrid extends StatelessWidget {
 
           final inactiveStyle = TextStyle(
             fontFamily: 'monospace',
-            fontSize: fontSize,
+            // fontSize applied directly to Text via ClockLetter
             fontWeight: FontWeight.w300,
             color: inactiveColor,
             shadows: const [],
@@ -81,6 +81,7 @@ class LetterGrid extends StatelessWidget {
                 isActive: isActive,
                 activeStyle: activeStyle,
                 inactiveStyle: inactiveStyle,
+                fontSize: fontSize,
                 duration: duration,
                 curve: curve,
               );
