@@ -1,7 +1,7 @@
 // ignore_for_file: avoid_print
 
 import 'package:graphs/graphs.dart';
-import 'package:wordclock/generator/backtracking/word_dependency_graph.dart';
+import 'package:wordclock/generator/backtracking/dependency_graph.dart';
 
 /// Exports a [WordDependencyGraph] to DOT format for Graphviz visualization.
 class WordGraphDotExporter {

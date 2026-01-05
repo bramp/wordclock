@@ -1,11 +1,11 @@
 import 'package:args/args.dart';
-import 'package:wordclock/generator/backtracking/backtracking_grid_builder.dart';
+import 'package:wordclock/generator/backtracking/grid_builder.dart';
 import 'package:wordclock/generator/greedy/dependency_graph.dart';
 import 'package:wordclock/generator/greedy/dot_exporter.dart';
-import 'package:wordclock/generator/greedy/greedy_grid_builder.dart';
+import 'package:wordclock/generator/greedy/grid_builder.dart';
 import 'package:wordclock/generator/utils/grid_validator.dart';
-import 'package:wordclock/generator/backtracking/word_dependency_graph.dart';
-import 'package:wordclock/generator/backtracking/word_graph_dot_exporter.dart';
+import 'package:wordclock/generator/backtracking/dependency_graph.dart';
+import 'package:wordclock/generator/backtracking/dot_exporter.dart';
 import 'package:wordclock/languages/language.dart';
 import 'package:wordclock/languages/all.dart';
 import 'package:wordclock/model/word_grid.dart';
@@ -57,7 +57,7 @@ void main(List<String> args) {
     ..addOption(
       'algorithm',
       abbr: 'a',
-      defaultsTo: 'greedy',
+      defaultsTo: 'backtracking',
       allowed: ['greedy', 'backtracking'],
       help:
           'Grid generation algorithm to use (greedy=fast, backtracking=thorough).',

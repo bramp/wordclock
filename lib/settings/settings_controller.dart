@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:wordclock/model/adjustable_clock.dart';
 import 'package:wordclock/generator/utils/word_clock_utils.dart';
 import 'package:wordclock/settings/theme_settings.dart';
-import 'package:wordclock/generator/greedy/grid_generator.dart';
+import 'package:wordclock/generator/backtracking/grid_builder.dart';
 import 'package:wordclock/model/word_grid.dart';
 import 'package:wordclock/languages/language.dart';
 import 'package:wordclock/languages/all.dart';
@@ -94,12 +94,19 @@ class SettingsController extends ChangeNotifier {
     if (_gridSeed == null && defGrid != null) {
       _currentGrid = defGrid;
     } else {
-      final cells = GridGenerator.generate(
+      final builder = BacktrackingGridBuilder(
         width: 11,
-        seed: _gridSeed,
+        height: 10,
         language: _currentLanguage,
+        seed: _gridSeed ?? 0,
       );
-      _currentGrid = WordGrid(width: 11, cells: cells);
+      final result = builder.build();
+      if (result.grid != null) {
+        _currentGrid = WordGrid(width: 11, cells: result.grid!);
+      } else {
+        // Fallback to empty grid or something if it fails
+        _currentGrid = WordGrid(width: 11, cells: List.filled(110, ' '));
+      }
     }
   }
 

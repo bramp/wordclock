@@ -1,5 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:wordclock/generator/backtracking/word_dependency_graph.dart';
+import 'package:wordclock/generator/backtracking/dependency_graph.dart';
 import 'package:wordclock/languages/all.dart';
 import 'package:wordclock/languages/language.dart';
 import 'package:wordclock/logic/time_to_words.dart';

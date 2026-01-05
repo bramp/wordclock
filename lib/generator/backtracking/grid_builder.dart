@@ -1,6 +1,6 @@
 import 'dart:math';
-import 'package:wordclock/generator/backtracking/backtracking_grid_state.dart';
-import 'package:wordclock/generator/backtracking/word_dependency_graph.dart';
+import 'package:wordclock/generator/backtracking/grid_state.dart';
+import 'package:wordclock/generator/backtracking/dependency_graph.dart';
 import 'package:wordclock/generator/utils/grid_build_result.dart';
 import 'package:wordclock/generator/utils/grid_validator.dart';
 import 'package:wordclock/languages/language.dart';
