@@ -8,7 +8,7 @@
 - [x] Implement a Settings Page (color schemes, logic toggles?).
 - [x] Create a script/tool to generate new clock faces/grids from configuration.
 - [ ] Add integration tests.
-- [ ] Create animating backgrounds (like a plasma effect)
+- [x] Create animating backgrounds (like a plasma effect)
 - [x] Add a debug mode, where we can set the time, or make the time tick extremely fast (one minute each second)
 - [x] Can we ensure all tests pass, and test is always formatted/linted before commit. Perhaps a pre-commit hook?
 - [x] 21:45 doesn't work
@@ -16,7 +16,7 @@
 - [x] Use a grid we generate
 - [x] We should make it possible to copy and paste the time
 - [x] When the app is resized, the grey letters animate their change, but the illumatned ones don't. That seems wrong behaviour
-- [ ] Add a debug toggle to hide the "padding" letters.
+- [x] Add a debug toggle to hide the "padding" letters.
 - [ ] Add support for other languages (see <https://en.wikipedia.org/wiki/Languages_used_on_the_Internet> for list)
 - [ ] Generate railroad diagrams (instead of dot diagrams) see <https://github.com/GuntherRademacher/rr>
 - [ ] The output of bin/extract_scriptable_highlights.js is not always correct

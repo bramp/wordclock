@@ -70,6 +70,22 @@ class SettingsPanel extends StatelessWidget {
                           );
                         },
                       ),
+                      SwitchListTile(
+                        contentPadding: EdgeInsets.zero,
+                        title: const Text(
+                          'Plasma Text',
+                          style: TextStyle(color: Colors.white),
+                        ),
+                        value: settings.backgroundType == BackgroundType.plasma,
+                        activeThumbColor: settings.activeGradientColors.last,
+                        onChanged: (value) {
+                          controller.setBackgroundType(
+                            value
+                                ? BackgroundType.plasma
+                                : BackgroundType.solid,
+                          );
+                        },
+                      ),
 
                       const SizedBox(height: 24),
                       const SectionHeader(title: 'About'),

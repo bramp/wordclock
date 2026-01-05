@@ -1,17 +1,21 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 
+enum BackgroundType { solid, plasma }
+
 class ThemeSettings {
   final List<Color> activeGradientColors;
   final Color inactiveColor;
   final Color backgroundColor;
   final bool showMinuteDots;
+  final BackgroundType backgroundType;
 
   const ThemeSettings({
     required this.activeGradientColors,
     required this.inactiveColor,
     required this.backgroundColor,
     this.showMinuteDots = true,
+    this.backgroundType = BackgroundType.plasma,
   });
 
   static const defaultTheme = ThemeSettings(
@@ -22,6 +26,7 @@ class ThemeSettings {
     ],
     inactiveColor: Color.fromRGBO(255, 255, 255, 0.15),
     backgroundColor: Colors.black,
+    backgroundType: BackgroundType.plasma,
   );
 
   static const warmTheme = ThemeSettings(
@@ -31,6 +36,7 @@ class ThemeSettings {
     ],
     inactiveColor: Color.fromRGBO(255, 200, 200, 0.15),
     backgroundColor: Color(0xFF1A0505),
+    backgroundType: BackgroundType.plasma,
   );
 
   static const matrixTheme = ThemeSettings(
@@ -40,12 +46,14 @@ class ThemeSettings {
     ],
     inactiveColor: Color.fromRGBO(0, 255, 0, 0.15),
     backgroundColor: Colors.black,
+    backgroundType: BackgroundType.plasma,
   );
 
   static const whiteTheme = ThemeSettings(
     activeGradientColors: [Colors.white, Colors.white],
     inactiveColor: Color.fromRGBO(255, 255, 255, 0.1),
     backgroundColor: Colors.black,
+    backgroundType: BackgroundType.plasma,
   );
 
   @override
@@ -55,7 +63,8 @@ class ThemeSettings {
     return listEquals(activeGradientColors, other.activeGradientColors) &&
         inactiveColor == other.inactiveColor &&
         backgroundColor == other.backgroundColor &&
-        showMinuteDots == other.showMinuteDots;
+        showMinuteDots == other.showMinuteDots &&
+        backgroundType == other.backgroundType;
   }
 
   @override
@@ -64,5 +73,22 @@ class ThemeSettings {
     inactiveColor,
     backgroundColor,
     showMinuteDots,
+    backgroundType,
   );
+
+  ThemeSettings copyWith({
+    List<Color>? activeGradientColors,
+    Color? inactiveColor,
+    Color? backgroundColor,
+    bool? showMinuteDots,
+    BackgroundType? backgroundType,
+  }) {
+    return ThemeSettings(
+      activeGradientColors: activeGradientColors ?? this.activeGradientColors,
+      inactiveColor: inactiveColor ?? this.inactiveColor,
+      backgroundColor: backgroundColor ?? this.backgroundColor,
+      showMinuteDots: showMinuteDots ?? this.showMinuteDots,
+      backgroundType: backgroundType ?? this.backgroundType,
+    );
+  }
 }

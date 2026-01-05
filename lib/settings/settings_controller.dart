@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:wordclock/model/adjustable_clock.dart';
 import 'package:wordclock/generator/utils/word_clock_utils.dart';
 import 'package:wordclock/settings/theme_settings.dart';
-import 'package:wordclock/generator/grid_generator.dart';
+import 'package:wordclock/generator/greedy/grid_generator.dart';
 import 'package:wordclock/model/word_grid.dart';
 import 'package:wordclock/languages/language.dart';
 import 'package:wordclock/languages/all.dart';
@@ -60,7 +60,16 @@ class SettingsController extends ChangeNotifier {
   }
 
   void updateTheme(ThemeSettings newSettings) {
-    _currentSettings = newSettings;
+    // Preserve the user's plasma preference when switching themes
+    _currentSettings = newSettings.copyWith(
+      backgroundType: _currentSettings.backgroundType,
+    );
+    notifyListeners();
+  }
+
+  void setBackgroundType(BackgroundType type) {
+    if (_currentSettings.backgroundType == type) return;
+    _currentSettings = _currentSettings.copyWith(backgroundType: type);
     notifyListeners();
   }
 

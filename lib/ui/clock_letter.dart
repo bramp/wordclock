@@ -45,10 +45,7 @@ class ClockLetter extends StatelessWidget {
         duration: duration,
         curve: curve,
         style: isActive ? activeStyle : inactiveStyle,
-        child: Text(
-          char,
-          style: TextStyle(fontSize: fontSize),
-        ),
+        child: Text(char, style: TextStyle(fontSize: fontSize)),
       ),
     );
   }
