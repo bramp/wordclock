@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 
 import 'package:wordclock/model/word_grid.dart';
 
@@ -171,72 +172,88 @@ class _ClockFaceState extends State<ClockFace> {
           backgroundColor: settings.backgroundColor,
           endDrawer: SettingsPanel(controller: widget.settingsController),
           drawerScrimColor: Colors.black.withAlpha(0x4D),
-          body: Stack(
-            children: [
-              // Background: Faceplate color (usually matches scaffold)
-              Positioned.fill(
-                child: Container(color: settings.backgroundColor),
-              ),
+          body: GestureDetector(
+            onLongPress: () async {
+              final phrase = lang.timeToWords.convert(now);
+              await Clipboard.setData(ClipboardData(text: phrase));
+              if (context.mounted) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(
+                    content: Text('Copied "$phrase" to clipboard'),
+                    duration: const Duration(seconds: 2),
+                    behavior: SnackBarBehavior.floating,
+                    width: 400,
+                  ),
+                );
+              }
+            },
+            child: Stack(
+              children: [
+                // Background: Faceplate color (usually matches scaffold)
+                Positioned.fill(
+                  child: Container(color: settings.backgroundColor),
+                ),
 
-              Center(
-                child: Stack(
-                  children: [
-                    // Layer 1: Inactive Elements
-                    RepaintBoundary(
-                      child: ClockLayout(
-                        grid: grid,
-                        remainder: 0,
-                        showDots: showDots,
-                        forceAllDots: true, // Always show placeholder dots
-                        dotColor: settings.inactiveColor,
-                        duration: widget.animationDuration,
-                        curve: widget.animationCurve,
-                        child: _cachedInactiveGrid!,
-                      ),
-                    ),
-
-                    // Layer 2: Active Elements
-                    RepaintBoundary(
-                      child: ShaderMask(
-                        shaderCallback: (bounds) {
-                          return LinearGradient(
-                            begin: Alignment.topLeft,
-                            end: Alignment.bottomRight,
-                            colors: settings.activeGradientColors,
-                          ).createShader(bounds);
-                        },
-                        blendMode: BlendMode.srcIn,
+                Center(
+                  child: Stack(
+                    children: [
+                      // Layer 1: Inactive Elements
+                      RepaintBoundary(
                         child: ClockLayout(
                           grid: grid,
-                          remainder: _remainder,
+                          remainder: 0,
                           showDots: showDots,
-                          forceAllDots: false,
-                          dotColor: Colors.white,
+                          forceAllDots: true, // Always show placeholder dots
+                          dotColor: settings.inactiveColor,
                           duration: widget.animationDuration,
                           curve: widget.animationCurve,
-                          child: _cachedActiveGrid!,
+                          child: _cachedInactiveGrid!,
                         ),
                       ),
-                    ),
-                  ],
-                ),
-              ),
 
-              // Settings Button (Bottom Right)
-              Positioned(
-                bottom: 16,
-                right: 16,
-                child: IconButton(
-                  icon: Icon(
-                    Icons.settings,
-                    color: Colors.white.withValues(alpha: 0.3),
+                      // Layer 2: Active Elements
+                      RepaintBoundary(
+                        child: ShaderMask(
+                          shaderCallback: (bounds) {
+                            return LinearGradient(
+                              begin: Alignment.topLeft,
+                              end: Alignment.bottomRight,
+                              colors: settings.activeGradientColors,
+                            ).createShader(bounds);
+                          },
+                          blendMode: BlendMode.srcIn,
+                          child: ClockLayout(
+                            grid: grid,
+                            remainder: _remainder,
+                            showDots: showDots,
+                            forceAllDots: false,
+                            dotColor: Colors.white,
+                            duration: widget.animationDuration,
+                            curve: widget.animationCurve,
+                            child: _cachedActiveGrid!,
+                          ),
+                        ),
+                      ),
+                    ],
                   ),
-                  onPressed: () {
-                    _scaffoldKey.currentState?.openEndDrawer();
-                  },
                 ),
-              ),
-            ],
+
+                // Settings Button (Bottom Right)
+                Positioned(
+                  bottom: 16,
+                  right: 16,
+                  child: IconButton(
+                    icon: Icon(
+                      Icons.settings,
+                      color: Colors.white.withValues(alpha: 0.3),
+                    ),
+                    onPressed: () {
+                      _scaffoldKey.currentState?.openEndDrawer();
+                    },
+                  ),
+                ),
+              ],
+            ),
           ),
         );
       },

@@ -10,18 +10,21 @@
 - [ ] Add integration tests.
 - [ ] Create animating backgrounds (like a plasma effect)
 - [x] Add a debug mode, where we can set the time, or make the time tick extremely fast (one minute each second)
-- [X] Can we ensure all tests pass, and test is always formatted/linted before commit. Perhaps a pre-commit hook?
+- [x] Can we ensure all tests pass, and test is always formatted/linted before commit. Perhaps a pre-commit hook?
 - [x] 21:45 doesn't work
-- [ ] Draw a ' after O, so it reads O'Clock, but the O' should take up a single space on the grid (with the O aligned as normal).
+- [x] Draw a ' after O, so it reads O'Clock, but the O' should take up a single space on the grid (with the O aligned as normal).
 - [x] Use a grid we generate
-- [ ] We should make it possible to copy and paste the time
+- [x] We should make it possible to copy and paste the time
 - [ ] When the app is resized, the grey letters animate their change, but the illumatned ones don't. That seems wrong behaviour
 - [ ] Add a debug toggle to hide the "padding" letters.
-- [ ] Add support for other languages (see https://en.wikipedia.org/wiki/Languages_used_on_the_Internet for list)
-- [ ] Generate railroad diagrams (instead of dot diagrams) see https://github.com/GuntherRademacher/rr
+- [ ] Add support for other languages (see <https://en.wikipedia.org/wiki/Languages_used_on_the_Internet> for list)
+- [ ] Generate railroad diagrams (instead of dot diagrams) see <https://github.com/GuntherRademacher/rr>
 - [ ] The output of bin/extract_scriptable_highlights.js is not always correct
   - [ ] "E3" has "IT IS ONE FIVE" but it would be better as "IT IS ONE OH FIVE"
   - [x] "CA" mixes correct Catalan time expressions with corrupted hour names. - Lines containing NAO, NZE, D'R, or missing the hour noun are incorrect.
 - [x] Can we add a padding field to ScriptableLanguageData, which is the list of all the characters discovered in the grid that are never mapped to by the time. That data should end up in the WordClockLanguage children.
 - [ ] In lib/generator some languages (such as Japnese) don't require padding. Can we annotate that on the WordClockLanguage, then tweak the generator to not require it.
 - [ ] Can we review all the TimeToWord implementations in lib/logic. Many of the language variants (e.g English and German) share the same words. Can we dedup and make common functions where nessacary. For all TimeToWord implementations can we review the code, and refactor into the concise, easy to read, and maintain style. Comments for translations are important, but make sure all the other comments are useful. We don't need to refer back to the Scritable origins of the code. Just focus on making clean, modern dart code. Please create a TODO list to stay focused on this tak, and do one at a time.
+- [ ] Consider using
+      <https://pub.dev/documentation/quiver/latest/quiver.time/Clock-class.html>
+      instead of Clock.
