@@ -97,7 +97,7 @@ class BacktrackingGridBuilder {
       placedWords = placementTasks.length;
       _fillPadding(state);
     } else {
-      print('Backtracking failed to find a valid grid solution.');
+      // Backtracking failed to find a valid grid solution.
     }
 
     // 6. Validate
@@ -193,8 +193,6 @@ class BacktrackingGridBuilder {
 
     return tasks;
   }
-
-
 
   List<_Candidate> _findPlacementCandidates(
     GridState state,

@@ -121,9 +121,17 @@ void main() {
         nodeA1: <WordNode>{}, // Sink
       };
 
+      final inEdges = <WordNode, Set<WordNode>>{};
+      for (final entry in edges.entries) {
+        for (final succ in entry.value) {
+          inEdges.putIfAbsent(succ, () => {}).add(entry.key);
+        }
+      }
+
       final graph = WordDependencyGraph(
         nodes: nodes,
         edges: edges,
+        inEdges: inEdges,
         phrases: <String, List<WordNode>>{},
         language: englishLanguage,
       );
@@ -202,9 +210,17 @@ WordDependencyGraph _buildGraph(Map<String, Set<String>> adjacency) {
     edges[sourceNode] = targets;
   }
 
+  final inEdges = <WordNode, Set<WordNode>>{};
+  for (final entry in edges.entries) {
+    for (final succ in entry.value) {
+      inEdges.putIfAbsent(succ, () => {}).add(entry.key);
+    }
+  }
+
   return WordDependencyGraph(
     nodes: nodes,
     edges: edges,
+    inEdges: inEdges,
     phrases: <String, List<WordNode>>{},
     language: englishLanguage,
   );
