@@ -10,17 +10,20 @@ permissions:
   contents: write
 
 jobs:
-  build:
+  test:
+    uses: ./.github/workflows/test.yml
+
+  deploy:
+    needs: test
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
 
-      - uses: subosito/flutter-action@v2
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
         with:
-          channel: 'stable'
-          # You can specify a version if strictly needed, otherwise stable is good.
-          # flutter-version: '3.19.0'
+          channel: "stable"
 
       - name: Build Web
         run: |
