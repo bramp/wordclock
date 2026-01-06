@@ -289,9 +289,6 @@ void _generateWithBacktracking(Config config) {
   final int targetHeight = config.targetHeight > 0 ? config.targetHeight : 10;
   const int maxSearchTimeSeconds = 60;
 
-  print('Backtracking Grid Builder');
-  print('Target: ${config.gridWidth}x$targetHeight');
-  print('Seed: $finalSeed');
   print('Timeout: ${maxSearchTimeSeconds}s');
   print('');
 
