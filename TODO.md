@@ -28,3 +28,6 @@
 - [ ] Consider using
       <https://pub.dev/documentation/quiver/latest/quiver.time/Clock-class.html>
       instead of Clock.
+- [ ] Default to the language the user natively speaks
+- [ ] Translate the app
+- [ ] Fix the issue where foreign characters take a while to load. We should pre-load the google fonts, and maybe bundle them with the app - especially if we can strip them to just the required characters (to keep the app small).

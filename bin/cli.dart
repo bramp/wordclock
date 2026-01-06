@@ -3,6 +3,7 @@ import 'dart:io';
 
 import 'package:wordclock/generator/greedy/grid_generator.dart';
 import 'package:wordclock/languages/all.dart';
+import 'package:wordclock/languages/language.dart';
 import 'package:wordclock/model/word_grid.dart';
 
 /// Returns true if a character should be treated as a double-width character.
@@ -67,20 +68,16 @@ void _processLanguage(String lang, int width, int? seed, DateTime now) {
     orElse: () => throw ArgumentError('Unsupported language: $lang'),
   );
 
-  print('Generating grid for lang="$lang", width=$width, seed=$seed...');
-  final letters = GridGenerator.generate(
-    width: width,
-    seed: seed,
-    language: language,
-  );
-
-  final grid = WordGrid(width: width, cells: letters);
+  final grid = _getOrGenerateGrid(language, width, seed);
 
   final phrase = language.timeToWords.convert(now);
   print('Phrase: "$phrase"');
 
   final units = language.tokenize(phrase);
-  final activeIndices = grid.getIndices(units);
+  final activeIndices = grid.getIndices(
+    units,
+    requiresPadding: language.requiresPadding,
+  );
   _printGrid(grid, activeIndices);
 }
 
@@ -137,4 +134,38 @@ void _printGrid(WordGrid grid, Set<int> activeIndices) {
   buffer.writeln('+${'-' * dashCount}+');
 
   print(buffer.toString());
+}
+
+WordGrid _getOrGenerateGrid(WordClockLanguage language, int width, int? seed) {
+  // Use default grid if available and parameters match (or seed not specified)
+  if (language.defaultGrid != null &&
+      seed == null &&
+      (width == 11 || width == language.defaultGrid!.width)) {
+    // Check if width is compatible
+    if (width == language.defaultGrid!.width) {
+      print('Using defaultGrid for lang="${language.id}"');
+      return language.defaultGrid!;
+    } else {
+      // Width mismatch (user requested different width, or default 11 != grid width)
+      print(
+        'Generating grid for lang="${language.id}", width=$width, seed=$seed...',
+      );
+      final letters = GridGenerator.generate(
+        width: width,
+        seed: seed,
+        language: language,
+      );
+      return WordGrid(width: width, cells: letters);
+    }
+  } else {
+    print(
+      'Generating grid for lang="${language.id}", width=$width, seed=$seed...',
+    );
+    final letters = GridGenerator.generate(
+      width: width,
+      seed: seed,
+      language: language,
+    );
+    return WordGrid(width: width, cells: letters);
+  }
 }

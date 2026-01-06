@@ -159,11 +159,23 @@ void main() {
       final result = builder.build();
       expect(result.grid, isNotNull);
 
-      // Validate using GridValidator
       final wordGrid = WordGrid(width: 11, cells: result.grid!);
-      final issues = GridValidator.validate(wordGrid, language);
+      var issues = GridValidator.validate(wordGrid, language);
 
-      expect(issues, isEmpty, reason: 'Grid should have no validation issues');
+      if (issues.isNotEmpty) {
+        print('\n=== Generated Grid (Seed 0) ===');
+        for (int y = 0; y < 10; y++) {
+          final row = result.grid!.sublist(y * 11, (y + 1) * 11).join(' ');
+          print(row);
+        }
+        print('Validation Issues:\n${issues.join('\n')}\n');
+      }
+
+      expect(
+        issues,
+        isEmpty,
+        reason: 'Grid should have no validation issues (ignoring strict order)',
+      );
     });
 
     test('maximizes word overlap and reuse', () {

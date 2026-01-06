@@ -39,44 +39,70 @@ class GridValidator {
 
     WordClockUtils.forEachTime(language, (time, phrase) {
       final units = language.tokenize(phrase);
-      int lastEndIndex = -1;
+
+      // Use the official algorithm to find word sequences, enabling padding check if required
+      final sequences = grid.getWordSequences(
+        units,
+        requiresPadding: language.requiresPadding,
+      );
+
+      // Verify the results
+      int lastEndIndex =
+          -1; // Track for re-verifying padding (redundant but safe)
 
       for (int i = 0; i < units.length; i++) {
         final unit = units[i];
+        final indices = sequences[i];
 
-        // Find unit strictly after lastEndIndex
-        var unitIndices = grid.findWordIndices(unit, lastEndIndex + 1);
-        if (unitIndices == null && lastEndIndex != -1) {
-          unitIndices = grid.findWordIndices(unit, 0, reverse: true);
-        }
-
-        if (unitIndices == null) {
+        if (indices == null) {
           if (reportedMissingAtoms.add(unit)) {
-            issues.add('Missing atom "$unit" (in phrase "$phrase")');
+            final timeStr =
+                '${time.hour.toString().padLeft(2, '0')}:${time.minute.toString().padLeft(2, '0')}';
+            issues.add(
+              'Missing atom "$unit" (in phrase "$phrase", at $timeStr)',
+            );
           }
-          break; // Cannot continue checking sequence for this phrase
+          // If we miss an atom, we can't meaningfully check padding for subsequent words
+          // relying on this one. But we continue to report other missing atoms.
+          // Reset lastEndIndex? Or just break?
+          // Original logic broke. Let's break.
+          break;
         }
 
-        // Check padding constraint
-        if (language.requiresPadding && i > 0) {
-          final matchIndex = unitIndices.first;
-          // Previous unit ended at lastEndIndex. Current unit starts at matchIndex.
+        if (i > 0 && lastEndIndex != -1) {
+          if (indices.first <= lastEndIndex) {
+            final pairKey = '${units[i - 1]}->$unit order';
+            if (reportedPaddingIssues.add(pairKey)) {
+              // Reuse set or create new one?
+              final timeStr =
+                  '${time.hour.toString().padLeft(2, '0')}:${time.minute.toString().padLeft(2, '0')}';
+              issues.add(
+                'Word "$unit" appears before or overlaps "${units[i - 1]}" in grid (at $timeStr). Strict reading order required.',
+              );
+            }
+          }
+        }
+
+        // Check padding constraint to report specific error if the "best" found sequence still fails it
+        if (language.requiresPadding && i > 0 && lastEndIndex != -1) {
+          final matchIndex = indices.first;
           if (matchIndex == lastEndIndex + 1) {
-            // Check if they are on the same row
             final prevRow = lastEndIndex ~/ width;
             final currRow = matchIndex ~/ width;
             if (prevRow == currRow) {
               final pairKey = '${units[i - 1]}->$unit';
               if (reportedPaddingIssues.add(pairKey)) {
+                final timeStr =
+                    '${time.hour.toString().padLeft(2, '0')}:${time.minute.toString().padLeft(2, '0')}';
                 issues.add(
-                  'No padding/newline between "${units[i - 1]}" and "$unit" in grid.',
+                  'No padding/newline between "${units[i - 1]}" and "$unit" in grid (at $timeStr).',
                 );
               }
             }
           }
         }
 
-        lastEndIndex = unitIndices.last;
+        lastEndIndex = indices.last;
       }
     });
 

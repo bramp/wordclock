@@ -84,7 +84,10 @@ class _ClockFaceState extends State<ClockFace>
     } else {
       final phrase = lang.timeToWords.convert(now);
       final units = lang.tokenize(phrase);
-      _activeIndices = grid.getIndices(units);
+      _activeIndices = grid.getIndices(
+        units,
+        requiresPadding: lang.requiresPadding,
+      );
       _remainder = now.minute % lang.minuteIncrement;
     }
   }
