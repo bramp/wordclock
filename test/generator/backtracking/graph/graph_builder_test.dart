@@ -365,5 +365,78 @@ void main() {
         expect(a1Edges == null || a1Edges.isEmpty, isTrue); // A#1 is at end
       });
     });
+
+    group('inEdges (predecessors)', () {
+      test('should be consistent with edges', () {
+        final lang = createMockLanguage(
+          id: 'TEST',
+          phrases: ['IT IS ONE', 'IT IS TWO', 'TEN PAST FIVE', 'FIVE PAST TEN'],
+        );
+        final graph = WordDependencyGraphBuilder.build(language: lang);
+
+        // For every edge A -> B in edges, A must be in inEdges[B]
+        for (final entry in graph.edges.entries) {
+          final fromNode = entry.key;
+          for (final toNode in entry.value) {
+            expect(
+              graph.inEdges[toNode],
+              isNotNull,
+              reason: 'inEdges should contain an entry for $toNode',
+            );
+            expect(
+              graph.inEdges[toNode]!.contains(fromNode),
+              isTrue,
+              reason: 'inEdges[$toNode] should contain $fromNode',
+            );
+          }
+        }
+
+        // For every parent A in inEdges[B], B must be in edges[A]
+        for (final entry in graph.inEdges.entries) {
+          final toNode = entry.key;
+          for (final fromNode in entry.value) {
+            expect(
+              graph.edges[fromNode],
+              isNotNull,
+              reason: 'edges should contain an entry for $fromNode',
+            );
+            expect(
+              graph.edges[fromNode]!.contains(toNode),
+              isTrue,
+              reason: 'edges[$fromNode] should contain $toNode',
+            );
+          }
+        }
+      });
+
+      test('shoud correctly map predecessors in a simple phrase', () {
+        final lang = createMockLanguage(id: 'TEST', phrases: ['IT IS ONE']);
+        final graph = WordDependencyGraphBuilder.build(language: lang);
+
+        final itNode = graph.nodes['IT']!.first;
+        final isNode = graph.nodes['IS']!.first;
+        final oneNode = graph.nodes['ONE']!.first;
+
+        expect(graph.inEdges[itNode], isNull, reason: 'First node has no inEdges');
+        expect(graph.inEdges[isNode]!.contains(itNode), isTrue);
+        expect(graph.inEdges[oneNode]!.contains(isNode), isTrue);
+      });
+
+      test('should correctly map multiple predecessors for shared nodes', () {
+        final lang = createMockLanguage(
+          id: 'TEST',
+          phrases: ['IT IS ONE', 'SHE IS TWO'],
+        );
+        final graph = WordDependencyGraphBuilder.build(language: lang);
+
+        final isNode = graph.nodes['IS']!.first;
+        final itNode = graph.nodes['IT']!.first;
+        final sheNode = graph.nodes['SHE']!.first;
+
+        expect(graph.inEdges[isNode]!.length, 2);
+        expect(graph.inEdges[isNode]!.contains(itNode), isTrue);
+        expect(graph.inEdges[isNode]!.contains(sheNode), isTrue);
+      });
+    });
   });
 }

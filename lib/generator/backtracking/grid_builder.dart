@@ -180,8 +180,9 @@ class BacktrackingGridBuilder {
 
   /// Creates a list of placement tasks sorted by rank and then by word length.
   List<_PlacementTask> _createPlacementTasks(Map<WordNode, int> nodeRanks) {
-    final tasks =
-        nodeRanks.entries.map((e) => _PlacementTask(e.key, e.value)).toList();
+    final tasks = nodeRanks.entries
+        .map((e) => _PlacementTask(e.key, e.value))
+        .toList();
 
     tasks.sort((a, b) {
       if (a.rank != b.rank) {
@@ -194,12 +195,7 @@ class BacktrackingGridBuilder {
   }
 
   /// Check if placing a word node respects all its parent dependencies
-  bool _respectsParents(
-    GridState state,
-    WordNode node,
-    int row,
-    int col,
-  ) {
+  bool _respectsParents(GridState state, WordNode node, int row, int col) {
     // Find parents in the graph
     final parents = <WordNode>[];
     for (final entry in graph.edges.entries) {
@@ -274,24 +270,24 @@ class BacktrackingGridBuilder {
 
     // Check all existing placements
     for (final other in state.nodePlacements.values) {
-        // Check if on same row or adjacent rows
-        if ((other.row - row).abs() <= 1) {
-          // Check horizontal separation on same row
-          if (other.row == row) {
-            // Check if words are adjacent
-            if ((other.endCol == col - 1) || (endCol == other.startCol - 1)) {
-              // Words are adjacent - need padding if language requires it
-              if (language.requiresPadding) {
-                return false; // Reject - no padding between words
-              }
+      // Check if on same row or adjacent rows
+      if ((other.row - row).abs() <= 1) {
+        // Check horizontal separation on same row
+        if (other.row == row) {
+          // Check if words are adjacent
+          if ((other.endCol == col - 1) || (endCol == other.startCol - 1)) {
+            // Words are adjacent - need padding if language requires it
+            if (language.requiresPadding) {
+              return false; // Reject - no padding between words
             }
-            // Check if words overlap in a way that creates no separation
-            if ((col >= other.startCol && col <= other.endCol) ||
-                (endCol >= other.startCol && endCol <= other.endCol) ||
-                (col <= other.startCol && endCol >= other.endCol)) {
-              // Some overlap - this is checked by canPlaceWord, so if we're here it's OK
-              continue;
-            }
+          }
+          // Check if words overlap in a way that creates no separation
+          if ((col >= other.startCol && col <= other.endCol) ||
+              (endCol >= other.startCol && endCol <= other.endCol) ||
+              (col <= other.startCol && endCol >= other.endCol)) {
+            // Some overlap - this is checked by canPlaceWord, so if we're here it's OK
+            continue;
+          }
         }
       }
     }

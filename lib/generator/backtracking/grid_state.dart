@@ -140,14 +140,10 @@ class GridState {
   /// Returns a tuple: (canPlace, overlappedIndices)
   /// - canPlace: true if placement is possible
   /// - overlappedIndices: list of cell indices (within word) that overlap with existing content
-  (bool, List<int>) canPlaceWord(
-    List<String> cells,
-    int row,
-    int col,
-  ) {
+  (bool, List<int>) canPlaceWord(List<String> cells, int row, int col) {
     // Check bounds
-    assert (row >= 0 && row < height);
-    assert (col >= 0 && col + cells.length <= width);
+    assert(row >= 0 && row < height);
+    assert(col >= 0 && col + cells.length <= width);
 
     final overlappedIndices = <int>[];
 
@@ -173,11 +169,7 @@ class GridState {
   /// Place a word node on the grid
   ///
   /// Returns the WordPlacement if successful, null if placement fails
-  WordPlacement? placeWord(
-    WordNode node,
-    int row,
-    int col,
-  ) {
+  WordPlacement? placeWord(WordNode node, int row, int col) {
     final (canPlace, overlappedIndices) = canPlaceWord(node.cells, row, col);
     if (!canPlace) return null;
 
@@ -244,17 +236,17 @@ class GridState {
     double minDist = double.infinity;
 
     for (final placement in nodePlacements.values) {
-        // Distance to start of word
-        final distStart = sqrt(
-          pow(row - placement.row, 2) + pow(col - placement.startCol, 2),
-        );
-        minDist = min(minDist, distStart);
+      // Distance to start of word
+      final distStart = sqrt(
+        pow(row - placement.row, 2) + pow(col - placement.startCol, 2),
+      );
+      minDist = min(minDist, distStart);
 
-        // Distance to end of word
-        final distEnd = sqrt(
-          pow(row - placement.row, 2) + pow(col - placement.endCol, 2),
-        );
-        minDist = min(minDist, distEnd);
+      // Distance to end of word
+      final distEnd = sqrt(
+        pow(row - placement.row, 2) + pow(col - placement.endCol, 2),
+      );
+      minDist = min(minDist, distEnd);
     }
 
     return minDist;

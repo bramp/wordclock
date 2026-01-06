@@ -14,6 +14,9 @@ class WordDependencyGraph {
   /// Edges representing word ordering: node ID → set of successor node IDs
   final Map<WordNode, Set<WordNode>> edges;
 
+  /// Inverted edges (parents): node ID → set of predecessor node IDs
+  final Map<WordNode, Set<WordNode>> inEdges;
+
   /// All phrases: phrase text -> ordered list of nodes
   final Map<String, List<WordNode>> phrases;
 
@@ -23,6 +26,7 @@ class WordDependencyGraph {
   WordDependencyGraph({
     required this.nodes,
     required this.edges,
+    required this.inEdges,
     required this.phrases,
     required this.language,
   });

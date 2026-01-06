@@ -20,6 +20,7 @@ class WordDependencyGraphBuilder {
   static WordDependencyGraph build({required WordClockLanguage language}) {
     final Map<String, List<WordNode>> nodes = {};
     final Map<WordNode, Set<WordNode>> edges = {};
+    final Map<WordNode, Set<WordNode>> inEdges = {};
     final Map<String, List<WordNode>> phrases = {};
     final Set<String> processedPhrases = {};
 
@@ -64,7 +65,6 @@ class WordDependencyGraphBuilder {
         final predNode = i > 0 ? phraseNodes[i - 1] : null;
 
         // Try to find/create a node instance that doesn't create cycles.
-        // We start from instance 0 and try to reuse existing nodes first.
         WordNode? selectedNode;
         final instances = nodes[word] ??= [];
 
@@ -96,6 +96,7 @@ class WordDependencyGraphBuilder {
         // Add edge from the previous node to the selected node
         if (predNode != null) {
           edges.putIfAbsent(predNode, () => {}).add(selectedNode);
+          inEdges.putIfAbsent(selectedNode, () => {}).add(predNode);
         }
       }
 
@@ -105,6 +106,7 @@ class WordDependencyGraphBuilder {
     return WordDependencyGraph(
       nodes: nodes,
       edges: edges,
+      inEdges: inEdges,
       phrases: phrases,
       language: language,
     );
