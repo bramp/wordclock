@@ -36,7 +36,6 @@ void main() {
         height: 10,
         language: language,
         seed: 0,
-        maxSearchTimeSeconds: 10,
       );
 
       final result = builder.build();
@@ -111,10 +110,32 @@ void main() {
       // The first row should be exactly IT.IS.TWENTYFIVE
       // because that satisfies all three phrases optimally.
       expect(gridStr.substring(0, 16), equals('IT.IS.TWENTYFIVE'));
-      
+
       // All nodes should be placed (IT, IS, FIVE, TWENTYFIVE, TWENTY)
       // Note: FIVE and TWENTY overlap with TWENTYFIVE.
       expect(result.placedWords, equals(result.totalWords));
+    });
+
+    test('findFirstValid stops after finding first complete grid', () {
+      final builder = BacktrackingGridBuilder(
+        width: 11,
+        height: 10,
+        language: englishLanguage,
+        seed: 0,
+        findFirstValid: true,
+      );
+
+      final stopwatch = Stopwatch()..start();
+      final result = builder.build();
+      stopwatch.stop();
+
+      // Should find a valid grid
+      expect(result.grid, isNotNull);
+      expect(result.isOptimal, isTrue);
+
+      // Should complete much faster than the full timeout
+      // (typically under 1 second vs 30+ seconds for full optimization)
+      expect(stopwatch.elapsedMilliseconds, lessThan(10000));
     });
   });
 }

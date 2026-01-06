@@ -8,6 +8,32 @@ import 'package:wordclock/generator/utils/grid_validator.dart';
 import 'package:wordclock/languages/language.dart';
 import 'package:wordclock/model/word_grid.dart';
 
+/// Progress information during grid building.
+class GridBuildProgress {
+  /// Words placed in current search path
+  final int currentWords;
+
+  /// Best number of words placed so far
+  final int bestWords;
+
+  /// Total words to place
+  final int totalWords;
+
+  /// Current grid state as a string (for display)
+  final String gridString;
+
+  GridBuildProgress({
+    required this.currentWords,
+    required this.bestWords,
+    required this.totalWords,
+    required this.gridString,
+  });
+}
+
+/// Callback for progress updates during grid building.
+/// Return true to continue, false to stop the search.
+typedef ProgressCallback = bool Function(GridBuildProgress progress);
+
 /// A backtracking-based grid builder that finds optimal word placements.
 class BacktrackingGridBuilder {
   final int width;
@@ -21,22 +47,29 @@ class BacktrackingGridBuilder {
   /// Padding alphabet cells
   final List<String> paddingCells;
 
-  /// Configuration
-  final int maxSearchTimeSeconds;
+  /// If true, stop after finding the first valid grid (all words placed).
+  /// If false (default), continue searching for optimal (minimum height) grid.
+  final bool findFirstValid;
+
+  /// Optional callback for progress updates (called at most once per second).
+  /// Return true to continue, false to stop the search.
+  final ProgressCallback? onProgress;
 
   /// Internal state for the best grid found
   GridState? _bestState;
   int _minHeightFound = 1000;
   int _maxWordsPlaced = -1;
-  late DateTime _deadline;
-  DateTime _lastProgressPrint = DateTime.now();
+  int _totalWords = 0;
+  bool _stopRequested = false;
+  DateTime _lastProgressReport = DateTime.now();
 
   BacktrackingGridBuilder({
     required this.width,
     required this.height,
     required this.language,
     required int seed,
-    this.maxSearchTimeSeconds = 30,
+    this.findFirstValid = true,
+    this.onProgress,
   }) : random = Random(seed),
        paddingCells = WordGrid.splitIntoCells(language.paddingAlphabet);
 
@@ -52,9 +85,10 @@ class BacktrackingGridBuilder {
     final state = GridState(width: width, height: height);
     _minHeightFound = height; // Initial target height
     _maxWordsPlaced = -1;
+    _totalWords = graph.nodes.values.expand((instances) => instances).length;
     _bestState = null;
-    _deadline = DateTime.now().add(Duration(seconds: maxSearchTimeSeconds));
-    _lastProgressPrint = DateTime.now();
+    _stopRequested = false;
+    _lastProgressReport = DateTime.now();
 
     // Group nodes by rank
     final maxRank = nodeRanks.isEmpty ? 0 : nodeRanks.values.reduce(max);
@@ -91,21 +125,30 @@ class BacktrackingGridBuilder {
     return GridBuildResult(
       grid: gridCells,
       validationIssues: validationIssues,
-      totalWords: graph.nodes.values.expand((instances) => instances).length,
+      totalWords: _totalWords,
       placedWords: placedWords,
     );
   }
 
-  void _printProgress(DateTime now, GridState state, int totalWords) {
-    if (now.difference(_lastProgressPrint).inSeconds < 1) return;
+  void _reportProgress(DateTime now, GridState state) {
+    if (now.difference(_lastProgressReport).inSeconds < 1) return;
+    if (onProgress == null) return;
 
-    _lastProgressPrint = now;
-    final progressGrid = state.clone();
-    print(
-      '\n--- Current Search: ${state.nodePlacements.length}/$totalWords words (Best: $_maxWordsPlaced) ---',
-    );
-    print(progressGrid.toGridString());
+    _lastProgressReport = now;
+    final shouldContinue = onProgress!(GridBuildProgress(
+      currentWords: state.nodePlacements.length,
+      bestWords: _maxWordsPlaced,
+      totalWords: _totalWords,
+      gridString: state.toGridString(),
+    ));
+    if (!shouldContinue) {
+      _stopRequested = true;
+    }
   }
+
+  /// Returns true if search should stop
+  bool get _shouldStop =>
+      _stopRequested || (findFirstValid && _maxWordsPlaced == _totalWords);
 
   /// The main recursive solve function
   void _solve(
@@ -115,15 +158,13 @@ class BacktrackingGridBuilder {
     List<WordNode> currentRankRemaining,
   ) {
     final placedWords = state.nodePlacements.length;
-    final totalWords =
-        graph.nodes.values.expand((instances) => instances).length;
 
     final now = DateTime.now();
 
-    // Periodically print progress
-    _printProgress(now, state, totalWords);
+    // Periodically report progress
+    _reportProgress(now, state);
 
-    if (now.isAfter(_deadline)) return;
+    if (_shouldStop) return;
 
     // Update best found so far (even if partial)
     if (placedWords > _maxWordsPlaced) {
@@ -174,15 +215,12 @@ class BacktrackingGridBuilder {
         }
       }
 
-      if (DateTime.now().isAfter(_deadline)) return;
+      if (_shouldStop) return;
     }
   }
 
   /// Finds the earliest valid placement for a word, respecting parents and reading order.
-  (int row, int col) _findEarliestPlacement(
-    GridState state,
-    WordNode node,
-  ) {
+  (int row, int col) _findEarliestPlacement(GridState state, WordNode node) {
     int minRow = 0;
     int minCol = 0;
 
@@ -220,7 +258,12 @@ class BacktrackingGridBuilder {
   }
 
   /// Helper to check placement and count overlaps
-  (bool, int) _checkPlacement(GridState state, WordNode node, int row, int col) {
+  (bool, int) _checkPlacement(
+    GridState state,
+    WordNode node,
+    int row,
+    int col,
+  ) {
     int overlaps = 0;
     for (int i = 0; i < node.cells.length; i++) {
       final existing = state.grid[row][col + i];

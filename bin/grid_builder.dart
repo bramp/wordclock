@@ -287,18 +287,30 @@ void _generateWithGreedy(Config config) {
 void _generateWithBacktracking(Config config) {
   final int finalSeed = config.seed ?? 0;
   final int targetHeight = config.targetHeight > 0 ? config.targetHeight : 10;
+  const int maxSearchTimeSeconds = 60;
 
   print('Backtracking Grid Builder');
   print('Target: ${config.gridWidth}x$targetHeight');
   print('Seed: $finalSeed');
+  print('Timeout: ${maxSearchTimeSeconds}s');
   print('');
+
+  final deadline = DateTime.now().add(Duration(seconds: maxSearchTimeSeconds));
 
   final builder = BacktrackingGridBuilder(
     width: config.gridWidth,
     height: targetHeight,
     language: config.language,
     seed: finalSeed,
-    maxSearchTimeSeconds: 60,
+    onProgress: (progress) {
+      print(
+        '\n--- Current Search: ${progress.currentWords}/${progress.totalWords} words (Best: ${progress.bestWords}) ---',
+      );
+      print(progress.gridString);
+
+      // Return false to stop if deadline passed
+      return DateTime.now().isBefore(deadline);
+    },
   );
 
   final result = builder.build();

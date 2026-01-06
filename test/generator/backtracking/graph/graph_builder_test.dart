@@ -416,7 +416,11 @@ void main() {
         final isNode = graph.nodes['IS']!.first;
         final oneNode = graph.nodes['ONE']!.first;
 
-        expect(graph.inEdges[itNode], isNull, reason: 'First node has no inEdges');
+        expect(
+          graph.inEdges[itNode],
+          isNull,
+          reason: 'First node has no inEdges',
+        );
         expect(graph.inEdges[isNode]!.contains(itNode), isTrue);
         expect(graph.inEdges[oneNode]!.contains(isNode), isTrue);
       });
