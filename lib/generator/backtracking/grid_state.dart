@@ -1,10 +1,11 @@
 import 'dart:math';
+import 'package:wordclock/generator/backtracking/graph/word_node.dart';
 import 'package:wordclock/generator/utils/grid_validator.dart';
 
 /// Represents a placed word on the grid.
 class WordPlacement {
-  /// The word that was placed
-  final String word;
+  /// The word node that was placed
+  final WordNode node;
 
   /// Row where the word starts (0-based)
   final int row;
@@ -18,9 +19,6 @@ class WordPlacement {
   /// Indices of cells (within this word) that overlapped with existing grid content
   final List<int> overlappedCells;
 
-  /// Which instance of this word (0-based) - since same word can appear multiple times
-  final int instanceIndex;
-
   /// Length of the word in cells
   int get length => endCol - startCol + 1;
 
@@ -28,12 +26,11 @@ class WordPlacement {
   int get overlapCount => overlappedCells.length;
 
   WordPlacement({
-    required this.word,
+    required this.node,
     required this.row,
     required this.startCol,
     required this.endCol,
     required this.overlappedCells,
-    this.instanceIndex = 0,
   });
 
   /// Check if this placement comes after [other] in reading order
@@ -64,7 +61,7 @@ class WordPlacement {
 
   @override
   String toString() =>
-      'WordPlacement($word@($row,$startCol-$endCol), overlaps=$overlapCount, instance=$instanceIndex)';
+      'WordPlacement(${node.id}@($row,$startCol-$endCol), overlaps=$overlapCount)';
 }
 
 /// Represents the current state of the grid during backtracking.
@@ -78,8 +75,8 @@ class GridState {
   /// Height of the grid
   final int height;
 
-  /// Track word placements: word -> list of placements (multiple instances possible)
-  final Map<String, List<WordPlacement>> wordPlacements;
+  /// Track word placements: word node -> placement
+  final Map<WordNode, WordPlacement> nodePlacements;
 
   /// Track which phrases are fully satisfied
   final Set<String> satisfiedPhrases;
@@ -98,10 +95,8 @@ class GridState {
   /// Total overlap cells across all placements
   int get totalOverlapCells {
     int count = 0;
-    for (final placements in wordPlacements.values) {
-      for (final placement in placements) {
-        count += placement.overlapCount;
-      }
+    for (final placement in nodePlacements.values) {
+      count += placement.overlapCount;
     }
     return count;
   }
@@ -117,7 +112,7 @@ class GridState {
 
   GridState({required this.width, required this.height})
     : grid = List.generate(height, (_) => List.filled(width, null)),
-      wordPlacements = {},
+      nodePlacements = {},
       satisfiedPhrases = {};
 
   /// Create a deep copy of this state
@@ -132,9 +127,7 @@ class GridState {
     }
 
     // Copy word placements
-    for (final entry in wordPlacements.entries) {
-      newState.wordPlacements[entry.key] = List.from(entry.value);
-    }
+    newState.nodePlacements.addAll(nodePlacements);
 
     // Copy satisfied phrases
     newState.satisfiedPhrases.addAll(satisfiedPhrases);
@@ -148,14 +141,13 @@ class GridState {
   /// - canPlace: true if placement is possible
   /// - overlappedIndices: list of cell indices (within word) that overlap with existing content
   (bool, List<int>) canPlaceWord(
-    String word,
     List<String> cells,
     int row,
     int col,
   ) {
     // Check bounds
-    if (row < 0 || row >= height) return (false, []);
-    if (col < 0 || col + cells.length > width) return (false, []);
+    assert (row >= 0 && row < height);
+    assert (col >= 0 && col + cells.length <= width);
 
     final overlappedIndices = <int>[];
 
@@ -178,37 +170,33 @@ class GridState {
     return (true, overlappedIndices);
   }
 
-  /// Place a word on the grid
+  /// Place a word node on the grid
   ///
   /// Returns the WordPlacement if successful, null if placement fails
   WordPlacement? placeWord(
-    String word,
-    List<String> cells,
+    WordNode node,
     int row,
-    int col, {
-    int instanceIndex = 0,
-  }) {
-    final (canPlace, overlappedIndices) = canPlaceWord(word, cells, row, col);
+    int col,
+  ) {
+    final (canPlace, overlappedIndices) = canPlaceWord(node.cells, row, col);
     if (!canPlace) return null;
 
     // Place the word
-    for (int i = 0; i < cells.length; i++) {
-      grid[row][col + i] = cells[i];
+    for (int i = 0; i < node.cells.length; i++) {
+      grid[row][col + i] = node.cells[i];
     }
 
     // Create placement record
     final placement = WordPlacement(
-      word: word,
+      node: node,
       row: row,
       startCol: col,
-      endCol: col + cells.length - 1,
+      endCol: col + node.cells.length - 1,
       overlappedCells: overlappedIndices,
-      instanceIndex: instanceIndex,
     );
 
     // Record placement
-    wordPlacements.putIfAbsent(word, () => []);
-    wordPlacements[word]!.add(placement);
+    nodePlacements[node] = placement;
 
     return placement;
   }
@@ -216,13 +204,7 @@ class GridState {
   /// Remove a placed word from the grid (backtracking support)
   void removePlacement(WordPlacement placement) {
     // Remove from map
-    final placements = wordPlacements[placement.word];
-    if (placements != null) {
-      placements.remove(placement);
-      if (placements.isEmpty) {
-        wordPlacements.remove(placement.word);
-      }
-    }
+    nodePlacements.remove(placement.node);
 
     // Clear grid cells that were NOT overlapped
     // We assume standard splitting matches - usually true unless special merging
@@ -240,29 +222,28 @@ class GridState {
     }
   }
 
-  /// Get all placements of a specific word
+  /// Get all placements of a specific word (by string)
   List<WordPlacement> getPlacementsOf(String word) {
-    return wordPlacements[word] ?? [];
+    return nodePlacements.values.where((p) => p.node.word == word).toList();
   }
 
-  /// Check if a word is placed
-  bool isWordPlaced(String word) {
-    return wordPlacements.containsKey(word) && wordPlacements[word]!.isNotEmpty;
+  /// Check if a word node is placed
+  bool isNodePlaced(WordNode node) {
+    return nodePlacements.containsKey(node);
   }
 
   /// Get the number of instances of a word that are placed
   int getPlacedInstanceCount(String word) {
-    return wordPlacements[word]?.length ?? 0;
+    return nodePlacements.keys.where((n) => n.word == word).length;
   }
 
   /// Calculate distance from position to nearest placed word
   double distanceToNearestWord(int row, int col) {
-    if (wordPlacements.isEmpty) return double.infinity;
+    if (nodePlacements.isEmpty) return double.infinity;
 
     double minDist = double.infinity;
 
-    for (final placements in wordPlacements.values) {
-      for (final placement in placements) {
+    for (final placement in nodePlacements.values) {
         // Distance to start of word
         final distStart = sqrt(
           pow(row - placement.row, 2) + pow(col - placement.startCol, 2),
@@ -274,7 +255,6 @@ class GridState {
           pow(row - placement.row, 2) + pow(col - placement.endCol, 2),
         );
         minDist = min(minDist, distEnd);
-      }
     }
 
     return minDist;
@@ -320,7 +300,7 @@ class GridState {
     buffer.writeln(
       '  Overlaps: $totalOverlapCells (compactness: ${(compactness * 100).toStringAsFixed(1)}%)',
     );
-    buffer.writeln('  Words placed: ${wordPlacements.length}');
+    buffer.writeln('  Words placed: ${nodePlacements.length}');
     buffer.writeln('  Satisfied phrases: ${satisfiedPhrases.length}');
     return buffer.toString();
   }
