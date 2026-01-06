@@ -48,88 +48,55 @@ class WordDependencyGraphBuilder {
 
     // 1. Process all phrases
     WordClockUtils.forEachTime(language, (time, phraseText) {
-      final words = language.tokenize(phraseText);
-      if (words.isEmpty) return;
-
+      // Optomisation to avoid processing the same phrase twice
+      // for example, Ten O'Clock - could be AM or PM.
       if (processedPhrases.contains(phraseText)) return;
       processedPhrases.add(phraseText);
 
+      final words = language.tokenize(phraseText);
+      if (words.isEmpty) return;
+
       final phraseNodes = <WordNode>[];
-      // Track which instance we should use for each word we've seen in this phrase
-      final Map<String, int> wordInstanceInPhrase = {};
 
       // Process each word in the phrase
       for (int i = 0; i < words.length; i++) {
         final word = words[i];
         final predNode = i > 0 ? phraseNodes[i - 1] : null;
 
-        // Check if this word appeared before in this phrase
-        final minInstance = wordInstanceInPhrase[word] ?? 0;
-        wordInstanceInPhrase[word] = minInstance + 1;
-
-        // Try to find/create a node instance that doesn't create cycles
+        // Try to find/create a node instance that doesn't create cycles.
+        // We start from instance 0 and try to reuse existing nodes first.
         WordNode? selectedNode;
-        for (int tryInstance = minInstance; tryInstance <= 100; tryInstance++) {
-          // Check if this instance already exists
-          final instances = nodes[word] ?? [];
-          WordNode? existingNode;
-          for (final node in instances) {
-            if (node.instance == tryInstance) {
-              existingNode = node;
-              break;
-            }
-          }
+        final instances = nodes[word] ??= [];
 
-          // Temporary node for cycle checking if it doesn't exist yet
-          final tempNode =
-              existingNode ??
-              WordNode(
-                word: word,
-                instance: tryInstance,
-                cells: [], // Dummy
-                phrases: {},
-              );
-
-          // Check if using this node would create a cycle
-          if (predNode != null && wouldCreateCycle(predNode, tempNode)) {
-            // This would create a cycle, try next instance
-            continue;
+        // Try to find an existing instance that doesn't create a cycle.
+        selectedNode = null;
+        for (final node in instances) {
+          if (predNode == null || !wouldCreateCycle(predNode, node)) {
+            selectedNode = node;
+            break;
           }
-
-          // This instance works!
-          if (existingNode != null) {
-            // Reuse existing node
-            existingNode.phrases.add(phraseText);
-            selectedNode = existingNode;
-          } else {
-            // Create new instance
-            final cells = WordGrid.splitIntoCells(word);
-            final newNode = WordNode(
-              word: word,
-              instance: tryInstance,
-              cells: cells,
-              phrases: {phraseText},
-            );
-            instances.add(newNode);
-            nodes[word] = instances;
-            selectedNode = newNode;
-          }
-          break;
         }
 
-        if (selectedNode == null) {
-          throw StateError('Could not find valid node instance for $word');
+        if (selectedNode != null) {
+          // Reuse existing node
+          selectedNode.phrases.add(phraseText);
+        } else {
+          // Create new instance
+          selectedNode = WordNode(
+            word: word,
+            instance: instances.length,
+            cells: WordGrid.splitIntoCells(word),
+            phrases: {phraseText},
+          );
+          instances.add(selectedNode);
         }
 
         phraseNodes.add(selectedNode);
-      }
 
-      // Now add edges between consecutive nodes in this phrase
-      for (int i = 0; i < phraseNodes.length - 1; i++) {
-        final fromNode = phraseNodes[i];
-        final toNode = phraseNodes[i + 1];
-        edges.putIfAbsent(fromNode, () => {});
-        edges[fromNode]!.add(toNode);
+        // Add edge from the previous node to the selected node
+        if (predNode != null) {
+          edges.putIfAbsent(predNode, () => {}).add(selectedNode);
+        }
       }
 
       phrases[phraseText] = phraseNodes;

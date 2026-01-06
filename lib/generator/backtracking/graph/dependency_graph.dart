@@ -37,67 +37,6 @@ class WordDependencyGraph {
     return allNodes;
   }
 
-  /// Get words sorted by priority (higher priority first)
-  /// Returns unique words with their highest priority instance
-  List<String> getWordsByPriority() {
-    final Map<String, double> wordPriorities = {};
-    for (final entry in nodes.entries) {
-      final word = entry.key;
-      final instances = entry.value;
-      // Get max priority across all instances
-      final maxPriority = instances
-          .map((n) => n.priority)
-          .reduce((a, b) => a > b ? a : b);
-      wordPriorities[word] = maxPriority;
-    }
-
-    final words = wordPriorities.keys.toList();
-    words.sort((a, b) => wordPriorities[b]!.compareTo(wordPriorities[a]!));
-    return words;
-  }
-
-  /// Get all unique words
-  Set<String> getUniqueWords() {
-    return nodes.keys.toSet();
-  }
-
-  /// Get all nodes for a given word
-  List<WordNode> getNodesForWord(String word) {
-    return nodes[word] ?? [];
-  }
-
-  /// Get all phrases that contain [word]
-  Set<String> getPhrasesContaining(String word) {
-    final instances = nodes[word];
-    if (instances == null) return {};
-
-    final allPhrases = <String>{};
-    for (final node in instances) {
-      allPhrases.addAll(node.phrases);
-    }
-    return allPhrases;
-  }
-
-  /// Get the position(s) of [word] in [phrase]
-  List<int> getPositionsInPhrase(String word, String phrase) {
-    final phraseNodes = phrases[phrase];
-    if (phraseNodes == null) return [];
-
-    final instances = nodes[word];
-    if (instances == null) return [];
-
-    // Build set of nodes for this word
-    final wordNodes = instances.toSet();
-
-    final positions = <int>[];
-    for (int i = 0; i < phraseNodes.length; i++) {
-      if (wordNodes.contains(phraseNodes[i])) {
-        positions.add(i);
-      }
-    }
-    return positions;
-  }
-
   @override
   String toString() {
     final buffer = StringBuffer();

@@ -4,7 +4,6 @@ import 'package:wordclock/generator/greedy/dependency_graph.dart';
 import 'package:wordclock/generator/greedy/dot_exporter.dart';
 import 'package:wordclock/generator/greedy/grid_builder.dart';
 import 'package:wordclock/generator/utils/grid_validator.dart';
-import 'package:wordclock/generator/backtracking/graph/dependency_graph.dart';
 import 'package:wordclock/generator/backtracking/graph/graph_builder.dart';
 import 'package:wordclock/generator/backtracking/dot_exporter.dart';
 import 'package:wordclock/languages/language.dart';

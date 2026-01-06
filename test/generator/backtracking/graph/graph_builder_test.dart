@@ -92,17 +92,25 @@ void main() {
       expect(cyclicGraph.nodes.length, greaterThan(0));
       expect(cyclicGraph.phrases.length, 2);
 
-      // FIVE and TEN can be reused (no cycle created by reusing them)
+      // FIVE and TEN might need multiple instances if reuse creates cycles.
       // In 'FIVE PAST TEN': FIVE#0 -> PAST#0 -> TEN#0
-      // In 'TEN PAST FIVE': TEN#0 -> PAST#1 -> FIVE#0 (PAST#1 needed to avoid cycle)
+      // In 'TEN PAST FIVE':
+      //   TEN#0 reuses TEN#0.
+      //   PAST#0 would create cycle (PAST#0 -> TEN#0 -> PAST#0), so uses PAST#1.
+      //   FIVE#0 would create cycle (FIVE#0 -> PAST#0 -> TEN#0 -> PAST#1 -> FIVE#0), so uses FIVE#1.
       final fiveInstances = cyclicGraph.nodes['FIVE'];
       expect(fiveInstances, isNotNull);
-      expect(fiveInstances!.length, 1, reason: 'FIVE can be reused (no cycle)');
-      expect(fiveInstances[0].frequency, 2);
+      expect(
+        fiveInstances!.length,
+        2,
+        reason: 'FIVE needs 2 instances to prevent cycle',
+      );
+      expect(fiveInstances[0].frequency, 1);
+      expect(fiveInstances[1].frequency, 1);
 
       final tenInstances = cyclicGraph.nodes['TEN'];
       expect(tenInstances, isNotNull);
-      expect(tenInstances!.length, 1, reason: 'TEN can be reused (no cycle)');
+      expect(tenInstances!.length, 1, reason: 'TEN can be reused');
       expect(tenInstances[0].frequency, 2);
 
       // PAST needs 2 instances to prevent cycle
@@ -156,34 +164,6 @@ void main() {
           );
         }
       }
-    });
-
-    test('should handle multiple instances in complex phrase patterns', () {
-      final lang = createMockLanguage(
-        id: 'TEST',
-        phrases: [
-          'A B A B A', // A appears 3 times, B appears 2 times
-          'B C B', // B appears 2 times, C appears 1 time
-        ],
-      );
-      final graph = WordDependencyGraphBuilder.build(language: lang);
-
-      // Each occurrence of A in different contexts should create a separate node
-      // A at position 0 (pred=null, succ=B)
-      // A at position 2 (pred=B, succ=B)
-      // A at position 4 (pred=B, succ=null)
-
-      // Check that A nodes exist
-      final aInstances = graph.nodes['A'];
-      expect(aInstances, isNotNull, reason: 'Should have A nodes');
-      expect(aInstances!.length, greaterThan(0));
-
-      // Check positions in first phrase
-      final aPositions = graph.getPositionsInPhrase('A', 'A B A B A');
-      expect(aPositions, [0, 2, 4]);
-
-      final bPositions = graph.getPositionsInPhrase('B', 'A B A B A');
-      expect(bPositions, [1, 3]);
     });
 
     test('should work with different languages', () {
