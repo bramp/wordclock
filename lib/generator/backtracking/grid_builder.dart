@@ -27,7 +27,9 @@ class BacktrackingGridBuilder {
   /// Internal state for the best grid found
   GridState? _bestState;
   int _minHeightFound = 1000;
+  int _maxWordsPlaced = -1;
   late DateTime _deadline;
+  DateTime _lastProgressPrint = DateTime.now();
 
   BacktrackingGridBuilder({
     required this.width,
@@ -49,14 +51,21 @@ class BacktrackingGridBuilder {
     // 3. Initialize search
     final state = GridState(width: width, height: height);
     _minHeightFound = height; // Initial target height
+    _maxWordsPlaced = -1;
     _bestState = null;
     _deadline = DateTime.now().add(Duration(seconds: maxSearchTimeSeconds));
+    _lastProgressPrint = DateTime.now();
 
     // Group nodes by rank
     final maxRank = nodeRanks.isEmpty ? 0 : nodeRanks.values.reduce(max);
     final List<List<WordNode>> ranks = List.generate(maxRank + 1, (_) => []);
     for (final entry in nodeRanks.entries) {
       ranks[entry.value].add(entry.key);
+    }
+
+    // Sort words within each rank by length (longest first)
+    for (final rankList in ranks) {
+      rankList.sort((a, b) => b.cells.length.compareTo(a.cells.length));
     }
 
     // 4. Recursive Solve
@@ -87,6 +96,17 @@ class BacktrackingGridBuilder {
     );
   }
 
+  void _printProgress(DateTime now, GridState state, int totalWords) {
+    if (now.difference(_lastProgressPrint).inSeconds < 1) return;
+
+    _lastProgressPrint = now;
+    final progressGrid = state.clone();
+    print(
+      '\n--- Current Search: ${state.nodePlacements.length}/$totalWords words (Best: $_maxWordsPlaced) ---',
+    );
+    print(progressGrid.toGridString());
+  }
+
   /// The main recursive solve function
   void _solve(
     GridState state,
@@ -94,7 +114,22 @@ class BacktrackingGridBuilder {
     int rankIndex,
     List<WordNode> currentRankRemaining,
   ) {
-    if (DateTime.now().isAfter(_deadline)) return;
+    final placedWords = state.nodePlacements.length;
+    final totalWords =
+        graph.nodes.values.expand((instances) => instances).length;
+
+    final now = DateTime.now();
+
+    // Periodically print progress
+    _printProgress(now, state, totalWords);
+
+    if (now.isAfter(_deadline)) return;
+
+    // Update best found so far (even if partial)
+    if (placedWords > _maxWordsPlaced) {
+      _maxWordsPlaced = placedWords;
+      _bestState = state.clone();
+    }
 
     // Pruning: If currently used height already exceeds our best found, backtrack.
     // We check maxRowUsed + 1 (the current height).
@@ -122,53 +157,78 @@ class BacktrackingGridBuilder {
       return;
     }
 
-    // COMBINATORIAL: Try each available word in this rank
+    // Try EVERY word in this rank as the next one to place (Combinatorial)
     for (int i = 0; i < currentRankRemaining.length; i++) {
       final node = currentRankRemaining[i];
 
-      // Pruning: Calculate the min possible position based on parents
-      int minRow = 0;
-      int minCol = 0;
+      // Find EARLIEST valid placement for this word
+      final (r, c) = _findEarliestPlacement(state, node);
 
-      final parents = graph.inEdges[node] ?? {};
-      for (final parentNode in parents) {
-        final p = state.nodePlacements[parentNode];
-        assert(p != null, 'Parent $parentNode not placed');
-        if (p == null) continue; // Should be placed already
-
-        if (p.row > minRow) {
-          minRow = p.row;
-          minCol = p.endCol + (language.requiresPadding ? 2 : 1);
-        } else if (p.row == minRow) {
-          minCol = max(minCol, p.endCol + (language.requiresPadding ? 2 : 1));
+      if (r != -1) {
+        final p = state.placeWord(node, r, c);
+        if (p != null) {
+          final nextRemaining = List<WordNode>.from(currentRankRemaining)
+            ..removeAt(i);
+          _solve(state, rankNodes, rankIndex, nextRemaining);
+          state.removePlacement(p);
         }
       }
 
-      if (minCol >= width) {
-        minRow++;
-        minCol = 0;
+      if (DateTime.now().isAfter(_deadline)) return;
+    }
+  }
+
+  /// Finds the earliest valid placement for a word, respecting parents and reading order.
+  (int row, int col) _findEarliestPlacement(
+    GridState state,
+    WordNode node,
+  ) {
+    int minRow = 0;
+    int minCol = 0;
+
+    // 1. Respect parents
+    final parents = graph.inEdges[node] ?? {};
+    for (final parentNode in parents) {
+      final p = state.nodePlacements[parentNode];
+      if (p == null) continue;
+
+      if (p.row > minRow) {
+        minRow = p.row;
+        minCol = p.endCol + (language.requiresPadding ? 2 : 1);
+      } else if (p.row == minRow) {
+        minCol = max(minCol, p.endCol + (language.requiresPadding ? 2 : 1));
       }
+    }
 
-      // Try every valid position in reading order
-      for (int r = minRow; r < _minHeightFound; r++) {
-        int cStart = (r == minRow) ? minCol : 0;
-        for (int c = cStart; c <= width - node.cells.length; c++) {
-          // Separation check (O(1) using grid)
-          if (language.requiresPadding) {
-            if (c > 0 && state.grid[r][c - 1] != null) continue;
-            if (c + node.cells.length < width && state.grid[r][c + node.cells.length] != null) continue;
-          }
+    if (minCol >= width) {
+      minRow++;
+      minCol = 0;
+    }
 
-          final p = state.placeWord(node, r, c);
-          if (p != null) {
-            final nextRemaining =
-                List<WordNode>.from(currentRankRemaining)..removeAt(i);
-            _solve(state, rankNodes, rankIndex, nextRemaining);
-            state.removePlacement(p);
-          }
+    // 3. Find the very first valid cell
+    for (int r = minRow; r < _minHeightFound; r++) {
+      int cStart = (r == minRow) ? minCol : 0;
+      for (int c = cStart; c <= width - node.cells.length; c++) {
+        final (canPlace, _) = _checkPlacement(state, node, r, c);
+        if (canPlace) {
+          return (r, c);
         }
       }
     }
+
+    return (-1, -1);
+  }
+
+  /// Helper to check placement and count overlaps
+  (bool, int) _checkPlacement(GridState state, WordNode node, int row, int col) {
+    int overlaps = 0;
+    for (int i = 0; i < node.cells.length; i++) {
+      final existing = state.grid[row][col + i];
+      if (existing == null) continue;
+      if (existing != node.cells[i]) return (false, 0);
+      overlaps++;
+    }
+    return (true, overlaps);
   }
 
   /// Fill remaining cells with padding characters
@@ -176,6 +236,7 @@ class BacktrackingGridBuilder {
     for (int row = 0; row < height; row++) {
       for (int col = 0; col < width; col++) {
         if (state.grid[row][col] == null) {
+          assert(state.usage[row][col] == 0);
           state.grid[row][col] =
               paddingCells[random.nextInt(paddingCells.length)];
         }

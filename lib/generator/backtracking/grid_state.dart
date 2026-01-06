@@ -64,6 +64,9 @@ class GridState {
   /// Reference count for each cell: [row][col] -> number of words using this cell
   final List<List<int>> _usage;
 
+  /// Public getter for usage (mostly for testing/assertions)
+  List<List<int>> get usage => _usage;
+
   /// Width of the grid
   final int width;
 
@@ -192,6 +195,9 @@ class GridState {
     // Remove from map
     nodePlacements.remove(placement.node);
 
+    // TODO This is using reference counting, to know when to remove
+    // a value from a cell. But I think keeping a index of overlaps in
+    // WordPlacement may be more efficient.
     final node = placement.node;
     for (int i = 0; i < node.cells.length; i++) {
       final c = placement.startCol + i;

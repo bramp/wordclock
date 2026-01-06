@@ -15,11 +15,12 @@ class MockTimeToWords extends TimeToWords {
   }
 }
 
-/// Creates a mock language for testing with controlled phrases
 WordClockLanguage createMockLanguage({
   required String id,
   required List<String> phrases,
   int minuteIncrement = 5,
+  String paddingAlphabet = ' ',
+  bool requiresPadding = true,
 }) {
   return WordClockLanguage(
     id: id,
@@ -28,7 +29,8 @@ WordClockLanguage createMockLanguage({
     englishName: 'Test',
     timeToWords: MockTimeToWords(phrases),
     minuteIncrement: minuteIncrement,
-    requiresPadding: true,
+    requiresPadding: requiresPadding,
+    paddingAlphabet: paddingAlphabet,
     atomizePhrases: false,
   );
 }

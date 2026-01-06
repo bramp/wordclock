@@ -299,7 +299,6 @@ void _generateWithBacktracking(Config config) {
     language: config.language,
     seed: finalSeed,
     maxSearchTimeSeconds: 60,
-    maxNodesExplored: 500000,
   );
 
   final result = builder.build();
