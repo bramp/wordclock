@@ -1,9 +1,7 @@
-import 'dart:math';
-
 import 'package:flutter_test/flutter_test.dart';
 import 'package:wordclock/generator/backtracking/grid_builder.dart';
-import 'package:wordclock/generator/backtracking/grid_state.dart';
 import 'package:wordclock/generator/utils/grid_validator.dart';
+import 'package:wordclock/languages/all.dart';
 import 'package:wordclock/languages/english.dart';
 import 'package:wordclock/model/word_grid.dart';
 import 'graph/test_helpers.dart';
@@ -137,5 +135,45 @@ void main() {
       // (typically under 1 second vs 30+ seconds for full optimization)
       expect(stopwatch.elapsedMilliseconds, lessThan(10000));
     });
+  });
+
+  group('BacktrackingGridBuilder - All Languages', () {
+    for (final language in WordClockLanguages.all) {
+      test(
+        'generates valid grid for ${language.id} (${language.englishName})',
+        () {
+          final builder = BacktrackingGridBuilder(
+            width: 11,
+            height: 10,
+            language: language,
+            seed: 0,
+            findFirstValid: true,
+          );
+
+          final result = builder.build();
+
+          expect(
+            result.grid,
+            isNotNull,
+            reason: 'Should generate a grid for ${language.id}',
+          );
+          expect(
+            result.isOptimal,
+            isTrue,
+            reason:
+                'Should place all ${result.totalWords} words (placed ${result.placedWords})',
+          );
+
+          // Validate the generated grid
+          final grid = WordGrid(width: 11, cells: result.grid!);
+          final issues = GridValidator.validate(grid, language);
+          expect(
+            issues,
+            isEmpty,
+            reason: 'Grid for ${language.id} should have no validation issues',
+          );
+        },
+      );
+    }
   });
 }

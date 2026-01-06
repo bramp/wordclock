@@ -10,23 +10,30 @@ import 'package:wordclock/model/word_grid.dart';
 
 /// Progress information during grid building.
 class GridBuildProgress {
-  /// Words placed in current search path
-  final int currentWords;
-
   /// Best number of words placed so far
   final int bestWords;
 
   /// Total words to place
   final int totalWords;
 
-  /// Current grid state as a string (for display)
-  final String gridString;
+  /// Grid width
+  final int width;
+
+  /// Current grid cells (for colored display)
+  final List<String> cells;
+
+  /// Word placement info (for colored display)
+  final List<PlacedWordInfo> wordPlacements;
+
+  /// Words placed in current search path
+  int get currentWords => wordPlacements.length;
 
   GridBuildProgress({
-    required this.currentWords,
     required this.bestWords,
     required this.totalWords,
-    required this.gridString,
+    required this.width,
+    required this.cells,
+    required this.wordPlacements,
   });
 }
 
@@ -109,9 +116,11 @@ class BacktrackingGridBuilder {
     final finalState = _bestState;
     int placedWords = 0;
     List<String> gridCells;
+    List<PlacedWordInfo> wordPlacements = [];
 
     if (finalState != null) {
       placedWords = finalState.nodePlacements.length;
+      wordPlacements = _extractPlacements(finalState);
       _fillPadding(finalState);
       gridCells = finalState.toFlatList();
     } else {
@@ -127,6 +136,7 @@ class BacktrackingGridBuilder {
       validationIssues: validationIssues,
       totalWords: _totalWords,
       placedWords: placedWords,
+      wordPlacements: wordPlacements,
     );
   }
 
@@ -135,15 +145,32 @@ class BacktrackingGridBuilder {
     if (onProgress == null) return;
 
     _lastProgressReport = now;
-    final shouldContinue = onProgress!(GridBuildProgress(
-      currentWords: state.nodePlacements.length,
-      bestWords: _maxWordsPlaced,
-      totalWords: _totalWords,
-      gridString: state.toGridString(),
-    ));
+    final shouldContinue = onProgress!(
+      GridBuildProgress(
+        bestWords: _maxWordsPlaced,
+        totalWords: _totalWords,
+        width: width,
+        cells: state.toFlatList(),
+        wordPlacements: _extractPlacements(state),
+      ),
+    );
     if (!shouldContinue) {
       _stopRequested = true;
     }
+  }
+
+  /// Extracts word placement info from a GridState
+  List<PlacedWordInfo> _extractPlacements(GridState state) {
+    return state.nodePlacements.entries.map((entry) {
+      final node = entry.key;
+      final placement = entry.value;
+      return PlacedWordInfo(
+        word: node.word,
+        row: placement.row,
+        startCol: placement.startCol,
+        endCol: placement.endCol,
+      );
+    }).toList();
   }
 
   /// Returns true if search should stop
