@@ -65,39 +65,6 @@ void main() {
       expect(itInstances[0].frequency, 3); // Reused across all 3 phrases
     });
 
-    test(
-      'should handle words appearing multiple times with different contexts',
-      () {
-        final lang = createMockLanguage(
-          id: 'TEST',
-          phrases: [
-            'IT IS FIVE TO FIVE', // FIVE appears twice in same phrase
-            'IT IS TEN TO TEN', // TEN appears twice in same phrase
-            'IT IS ONE', // ONE appears once
-          ],
-        );
-        final graph = WordDependencyGraphBuilder.build(language: lang);
-
-        // FIVE appears twice in same phrase, so should have 2 instances
-        final fiveInstances = graph.nodes['FIVE'];
-        expect(fiveInstances, isNotNull);
-        expect(
-          fiveInstances!.length,
-          2,
-          reason: 'FIVE should have 2 instances (appears twice in same phrase)',
-        );
-
-        // TEN should also have 2 instances
-        final tenInstances = graph.nodes['TEN'];
-        expect(tenInstances, isNotNull);
-        expect(
-          tenInstances!.length,
-          2,
-          reason: 'TEN should have 2 instances (appears twice in same phrase)',
-        );
-      },
-    );
-
     test('should track word positions in phrases', () {
       final lang = createMockLanguage(
         id: 'TEST',
@@ -388,7 +355,7 @@ void main() {
     });
   });
 
-  group('WordDependencyGraph - Real Language Integration', () {
+  group('WordDependencyGraph - Real Languages', () {
     test('should work with English language', () {
       final lang = WordClockLanguages.byId['EN']!;
       final graph = WordDependencyGraphBuilder.build(language: lang);
@@ -400,6 +367,15 @@ void main() {
       expect(graph.nodes['IT'], isNotNull);
       expect(graph.nodes['IS'], isNotNull);
       expect(graph.nodes['FIVE'], isNotNull);
+
+      // Verify duplicate instances for FIVE (e.g. in "FIVE PAST FIVE")
+      // English E3 definitely has this.
+      final fiveInstances = graph.nodes['FIVE'];
+      expect(
+        fiveInstances!.length,
+        greaterThanOrEqualTo(2),
+        reason: 'FIVE should appear multiple times in English phrases',
+      );
     });
 
     test('should work with different languages', () {

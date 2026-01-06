@@ -65,42 +65,54 @@ class BacktrackingGridBuilder {
     // 1. Build word dependency graph
     graph = WordDependencyGraphBuilder.build(language: language);
 
-    // 2. Get topological ranks for words
-    final ranks = computeRanks(graph);
-    final maxRank = ranks.isEmpty
+    // 2. Get topological ranks for word instances (Node IDs)
+    final nodeRanks = computeRanks(graph);
+    
+    // Create faster lookup map for helpers (ID -> Rank)
+    final ranks = <String, int>{};
+    for (final entry in nodeRanks.entries) {
+      ranks[entry.key.id] = entry.value;
+    }
+
+    final maxRank = nodeRanks.isEmpty
         ? 0
-        : ranks.values.reduce((a, b) => a > b ? a : b);
+        : nodeRanks.values.reduce((a, b) => a > b ? a : b);
 
     // 3. Initialize empty grid state
     final state = GridState(width: width, height: height);
 
     // 4. Place words rank by rank
     int placedWords = 0;
+    
+    // Convert ranks to tasks
+    final placementTasks = <_PlacementTask>[];
+    
     for (int rank = 0; rank <= maxRank; rank++) {
-      final wordsAtRank = ranks.entries
+      final nodesAtRank = nodeRanks.entries
           .where((e) => e.value == rank)
           .map((e) => e.key)
           .toList();
 
-      if (wordsAtRank.isEmpty) continue;
+      if (nodesAtRank.isEmpty) continue;
+      
+      // Sort by word length
+      nodesAtRank.sort((a, b) => b.word.length.compareTo(a.word.length));
 
-      for (final word in wordsAtRank) {
-        final instances = graph.nodes[word]!;
-        final cells = instances[0].cells;
-        final numInstances = instances.length;
-
-        // Place each instance of this word
-        bool wordPlaced = false;
-        for (int i = 0; i < numInstances; i++) {
-          final placed = _placeWord(state, word, cells, i, rank, ranks);
-          if (placed) wordPlaced = true;
-        }
-        if (wordPlaced) placedWords++;
+      for (final node in nodesAtRank) {
+         placementTasks.add(_PlacementTask(node.word, node.instance, node.cells, rank));
       }
     }
+    
+    // 5. Recursive Solve
+    final startTime = DateTime.now();
+    final success = _solveRecursively(state, placementTasks, 0, ranks, startTime);
 
-    // 5. Fill padding
-    _fillPadding(state);
+    if (success) {
+        placedWords = placementTasks.length;
+        _fillPadding(state);
+    } else {
+        print('Backtracking failed to find a valid grid solution.');
+    }
 
     // 6. Validate
     final gridCells = state.toFlatList();
@@ -115,31 +127,23 @@ class BacktrackingGridBuilder {
     );
   }
 
-  /// Compute topological ranks for all words
-  static Map<String, int> computeRanks(WordDependencyGraph graph) {
-    // Get all word names (not node IDs)
-    final allWords = graph.nodes.keys.toList();
-
-    // Build word-level edges (collapse all instances)
-    final Map<String, Set<String>> wordEdges = {};
-    for (final entry in graph.edges.entries) {
-      final fromId = entry.key;
-      final fromWord = fromId.split('#')[0];
-
-      for (final toId in entry.value) {
-        final toWord = toId.split('#')[0];
-        if (fromWord != toWord) {
-          wordEdges.putIfAbsent(fromWord, () => {}).add(toWord);
-        }
+  /// Compute topological ranks for all word instances (Node IDs)
+  static Map<WordNode, int> computeRanks(WordDependencyGraph graph) {
+    // Collect all Node IDs
+    final allNodeIds = <String>{};
+    for (final word in graph.nodes.keys) {
+      for (final node in graph.nodes[word]!) {
+        allNodeIds.add(node.id);
       }
     }
 
-    // Assign ranks based on longest path from sources
+    // Edges are already specific to IDs.
     final inDegree = <String, int>{};
-    for (final word in allWords) {
-      inDegree[word] = 0;
+    for (final id in allNodeIds) {
+      inDegree[id] = 0;
     }
-    for (final successors in wordEdges.values) {
+
+    for (final successors in graph.edges.values) {
       for (final succ in successors) {
         inDegree[succ] = (inDegree[succ] ?? 0) + 1;
       }
@@ -147,22 +151,22 @@ class BacktrackingGridBuilder {
 
     final Map<String, int> ranks = {};
 
-    // Process in waves (Kahn's algorithm for topological sort)
-    final queue = allWords.where((w) => inDegree[w] == 0).toList();
+    // Kahn's algorithm
+    final queue = allNodeIds.where((id) => inDegree[id] == 0).toList();
+    queue.sort(); // Deterministic
+
     int currentRank = 0;
 
     while (queue.isNotEmpty) {
       final nextQueue = <String>[];
 
-      // Assign rank to all nodes in current queue
-      for (final word in queue) {
-        ranks[word] = currentRank;
+      for (final id in queue) {
+        ranks[id] = currentRank;
 
-        // Decrement in-degree of successors
-        final successors = wordEdges[word] ?? {};
+        final successors = graph.edges[id] ?? {};
         for (final succ in successors) {
           inDegree[succ] = inDegree[succ]! - 1;
-          if (inDegree[succ] == 0 && !ranks.containsKey(succ)) {
+          if (inDegree[succ] == 0) {
             nextQueue.add(succ);
           }
         }
@@ -170,123 +174,116 @@ class BacktrackingGridBuilder {
 
       queue.clear();
       queue.addAll(nextQueue);
+      queue.sort();
       currentRank++;
     }
 
-    // Any remaining words (in cycles) get assigned to next rank
-    for (final word in allWords) {
-      if (!ranks.containsKey(word)) {
-        ranks[word] = currentRank;
+    // Handle cycles
+    for (final id in allNodeIds) {
+      if (!ranks.containsKey(id)) {
+        ranks[id] = currentRank;
       }
     }
 
-    return ranks;
+    // Convert string IDs to WordNode objects
+    final Map<WordNode, int> nodeRanks = {};
+    for (final nodeList in graph.nodes.values) {
+      for (final node in nodeList) {
+        if (ranks.containsKey(node.id)) {
+          nodeRanks[node] = ranks[node.id]!;
+        }
+      }
+    }
+
+    return nodeRanks;
   }
 
   /// Place a single word instance in the grid
-  bool _placeWord(
+  bool _respectsParents(
     GridState state,
     String word,
-    List<String> cells,
     int instanceIndex,
-    int currentRank,
+    int row,
+    int col,
     Map<String, int> ranks,
   ) {
-    // Find best position for this word
-    final candidates = _findPlacementCandidates(
-      state,
-      word,
-      cells,
-      instanceIndex,
-      currentRank,
-      ranks,
-    );
+    final nodeId = instanceIndex == 0 ? word : '$word#$instanceIndex';
 
-    if (candidates.isEmpty) {
-      return false;
+    final parentIds = <String>[];
+    for (final entry in graph.edges.entries) {
+      if (entry.value.contains(nodeId)) parentIds.add(entry.key);
     }
 
-    // Try candidates in order of score
-    for (final candidate in candidates) {
-      final placement = state.placeWord(
-        word,
-        cells,
-        candidate.row,
-        candidate.col,
-        instanceIndex: instanceIndex,
-      );
+    for (final parentId in parentIds) {
+      final parts = parentId.split('#');
+      final parentWord = parts[0];
+      final parentInstance = parts.length > 1 ? int.parse(parts[1]) : 0;
 
-      if (placement != null) {
-        return true;
+      final parentPlacements = state.wordPlacements[parentWord];
+      if (parentPlacements == null) return false;
+
+      bool found = false;
+      bool before = false;
+      for (final p in parentPlacements) {
+        if (p.instanceIndex == parentInstance) {
+          found = true;
+          if (p.row < row || (p.row == row && p.endCol < col)) {
+            before = true;
+          }
+          break;
+        }
       }
+      if (!found || !before) return false;
     }
-
-    return false;
+    return true;
   }
 
-  /// Find all valid placement candidates for a word
   List<_Candidate> _findPlacementCandidates(
     GridState state,
     String word,
     List<String> cells,
     int instanceIndex,
-    int currentRank,
+    int rank,
     Map<String, int> ranks,
   ) {
     final candidates = <_Candidate>[];
 
-    // Special case: first word - place at top-left
+    // Special case: first word
     if (state.wordPlacements.isEmpty) {
       candidates.add(_Candidate(0, 0, 1000.0, []));
       return candidates;
     }
 
-    // Try all positions in the grid
     for (int row = 0; row < height; row++) {
       for (int col = 0; col <= width - cells.length; col++) {
+        // Basic fit check
         final (canPlace, overlappedIndices) = state.canPlaceWord(
           word,
           cells,
           row,
           col,
         );
-
         if (!canPlace) continue;
 
-        // Check if this position respects parent words
-        if (!_respectsParents(
-          state,
-          word,
-          row,
-          col,
-          cells.length,
-          currentRank,
-          ranks,
-        )) {
-          continue;
-        }
+        // Check dependencies
+        if (_respectsParents(state, word, instanceIndex, row, col, ranks)) {
+          // Check separation
+          if (!_hasProperSeparation(state, row, col, cells.length)) continue;
 
-        // Check if this position has proper padding/separation from adjacent words
-        if (!_hasProperSeparation(state, row, col, cells.length)) {
-          continue;
+          final score = _scorePosition(
+            state,
+            word,
+            instanceIndex,
+            row,
+            col,
+            ranks,
+            overlappedIndices,
+          );
+          candidates.add(_Candidate(row, col, score, overlappedIndices));
         }
-
-        final score = _scorePosition(
-          state,
-          row,
-          col,
-          overlappedIndices,
-          word,
-          currentRank,
-          ranks,
-        );
-        candidates.add(_Candidate(row, col, score, overlappedIndices));
       }
     }
-
-    // Sort by score descending (best first)
     candidates.sort((a, b) => b.score.compareTo(a.score));
-
     return candidates;
   }
 
@@ -319,92 +316,34 @@ class BacktrackingGridBuilder {
         }
       }
     }
-
     return true;
   }
 
-  /// Check if a position respects parent words (doesn't come before them)
-  bool _respectsParents(
-    GridState state,
-    String word,
-    int row,
-    int col,
-    int wordLength,
-    int currentRank,
-    Map<String, int> ranks,
-  ) {
-    // Get all parent words (words that must come before this one)
-    final parents = <String>{};
-    for (final entry in graph.edges.entries) {
-      final fromId = entry.key;
-      final fromWord = fromId.split('#')[0];
-
-      for (final toId in entry.value) {
-        final toWord = toId.split('#')[0];
-        if (toWord == word && ranks[fromWord]! < currentRank) {
-          parents.add(fromWord);
-        }
-      }
-    }
-
-    // For each parent, check that at least one of its placements comes before this position
-    for (final parent in parents) {
-      final parentPlacements = state.wordPlacements[parent];
-      if (parentPlacements == null || parentPlacements.isEmpty) {
-        continue; // Parent not placed yet, skip check
-      }
-
-      // Check if any parent placement comes before this position
-      bool hasParentBefore = false;
-      for (final parentPlacement in parentPlacements) {
-        final parentEndRow = parentPlacement.row;
-        final parentEndCol = parentPlacement.endCol;
-
-        // Parent comes before if it ends before this word starts
-        if (parentEndRow < row || (parentEndRow == row && parentEndCol < col)) {
-          hasParentBefore = true;
-          break;
-        }
-      }
-
-      if (!hasParentBefore) {
-        return false; // This position would violate parent constraint
-      }
-    }
-
-    return true;
-  }
-
-  /// Score a position (higher is better)
   double _scorePosition(
     GridState state,
+    String word,
+    int instanceIndex,
     int row,
     int col,
-    List<int> overlappedIndices,
-    String word,
-    int currentRank,
     Map<String, int> ranks,
+    List<int> overlappedIndices,
   ) {
     double score = 0.0;
-
-    // Heavily reward overlap (cell reuse)
     score += overlappedIndices.length * 100.0;
 
-    // HUGE bonus for being right after a parent word on the same row
+    final nodeId = instanceIndex == 0 ? word : '$word#$instanceIndex';
+    final currentRank = ranks[nodeId] ?? 0;
     final parents = _getParentWords(word, currentRank, ranks);
+
     for (final parent in parents) {
       final parentPlacements = state.wordPlacements[parent];
       if (parentPlacements != null) {
-        for (final parentPlacement in parentPlacements) {
-          if (parentPlacement.row == row) {
-            // Same row as parent
-            final expectedCol =
-                parentPlacement.endCol + (language.requiresPadding ? 2 : 1);
+        for (final pp in parentPlacements) {
+          if (pp.row == row) {
+            final expectedCol = pp.endCol + (language.requiresPadding ? 2 : 1);
             if (col == expectedCol) {
-              // Exactly where it should be after parent!
               score += 10000.0;
             } else if (col > expectedCol) {
-              // Later on same row - still good but not as good
               score += 5000.0 - (col - expectedCol) * 10.0;
             }
           }
@@ -412,20 +351,56 @@ class BacktrackingGridBuilder {
       }
     }
 
-    // Prefer positions near existing words (compactness)
-    final distance = state.distanceToNearestWord(row, col);
-    score -= distance * 5.0;
-
-    // Prefer top-left positions
+    score -= state.distanceToNearestWord(row, col) * 5.0;
     score -= (row + col) * 1.0;
-
-    // Prefer earlier in row (left side)
     score -= col * 0.5;
-
     return score;
   }
 
-  /// Get parent words for a given word at current rank
+  bool _solveRecursively(
+    GridState state,
+    List<_PlacementTask> tasks,
+    int taskIndex,
+    Map<String, int> ranks,
+    DateTime startTime,
+  ) {
+    if (taskIndex >= tasks.length) return true;
+    if (DateTime.now().difference(startTime).inSeconds > maxSearchTimeSeconds) {
+      return false;
+    }
+
+    final task = tasks[taskIndex];
+    final candidates = _findPlacementCandidates(
+      state,
+      task.word,
+      task.cells,
+      task.instanceIndex,
+      task.rank,
+      ranks,
+    );
+
+    final maxCandidates = 50;
+    final count = min(candidates.length, maxCandidates);
+
+    for (int i = 0; i < count; i++) {
+      final c = candidates[i];
+      final p = state.placeWord(
+        task.word,
+        task.cells,
+        c.row,
+        c.col,
+        instanceIndex: task.instanceIndex,
+      );
+      if (p != null) {
+        if (_solveRecursively(state, tasks, taskIndex + 1, ranks, startTime)) {
+          return true;
+        }
+        state.removePlacement(p);
+      }
+    }
+    return false;
+  }
+
   List<String> _getParentWords(
     String word,
     int currentRank,
@@ -438,7 +413,10 @@ class BacktrackingGridBuilder {
 
       for (final toId in entry.value) {
         final toWord = toId.split('#')[0];
-        if (toWord == word && ranks[fromWord]! < currentRank) {
+        // Rank check on ID
+        if (toWord == word &&
+            ranks.containsKey(fromId) &&
+            ranks[fromId]! < currentRank) {
           parents.add(fromWord);
         }
       }
@@ -457,4 +435,13 @@ class BacktrackingGridBuilder {
       }
     }
   }
+}
+
+class _PlacementTask {
+  final String word;
+  final int instanceIndex;
+  final List<String> cells;
+  final int rank;
+
+  _PlacementTask(this.word, this.instanceIndex, this.cells, this.rank);
 }

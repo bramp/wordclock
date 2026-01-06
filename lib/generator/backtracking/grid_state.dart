@@ -213,6 +213,33 @@ class GridState {
     return placement;
   }
 
+  /// Remove a placed word from the grid (backtracking support)
+  void removePlacement(WordPlacement placement) {
+    // Remove from map
+    final placements = wordPlacements[placement.word];
+    if (placements != null) {
+      placements.remove(placement);
+      if (placements.isEmpty) {
+        wordPlacements.remove(placement.word);
+      }
+    }
+
+    // Clear grid cells that were NOT overlapped
+    // We assume standard splitting matches - usually true unless special merging
+    // Ideally we'd store the specific cells in placement, but regenerating is okay
+    // for this context if we are consistent.
+    // Actually, to be safe, we should check what's in the grid?
+    // No, removing requires knowing what we put there.
+    // We don't need the character value!
+
+    for (int i = 0; i < placement.length; i++) {
+      if (placement.overlappedCells.contains(i)) {
+        continue; // Was existing, leave it
+      }
+      grid[placement.row][placement.startCol + i] = null;
+    }
+  }
+
   /// Get all placements of a specific word
   List<WordPlacement> getPlacementsOf(String word) {
     return wordPlacements[word] ?? [];
