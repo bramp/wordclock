@@ -194,23 +194,7 @@ class BacktrackingGridBuilder {
     return tasks;
   }
 
-  /// Check if placing a word node respects all its parent dependencies
-  bool _respectsParents(GridState state, WordNode node, int row, int col) {
-    // Find parents in the graph
-    final parents = graph.inEdges[node] ?? {};
 
-    for (final parentNode in parents) {
-      final parentPlacement = state.nodePlacements[parentNode];
-      if (parentPlacement == null) return false;
-
-      // Parent must be before this node in reading order
-      if (parentPlacement.row > row ||
-          (parentPlacement.row == row && parentPlacement.endCol >= col)) {
-        return false;
-      }
-    }
-    return true;
-  }
 
   List<_Candidate> _findPlacementCandidates(
     GridState state,
@@ -226,8 +210,26 @@ class BacktrackingGridBuilder {
       return candidates;
     }
 
-    for (int row = 0; row < height; row++) {
-      for (int col = 0; col <= width - node.cells.length; col++) {
+    // Find the latest parent position to constrain the search
+    int startRow = 0;
+    int startCol = 0;
+
+    final parents = graph.inEdges[node] ?? {};
+    for (final parentNode in parents) {
+      final p = state.nodePlacements[parentNode];
+      if (p == null) return []; // Parent not placed yet
+
+      if (p.row > startRow) {
+        startRow = p.row;
+        startCol = p.endCol + 1; // TODO This may be tweak to handle padding
+      } else if (p.row == startRow) {
+        startCol = max(startCol, p.endCol + 1);
+      }
+    }
+
+    for (int row = startRow; row < height; row++) {
+      final colStart = (row == startRow) ? startCol : 0;
+      for (int col = colStart; col <= width - node.cells.length; col++) {
         // Basic fit check
         final (canPlace, overlappedIndices) = state.canPlaceWord(
           node.cells,
@@ -236,23 +238,20 @@ class BacktrackingGridBuilder {
         );
         if (!canPlace) continue;
 
-        // Check dependencies
-        if (_respectsParents(state, node, row, col)) {
-          // Check separation
-          if (!_hasProperSeparation(state, row, col, node.cells.length)) {
-            continue;
-          }
-
-          final score = _scorePosition(
-            state,
-            node,
-            row,
-            col,
-            ranks,
-            overlappedIndices,
-          );
-          candidates.add(_Candidate(row, col, score, overlappedIndices));
+        // Check separation
+        if (!_hasProperSeparation(state, row, col, node.cells.length)) {
+          continue;
         }
+
+        final score = _scorePosition(
+          state,
+          node,
+          row,
+          col,
+          ranks,
+          overlappedIndices,
+        );
+        candidates.add(_Candidate(row, col, score, overlappedIndices));
       }
     }
     candidates.sort((a, b) => b.score.compareTo(a.score));
