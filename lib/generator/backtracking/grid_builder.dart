@@ -66,8 +66,10 @@ class BacktrackingGridBuilder {
     graph = WordDependencyGraphBuilder.build(language: language);
 
     // 2. Get topological ranks for words
-    final ranks = _computeRanks();
-    final maxRank = ranks.values.reduce((a, b) => a > b ? a : b);
+    final ranks = computeRanks(graph);
+    final maxRank = ranks.isEmpty
+        ? 0
+        : ranks.values.reduce((a, b) => a > b ? a : b);
 
     // 3. Initialize empty grid state
     final state = GridState(width: width, height: height);
@@ -114,9 +116,7 @@ class BacktrackingGridBuilder {
   }
 
   /// Compute topological ranks for all words
-  Map<String, int> _computeRanks() {
-    final Map<String, int> ranks = {};
-
+  static Map<String, int> computeRanks(WordDependencyGraph graph) {
     // Get all word names (not node IDs)
     final allWords = graph.nodes.keys.toList();
 
@@ -144,6 +144,8 @@ class BacktrackingGridBuilder {
         inDegree[succ] = (inDegree[succ] ?? 0) + 1;
       }
     }
+
+    final Map<String, int> ranks = {};
 
     // Process in waves (Kahn's algorithm for topological sort)
     final queue = allWords.where((w) => inDegree[w] == 0).toList();
