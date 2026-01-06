@@ -1,5 +1,6 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:wordclock/generator/backtracking/dependency_graph.dart';
+import 'package:wordclock/generator/backtracking/graph/dependency_graph.dart';
+import 'package:wordclock/generator/backtracking/graph/word_node.dart';
 import 'package:wordclock/generator/backtracking/grid_builder.dart';
 import 'package:wordclock/languages/english.dart';
 
@@ -110,16 +111,20 @@ void main() {
         'B': [_createNode('B', 0)],
       };
 
+      final nodeA0 = nodes['A']![0];
+      final nodeA1 = nodes['A']![1];
+      final nodeB = nodes['B']![0];
+
       final edges = {
-        'A': {'B'}, // A (Instance 0) -> B (Instance 0)
-        'B': {'A#1'}, // B (Instance 0) -> A#1
-        'A#1': <String>{}, // Sink
+        nodeA0: {nodeB}, // A (Instance 0) -> B (Instance 0)
+        nodeB: {nodeA1}, // B (Instance 0) -> A#1
+        nodeA1: <WordNode>{}, // Sink
       };
 
       final graph = WordDependencyGraph(
         nodes: nodes,
         edges: edges,
-        phrases: <String, List<String>>{},
+        phrases: <String, List<WordNode>>{},
         language: englishLanguage,
       );
 
@@ -138,28 +143,69 @@ void main() {
 // Helper to build a simple graph from a map of word -> successors
 WordDependencyGraph _buildGraph(Map<String, Set<String>> adjacency) {
   final Map<String, List<WordNode>> nodes = {};
-  final Map<String, Set<String>> edges = {};
+  final Map<WordNode, Set<WordNode>> edges = {};
 
+  // 1. Create nodes
   for (final entry in adjacency.entries) {
     final word = entry.key;
-    nodes[word] = [_createNode(word, 0)];
-    edges[word] = entry.value; // Simple 1:1 mapping for this test helper
-
-    // Ensure targets exist in nodes
+    if (!nodes.containsKey(word)) {
+      nodes[word] = [_createNode(word, 0)];
+    }
     for (final target in entry.value) {
-      if (!nodes.containsKey(target)) {
-        nodes[target] = [_createNode(target, 0)];
+      // Handle "A#1" style inputs if any (the test helper handles sequential reuse test)
+      final parts = target.split('#');
+      final targetWord = parts[0];
+      final targetInstance = parts.length > 1 ? int.parse(parts[1]) : 0;
+
+      if (!nodes.containsKey(targetWord)) {
+        nodes[targetWord] = [];
       }
-      if (!edges.containsKey(target)) {
-        edges[target] = <String>{};
+      // Ensure specific instance exists
+      var exists = false;
+      for (final n in nodes[targetWord]!) {
+        if (n.instance == targetInstance) {
+          exists = true;
+          break;
+        }
+      }
+      if (!exists) {
+        nodes[targetWord]!.add(_createNode(targetWord, targetInstance));
       }
     }
+  }
+
+  // 2. Create edges
+  for (final entry in adjacency.entries) {
+    final sourceParts = entry.key.split('#');
+    final sourceWord = sourceParts[0];
+    final sourceInstance = sourceParts.length > 1
+        ? int.parse(sourceParts[1])
+        : 0;
+
+    final sourceNode = nodes[sourceWord]!.firstWhere(
+      (n) => n.instance == sourceInstance,
+    );
+
+    final targets = <WordNode>{};
+    for (final target in entry.value) {
+      final targetParts = target.split('#');
+      final targetWord = targetParts[0];
+      final targetInstance = targetParts.length > 1
+          ? int.parse(targetParts[1])
+          : 0;
+
+      final targetNode = nodes[targetWord]!.firstWhere(
+        (n) => n.instance == targetInstance,
+      );
+      targets.add(targetNode);
+    }
+    edges[sourceNode] = targets;
   }
 
   return WordDependencyGraph(
     nodes: nodes,
     edges: edges,
-    phrases: <String, List<String>>{},
+    phrases: <String, List<WordNode>>{},
     language: englishLanguage,
   );
 }

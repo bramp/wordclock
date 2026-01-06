@@ -1,6 +1,8 @@
 import 'dart:math';
 import 'package:wordclock/generator/backtracking/grid_state.dart';
-import 'package:wordclock/generator/backtracking/dependency_graph.dart';
+import 'package:wordclock/generator/backtracking/graph/dependency_graph.dart';
+import 'package:wordclock/generator/backtracking/graph/graph_builder.dart';
+import 'package:wordclock/generator/backtracking/graph/word_node.dart';
 import 'package:wordclock/generator/utils/grid_build_result.dart';
 import 'package:wordclock/generator/utils/grid_validator.dart';
 import 'package:wordclock/languages/language.dart';
@@ -67,7 +69,7 @@ class BacktrackingGridBuilder {
 
     // 2. Get topological ranks for word instances (Node IDs)
     final nodeRanks = computeRanks(graph);
-    
+
     // Create faster lookup map for helpers (ID -> Rank)
     final ranks = <String, int>{};
     for (final entry in nodeRanks.entries) {
@@ -83,10 +85,10 @@ class BacktrackingGridBuilder {
 
     // 4. Place words rank by rank
     int placedWords = 0;
-    
+
     // Convert ranks to tasks
     final placementTasks = <_PlacementTask>[];
-    
+
     for (int rank = 0; rank <= maxRank; rank++) {
       final nodesAtRank = nodeRanks.entries
           .where((e) => e.value == rank)
@@ -94,24 +96,32 @@ class BacktrackingGridBuilder {
           .toList();
 
       if (nodesAtRank.isEmpty) continue;
-      
+
       // Sort by word length
       nodesAtRank.sort((a, b) => b.word.length.compareTo(a.word.length));
 
       for (final node in nodesAtRank) {
-         placementTasks.add(_PlacementTask(node.word, node.instance, node.cells, rank));
+        placementTasks.add(
+          _PlacementTask(node.word, node.instance, node.cells, rank),
+        );
       }
     }
-    
+
     // 5. Recursive Solve
     final startTime = DateTime.now();
-    final success = _solveRecursively(state, placementTasks, 0, ranks, startTime);
+    final success = _solveRecursively(
+      state,
+      placementTasks,
+      0,
+      ranks,
+      startTime,
+    );
 
     if (success) {
-        placedWords = placementTasks.length;
-        _fillPadding(state);
+      placedWords = placementTasks.length;
+      _fillPadding(state);
     } else {
-        print('Backtracking failed to find a valid grid solution.');
+      print('Backtracking failed to find a valid grid solution.');
     }
 
     // 6. Validate
@@ -129,41 +139,44 @@ class BacktrackingGridBuilder {
 
   /// Compute topological ranks for all word instances (Node IDs)
   static Map<WordNode, int> computeRanks(WordDependencyGraph graph) {
-    // Collect all Node IDs
-    final allNodeIds = <String>{};
-    for (final word in graph.nodes.keys) {
-      for (final node in graph.nodes[word]!) {
-        allNodeIds.add(node.id);
+    // 1. Initialize in-degrees for all nodes
+    final inDegree = <WordNode, int>{};
+    for (final nodeList in graph.nodes.values) {
+      for (final node in nodeList) {
+        inDegree[node] = 0;
       }
     }
 
-    // Edges are already specific to IDs.
-    final inDegree = <String, int>{};
-    for (final id in allNodeIds) {
-      inDegree[id] = 0;
-    }
-
-    for (final successors in graph.edges.values) {
+    // 2. Compute in-degrees based on edges
+    for (final entry in graph.edges.entries) {
+      final successors = entry.value;
       for (final succ in successors) {
         inDegree[succ] = (inDegree[succ] ?? 0) + 1;
       }
     }
 
-    final Map<String, int> ranks = {};
+    final ranks = <WordNode, int>{};
 
-    // Kahn's algorithm
-    final queue = allNodeIds.where((id) => inDegree[id] == 0).toList();
-    queue.sort(); // Deterministic
+    // 3. Kahn's Algorithm
+    // Initial queue: nodes with in-degree 0
+    var queue = inDegree.entries
+        .where((e) => e.value == 0)
+        .map((e) => e.key)
+        .toList();
+
+    // Sort by ID to ensure deterministic behavior
+    queue.sort((a, b) => a.id.compareTo(b.id));
 
     int currentRank = 0;
 
     while (queue.isNotEmpty) {
-      final nextQueue = <String>[];
+      final nextQueue = <WordNode>[];
 
-      for (final id in queue) {
-        ranks[id] = currentRank;
+      for (final node in queue) {
+        ranks[node] = currentRank;
 
-        final successors = graph.edges[id] ?? {};
+        // Find successors
+        final successors = graph.edges[node] ?? {};
         for (final succ in successors) {
           inDegree[succ] = inDegree[succ]! - 1;
           if (inDegree[succ] == 0) {
@@ -172,30 +185,21 @@ class BacktrackingGridBuilder {
         }
       }
 
-      queue.clear();
-      queue.addAll(nextQueue);
-      queue.sort();
+      queue = nextQueue;
+      queue.sort((a, b) => a.id.compareTo(b.id));
       currentRank++;
     }
 
-    // Handle cycles
-    for (final id in allNodeIds) {
-      if (!ranks.containsKey(id)) {
-        ranks[id] = currentRank;
-      }
-    }
-
-    // Convert string IDs to WordNode objects
-    final Map<WordNode, int> nodeRanks = {};
+    // 4. Handle cycles (assign remaining nodes the next rank)
     for (final nodeList in graph.nodes.values) {
       for (final node in nodeList) {
-        if (ranks.containsKey(node.id)) {
-          nodeRanks[node] = ranks[node.id]!;
+        if (!ranks.containsKey(node)) {
+          ranks[node] = currentRank;
         }
       }
     }
 
-    return nodeRanks;
+    return ranks;
   }
 
   /// Place a single word instance in the grid
@@ -207,25 +211,26 @@ class BacktrackingGridBuilder {
     int col,
     Map<String, int> ranks,
   ) {
-    final nodeId = instanceIndex == 0 ? word : '$word#$instanceIndex';
-
-    final parentIds = <String>[];
+    // Find parents in the graph
+    // Since edges are Map<WordNode, Set<WordNode>>, we need to iterate
+    final parents = <WordNode>[];
     for (final entry in graph.edges.entries) {
-      if (entry.value.contains(nodeId)) parentIds.add(entry.key);
+      final successors = entry.value;
+      for (final succ in successors) {
+        if (succ.word == word && succ.instance == instanceIndex) {
+          parents.add(entry.key);
+        }
+      }
     }
 
-    for (final parentId in parentIds) {
-      final parts = parentId.split('#');
-      final parentWord = parts[0];
-      final parentInstance = parts.length > 1 ? int.parse(parts[1]) : 0;
-
-      final parentPlacements = state.wordPlacements[parentWord];
+    for (final parentNode in parents) {
+      final parentPlacements = state.wordPlacements[parentNode.word];
       if (parentPlacements == null) return false;
 
       bool found = false;
       bool before = false;
       for (final p in parentPlacements) {
-        if (p.instanceIndex == parentInstance) {
+        if (p.instanceIndex == parentNode.instance) {
           found = true;
           if (p.row < row || (p.row == row && p.endCol < col)) {
             before = true;
@@ -408,16 +413,15 @@ class BacktrackingGridBuilder {
   ) {
     final parents = <String>[];
     for (final entry in graph.edges.entries) {
-      final fromId = entry.key;
-      final fromWord = fromId.split('#')[0];
+      final fromNode = entry.key;
 
-      for (final toId in entry.value) {
-        final toWord = toId.split('#')[0];
+      final successors = entry.value;
+      for (final toNode in successors) {
         // Rank check on ID
-        if (toWord == word &&
-            ranks.containsKey(fromId) &&
-            ranks[fromId]! < currentRank) {
-          parents.add(fromWord);
+        if (toNode.word == word &&
+            ranks.containsKey(fromNode.id) &&
+            ranks[fromNode.id]! < currentRank) {
+          parents.add(fromNode.word);
         }
       }
     }

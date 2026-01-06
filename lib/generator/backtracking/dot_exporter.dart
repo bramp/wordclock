@@ -1,7 +1,8 @@
 // ignore_for_file: avoid_print
 
 import 'package:graphs/graphs.dart';
-import 'package:wordclock/generator/backtracking/dependency_graph.dart';
+import 'package:wordclock/generator/backtracking/graph/dependency_graph.dart';
+import 'package:wordclock/generator/backtracking/graph/word_node.dart';
 
 /// Exports a [WordDependencyGraph] to DOT format for Graphviz visualization.
 class WordGraphDotExporter {
@@ -93,7 +94,7 @@ class WordGraphDotExporter {
       final from = entry.key;
       final successors = entry.value;
       for (final to in successors) {
-        sb.writeln('  "$from" -> "$to";');
+        sb.writeln('  "${from.id}" -> "${to.id}";');
       }
     }
 
@@ -110,17 +111,24 @@ class WordGraphDotExporter {
   static Map<String, int> _topologicalRanks(WordDependencyGraph graph) {
     final Map<String, int> ranks = {};
 
-    // Get all node IDs (from all instances of all words)
-    final allNodeIds = <String>[];
+    // Get all nodes flat list and map ID -> Node
+    final allNodes = <WordNode>[];
+    final nodeById = <String, WordNode>{};
     for (final instances in graph.nodes.values) {
       for (final node in instances) {
-        allNodeIds.add(node.id);
+        allNodes.add(node);
+        nodeById[node.id] = node;
       }
     }
 
+    final allNodeIds = allNodes.map((n) => n.id).toList();
+
     // Use the graphs package to do topological sorting
     Iterable<String> successorsOf(String nodeId) {
-      return graph.edges[nodeId] ?? {};
+      final node = nodeById[nodeId];
+      if (node == null) return {};
+      final successors = graph.edges[node] ?? {};
+      return successors.map((n) => n.id);
     }
 
     try {
@@ -132,9 +140,14 @@ class WordGraphDotExporter {
       for (final nodeId in ordering) {
         // Find all predecessors and take max rank + 1
         int maxPredRank = -1;
+
+        // This is inefficient (O(E)), but fine for graph export visualization
         for (final entry in graph.edges.entries) {
-          if (entry.value.contains(nodeId)) {
-            final predId = entry.key;
+          final fromNode = entry.key;
+          final successors = entry.value;
+          // check if fromNode -> nodeId exists
+          if (successors.any((n) => n.id == nodeId)) {
+            final predId = fromNode.id;
             if (ranks.containsKey(predId)) {
               maxPredRank = maxPredRank > ranks[predId]!
                   ? maxPredRank
@@ -158,7 +171,7 @@ class WordGraphDotExporter {
       }
       for (final successors in graph.edges.values) {
         for (final successor in successors) {
-          inDegree[successor] = (inDegree[successor] ?? 0) + 1;
+          inDegree[successor.id] = (inDegree[successor.id] ?? 0) + 1;
         }
       }
 
@@ -187,10 +200,13 @@ class WordGraphDotExporter {
           processed.add(nodeId);
 
           // Decrement in-degree of successors
-          final successors = graph.edges[nodeId] ?? {};
-          for (final succ in successors) {
-            if (!processed.contains(succ)) {
-              inDegree[succ] = inDegree[succ]! - 1;
+          final node = nodeById[nodeId];
+          if (node != null) {
+            final successors = graph.edges[node] ?? {};
+            for (final succ in successors) {
+              if (!processed.contains(succ.id)) {
+                inDegree[succ.id] = inDegree[succ.id]! - 1;
+              }
             }
           }
         }
