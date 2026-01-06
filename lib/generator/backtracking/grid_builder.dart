@@ -197,12 +197,7 @@ class BacktrackingGridBuilder {
   /// Check if placing a word node respects all its parent dependencies
   bool _respectsParents(GridState state, WordNode node, int row, int col) {
     // Find parents in the graph
-    final parents = <WordNode>[];
-    for (final entry in graph.edges.entries) {
-      if (entry.value.contains(node)) {
-        parents.add(entry.key);
-      }
-    }
+    final parents = graph.inEdges[node] ?? {};
 
     for (final parentNode in parents) {
       final parentPlacement = state.nodePlacements[parentNode];
@@ -371,15 +366,12 @@ class BacktrackingGridBuilder {
     Map<String, int> ranks,
   ) {
     final parents = <WordNode>[];
-    for (final entry in graph.edges.entries) {
-      final fromNode = entry.key;
-
-      if (entry.value.contains(node)) {
-        // Rank check
-        if (ranks.containsKey(fromNode.id) &&
-            ranks[fromNode.id]! < currentRank) {
-          parents.add(fromNode);
-        }
+    final potentialParents = graph.inEdges[node] ?? {};
+    for (final fromNode in potentialParents) {
+      // Rank check
+      if (ranks.containsKey(fromNode.id) &&
+          ranks[fromNode.id]! < currentRank) {
+        parents.add(fromNode);
       }
     }
     return parents;
