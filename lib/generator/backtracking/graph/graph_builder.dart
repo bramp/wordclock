@@ -47,15 +47,33 @@ class WordDependencyGraphBuilder {
       return false;
     }
 
-    // 1. Process all phrases
+    // 1. Collect all unique phrases first
+    
     WordClockUtils.forEachTime(language, (time, phraseText) {
-      // Optomisation to avoid processing the same phrase twice
-      // for example, Ten O'Clock - could be AM or PM.
-      if (processedPhrases.contains(phraseText)) return;
-      processedPhrases.add(phraseText);
+      if (!processedPhrases.contains(phraseText)) {
+        processedPhrases.add(phraseText);
+      }
+    });
 
+    final allPhrases = processedPhrases.toList();
+
+    // Calculate the optimal (minimum) number of nodes needed for these phrases
+    final maxOccurrences = _calculateMaxWordOccurrences(allPhrases, language);
+    final optimalNodeCount = maxOccurrences.values.fold(
+      0,
+      (sum, count) => sum + count,
+    );
+
+    // 2. Sort phrases by length (shortest first)
+    // This optimization reduces the number of node instances needed.
+    // By processing short phrases first (e.g., "JE PĚT" before "JE JEDNA DVACET PĚT"),
+    // we establish base nodes that can be reused without creating cycles.
+    allPhrases.sort((a, b) => a.length.compareTo(b.length));
+
+    // 3. Process all phrases in optimized order
+    for (final phraseText in allPhrases) {
       final words = language.tokenize(phraseText);
-      if (words.isEmpty) return;
+      if (words.isEmpty) continue;
 
       final phraseNodes = <WordNode>[];
 
@@ -101,7 +119,10 @@ class WordDependencyGraphBuilder {
       }
 
       phrases[phraseText] = phraseNodes;
-    });
+    }
+
+    // Check if we achieved optimal node count
+    _warnIfSuboptimal(nodes, maxOccurrences, optimalNodeCount);
 
     return WordDependencyGraph(
       nodes: nodes,
@@ -130,6 +151,56 @@ class WordDependencyGraphBuilder {
       if (count++ >= 5) break;
       final nodeIds = entry.value.map((n) => n.id).toList();
       print('  "${entry.key}" -> $nodeIds');
+    }
+  }
+
+  /// Calculates the maximum number of times each word appears in any single phrase.
+  /// This determines the minimum number of node instances needed for each word.
+  static Map<String, int> _calculateMaxWordOccurrences(
+    List<String> phrases,
+    WordClockLanguage language,
+  ) {
+    final maxOccurrences = <String, int>{};
+    for (final phraseText in phrases) {
+      final words = language.tokenize(phraseText);
+      final counts = <String, int>{};
+      for (final word in words) {
+        counts[word] = (counts[word] ?? 0) + 1;
+      }
+      for (final entry in counts.entries) {
+        final current = maxOccurrences[entry.key] ?? 0;
+        if (entry.value > current) {
+          maxOccurrences[entry.key] = entry.value;
+        }
+      }
+    }
+    return maxOccurrences;
+  }
+
+  /// Prints a warning if the graph has more nodes than the optimal count.
+  static void _warnIfSuboptimal(
+    Map<String, List<WordNode>> nodes,
+    Map<String, int> maxOccurrences,
+    int optimalNodeCount,
+  ) {
+    final actualNodeCount = nodes.values.fold(
+      0,
+      (sum, list) => sum + list.length,
+    );
+    if (actualNodeCount > optimalNodeCount) {
+      print(
+        'WARNING: Graph has $actualNodeCount nodes, '
+        'but optimal is $optimalNodeCount',
+      );
+      print('  Extra instances created:');
+      for (final entry in nodes.entries) {
+        final word = entry.key;
+        final instances = entry.value;
+        final optimal = maxOccurrences[word] ?? 1;
+        if (instances.length > optimal) {
+          print('    $word: ${instances.length} nodes (optimal: $optimal)');
+        }
+      }
     }
   }
 }
