@@ -25,6 +25,12 @@ class GridBuildProgress {
   /// Word placement info (for colored display)
   final List<PlacedWordInfo> wordPlacements;
 
+  /// Number of iterations (recursive calls) so far
+  final int iterationCount;
+
+  /// When the search started
+  final DateTime startTime;
+
   /// Words placed in current search path
   int get currentWords => wordPlacements.length;
 
@@ -34,6 +40,8 @@ class GridBuildProgress {
     required this.width,
     required this.cells,
     required this.wordPlacements,
+    required this.iterationCount,
+    required this.startTime,
   });
 }
 
@@ -69,6 +77,9 @@ class BacktrackingGridBuilder {
   int _totalWords = 0;
   bool _stopRequested = false;
   DateTime _lastProgressReport = DateTime.now();
+  int _iterationCount = 0;
+  late DateTime _startTime;
+  StopReason _stopReason = StopReason.completed;
 
   BacktrackingGridBuilder({
     required this.width,
@@ -96,6 +107,9 @@ class BacktrackingGridBuilder {
     _bestState = null;
     _stopRequested = false;
     _lastProgressReport = DateTime.now();
+    _iterationCount = 0;
+    _startTime = DateTime.now();
+    _stopReason = StopReason.completed;
 
     // Group nodes by rank
     final maxRank = nodeRanks.isEmpty ? 0 : nodeRanks.values.reduce(max);
@@ -137,6 +151,9 @@ class BacktrackingGridBuilder {
       totalWords: _totalWords,
       placedWords: placedWords,
       wordPlacements: wordPlacements,
+      iterationCount: _iterationCount,
+      startTime: _startTime,
+      stopReason: _stopReason,
     );
   }
 
@@ -152,10 +169,13 @@ class BacktrackingGridBuilder {
         width: width,
         cells: state.toFlatList(),
         wordPlacements: _extractPlacements(state),
+        iterationCount: _iterationCount,
+        startTime: _startTime,
       ),
     );
     if (!shouldContinue) {
       _stopRequested = true;
+      _stopReason = StopReason.userStopped;
     }
   }
 
@@ -184,6 +204,7 @@ class BacktrackingGridBuilder {
     int rankIndex,
     List<WordNode> currentRankRemaining,
   ) {
+    _iterationCount++;
     final placedWords = state.nodePlacements.length;
 
     final now = DateTime.now();
@@ -230,7 +251,8 @@ class BacktrackingGridBuilder {
       final node = currentRankRemaining[i];
 
       // Find EARLIEST valid placement for this word
-      final (r, c) = findEarliestPlacement(state, node);
+      final (r, c) = findEarliestPlacementByPhrase(state, node);
+      //final (r, c) = findEarliestPlacement(state, node);
 
       if (r != -1) {
         final p = state.placeWord(node, r, c);
@@ -350,19 +372,22 @@ class BacktrackingGridBuilder {
       }
     }
 
+    int minRow;
+    int minCol;
+
     // If no phrases had predecessors, we can start at (0, 0)
     if (maxEndRow == -1) {
-      maxEndRow = 0;
-      maxEndCol = -1; // Will become 0 after adjustment
-    }
-
-    // Calculate the minimum starting position after the max end position
-    int minRow = maxEndRow;
-    int minCol = maxEndCol + (language.requiresPadding ? 2 : 1);
-
-    if (minCol >= width) {
-      minRow++;
+      minRow = 0;
       minCol = 0;
+    } else {
+      // Calculate the minimum starting position after the max end position
+      minRow = maxEndRow;
+      minCol = maxEndCol + (language.requiresPadding ? 2 : 1);
+
+      if (minCol >= width) {
+        minRow++;
+        minCol = 0;
+      }
     }
 
     // Find the first valid cell starting from minRow, minCol

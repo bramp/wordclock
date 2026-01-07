@@ -3,6 +3,7 @@ import 'package:wordclock/generator/backtracking/grid_builder.dart';
 import 'package:wordclock/generator/greedy/dependency_graph.dart';
 import 'package:wordclock/generator/greedy/dot_exporter.dart';
 import 'package:wordclock/generator/greedy/grid_builder.dart';
+import 'package:wordclock/generator/trie/trie_grid_builder.dart';
 import 'package:wordclock/generator/utils/grid_build_result.dart';
 import 'package:wordclock/generator/utils/grid_validator.dart';
 import 'package:wordclock/generator/backtracking/graph/graph_builder.dart';
@@ -12,6 +13,20 @@ import 'package:wordclock/languages/all.dart';
 import 'package:wordclock/model/word_grid.dart';
 
 // ignore_for_file: avoid_print
+
+/// Convert StopReason to human-readable string
+String _stopReasonToString(StopReason reason) {
+  switch (reason) {
+    case StopReason.completed:
+      return 'Search completed';
+    case StopReason.timeout:
+      return 'Timeout reached';
+    case StopReason.maxIterations:
+      return 'Max iterations reached';
+    case StopReason.userStopped:
+      return 'Stopped by timeout/user';
+  }
+}
 
 /// ANSI color codes for terminal output
 class AnsiColors {
@@ -133,9 +148,9 @@ void main(List<String> args) {
       'algorithm',
       abbr: 'a',
       defaultsTo: 'backtracking',
-      allowed: ['greedy', 'backtracking'],
+      allowed: ['greedy', 'backtracking', 'trie'],
       help:
-          'Grid generation algorithm to use (greedy=fast, backtracking=thorough).',
+          'Grid generation algorithm to use (greedy=fast, backtracking=thorough, trie=reading-order).',
     )
     ..addFlag(
       'dot',
@@ -277,6 +292,11 @@ void _generateAndPrintGrid(Config config) {
     print('Seed: $finalSeed');
     print('');
 
+    if (config.algorithm == 'trie') {
+      _generateWithTrie(config);
+      return;
+    }
+
     if (config.algorithm == 'backtracking') {
       _generateWithBacktracking(config);
       return;
@@ -375,12 +395,16 @@ void _generateWithBacktracking(Config config) {
     language: config.language,
     seed: finalSeed,
     onProgress: (progress) {
+      final elapsed = DateTime.now().difference(progress.startTime);
+      final elapsedSecs = elapsed.inMilliseconds / 1000.0;
+      final rate = elapsedSecs > 0 ? progress.iterationCount / elapsedSecs : 0;
+      final rateStr = rate.toStringAsFixed(0);
       printColoredGrid(
         progress.cells,
         progress.width,
         progress.wordPlacements,
         header:
-            '\n--- Search: ${progress.currentWords}/${progress.totalWords} words (Best: ${progress.bestWords}) ---',
+            '\n--- Search: ${progress.currentWords}/${progress.totalWords} words (Best: ${progress.bestWords}) | ${progress.iterationCount} iterations ($rateStr/s) ---',
       );
 
       // Return false to stop if deadline passed
@@ -389,6 +413,17 @@ void _generateWithBacktracking(Config config) {
   );
 
   final result = builder.build();
+
+  // Print search statistics
+  final duration = result.startTime != null
+      ? DateTime.now().difference(result.startTime!)
+      : Duration.zero;
+  final durationSecs = duration.inMilliseconds / 1000.0;
+  final rate = durationSecs > 0 ? result.iterationCount / durationSecs : 0;
+  print('\n--- Search completed ---');
+  print('Duration: ${durationSecs.toStringAsFixed(2)}s');
+  print('Iterations: ${result.iterationCount} (${rate.toStringAsFixed(0)}/s)');
+  print('Stop reason: ${_stopReasonToString(result.stopReason)}');
 
   if (result.grid == null) {
     print('\nFailed to generate grid with backtracking algorithm.');
@@ -428,6 +463,96 @@ void _generateWithBacktracking(Config config) {
 
   // Output the grid
   print('\n/// AUTOMATICALLY GENERATED (Backtracking Algorithm)');
+  print('/// Seed: $finalSeed');
+  print('  defaultGrid: WordGrid.fromLetters(');
+  print('    width: ${config.gridWidth},');
+  print('    letters:');
+
+  final cells = result.grid!;
+  for (int i = 0; i < targetHeight; i++) {
+    final line = cells
+        .sublist(i * config.gridWidth, (i + 1) * config.gridWidth)
+        .join('');
+    final escapedLine = line.replaceAll('"', r'\"');
+    print('        "$escapedLine"');
+  }
+  print('  ),');
+}
+
+void _generateWithTrie(Config config) {
+  final int finalSeed = config.seed ?? 0;
+  final int targetHeight = config.targetHeight > 0 ? config.targetHeight : 10;
+  const int maxSearchTimeSeconds = 120;
+
+  print('Trie Grid Builder (Reading Order Enforced)');
+  print('Timeout: ${maxSearchTimeSeconds}s');
+  print('');
+
+  final deadline = DateTime.now().add(Duration(seconds: maxSearchTimeSeconds));
+
+  final builder = TrieGridBuilder(
+    width: config.gridWidth,
+    height: targetHeight,
+    language: config.language,
+    seed: finalSeed,
+    findFirstValid: true,
+    maxIterations: 10000000,
+    onProgress: (progress) {
+      printColoredGrid(
+        progress.cells,
+        progress.width,
+        progress.wordPlacements,
+        header:
+            '\n--- Search: ${progress.placedWords} placed, ${progress.frontierSize} frontier (Best: ${progress.bestWords}) ---',
+      );
+
+      // Return false to stop if deadline passed
+      return DateTime.now().isBefore(deadline);
+    },
+  );
+
+  final result = builder.build();
+
+  if (result.grid == null) {
+    print('\nFailed to generate grid with trie algorithm.');
+    print('The reading order constraint may be too strict for this grid size.');
+    print('Try:');
+    print('  - Increasing height');
+    print('  - Increasing width');
+    print('  - Using the backtracking algorithm: --algorithm=backtracking');
+    return;
+  }
+
+  // Print warnings if not optimal
+  if (!result.isOptimal) {
+    print('\n⚠️⚠️⚠️ WARNING: Grid is not optimal ⚠️⚠️⚠️');
+    if (result.placedWords < result.totalWords) {
+      print('  - Only placed ${result.placedWords}/${result.totalWords} words');
+    }
+    if (result.validationIssues.isNotEmpty) {
+      print('  - Validation issues:');
+      for (final issue in result.validationIssues) {
+        print('    * $issue');
+      }
+    }
+    print('⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️\n');
+  } else {
+    print('\n✓✓✓ Grid is optimal! ✓✓✓');
+    print('All phrases can be read in left-to-right, top-to-bottom order.\n');
+  }
+
+  // Print colored grid for visualization
+  if (result.wordPlacements.isNotEmpty) {
+    printColoredGrid(
+      result.grid!,
+      config.gridWidth,
+      result.wordPlacements,
+      header: '\nColored grid (words highlighted):',
+    );
+  }
+
+  // Output the grid
+  print('\n/// AUTOMATICALLY GENERATED (Trie Algorithm - Reading Order)');
   print('/// Seed: $finalSeed');
   print('  defaultGrid: WordGrid.fromLetters(');
   print('    width: ${config.gridWidth},');
