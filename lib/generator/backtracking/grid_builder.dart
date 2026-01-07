@@ -230,7 +230,7 @@ class BacktrackingGridBuilder {
       final node = currentRankRemaining[i];
 
       // Find EARLIEST valid placement for this word
-      final (r, c) = _findEarliestPlacement(state, node);
+      final (r, c) = findEarliestPlacement(state, node);
 
       if (r != -1) {
         final p = state.placeWord(node, r, c);
@@ -247,7 +247,10 @@ class BacktrackingGridBuilder {
   }
 
   /// Finds the earliest valid placement for a word, respecting parents and reading order.
-  (int row, int col) _findEarliestPlacement(GridState state, WordNode node) {
+  /// This uses the pre-computed graph edges (parent nodes).
+  ///
+  /// Made public for testing comparison with [findEarliestPlacementByPhrase].
+  (int row, int col) findEarliestPlacement(GridState state, WordNode node) {
     int minRow = 0;
     int minCol = 0;
 
@@ -282,6 +285,171 @@ class BacktrackingGridBuilder {
     }
 
     return (-1, -1);
+  }
+
+  /// Finds the earliest valid placement for a word by scanning phrases left-to-right.
+  ///
+  /// This method tokenizes all phrases containing the node and scans the grid
+  /// to find placements for each predecessor word in reading order. The earliest
+  /// valid position is after the MAX end position across all phrases.
+  ///
+  /// This differs from [findEarliestPlacement] which uses the pre-computed graph edges.
+  /// The phrase-based approach correctly handles cases where duplicate words may
+  /// already be satisfied by earlier placements.
+  ///
+  /// Returns (-1, -1) if a required predecessor word is not found on the grid.
+  (int row, int col) findEarliestPlacementByPhrase(
+    GridState state,
+    WordNode node,
+  ) {
+    int maxEndRow = -1;
+    int maxEndCol = -1;
+
+    // Process each phrase this node appears in
+    for (final phrase in node.phrases) {
+      final tokens = language.tokenize(phrase);
+
+      // Find which occurrence of the word we are (0-indexed)
+      // node.instance tells us which instance this node represents
+      int targetOccurrence = node.instance;
+      int occurrenceCount = 0;
+      int tokenIndex = -1;
+
+      for (int i = 0; i < tokens.length; i++) {
+        if (tokens[i] == node.word) {
+          if (occurrenceCount == targetOccurrence) {
+            tokenIndex = i;
+            break;
+          }
+          occurrenceCount++;
+        }
+      }
+
+      // If this node's word doesn't appear in this phrase at the expected position,
+      // skip this phrase (shouldn't happen with correct graph building)
+      if (tokenIndex == -1) continue;
+
+      // If tokenIndex is 0, this is the first word - no predecessors
+      if (tokenIndex == 0) continue;
+
+      // Scan the grid left-to-right for each predecessor token
+      final (endRow, endCol) = _scanPhraseForPredecessors(
+        state,
+        tokens.sublist(0, tokenIndex),
+      );
+
+      // If any predecessor wasn't found, this phrase can't be satisfied
+      if (endRow == -1) {
+        return (-1, -1);
+      }
+
+      // Update max end position (in reading order)
+      if (endRow > maxEndRow || (endRow == maxEndRow && endCol > maxEndCol)) {
+        maxEndRow = endRow;
+        maxEndCol = endCol;
+      }
+    }
+
+    // If no phrases had predecessors, we can start at (0, 0)
+    if (maxEndRow == -1) {
+      maxEndRow = 0;
+      maxEndCol = -1; // Will become 0 after adjustment
+    }
+
+    // Calculate the minimum starting position after the max end position
+    int minRow = maxEndRow;
+    int minCol = maxEndCol + (language.requiresPadding ? 2 : 1);
+
+    if (minCol >= width) {
+      minRow++;
+      minCol = 0;
+    }
+
+    // Find the first valid cell starting from minRow, minCol
+    for (int r = minRow; r < _minHeightFound; r++) {
+      int cStart = (r == minRow) ? minCol : 0;
+      for (int c = cStart; c <= width - node.cells.length; c++) {
+        final (canPlace, _) = _checkPlacement(state, node, r, c);
+        if (canPlace) {
+          return (r, c);
+        }
+      }
+    }
+
+    return (-1, -1);
+  }
+
+  /// Scans the grid left-to-right to find placements for a sequence of tokens.
+  ///
+  /// Each subsequent token must be found AFTER the previous one in reading order.
+  /// Returns the (row, col) of the END of the last token found.
+  /// Returns (-1, -1) if any token is not found.
+  (int row, int col) _scanPhraseForPredecessors(
+    GridState state,
+    List<String> tokens,
+  ) {
+    int currentRow = 0;
+    int currentCol = 0;
+
+    for (final token in tokens) {
+      // Find the first placement of this token that starts at or after (currentRow, currentCol)
+      final placement = _findWordAfterPosition(
+        state,
+        token,
+        currentRow,
+        currentCol,
+      );
+
+      if (placement == null) {
+        return (-1, -1);
+      }
+
+      // Move current position to just after this word
+      currentRow = placement.row;
+      currentCol = placement.endCol + 1;
+    }
+
+    // Return the end position of the last token
+    // currentCol is already endCol + 1, so we need to subtract 1
+    return (currentRow, currentCol - 1);
+  }
+
+  /// Finds the first placement of a word that starts at or after the given position.
+  ///
+  /// Scans all placements of the word and returns the one that comes first
+  /// in reading order but is at or after (afterRow, afterCol).
+  WordPlacement? _findWordAfterPosition(
+    GridState state,
+    String word,
+    int afterRow,
+    int afterCol,
+  ) {
+    final placements = state.getPlacementsOf(word);
+    if (placements.isEmpty) return null;
+
+    WordPlacement? best;
+
+    for (final p in placements) {
+      // Check if this placement starts at or after the required position
+      final startsAfter =
+          p.row > afterRow || (p.row == afterRow && p.startCol >= afterCol);
+
+      if (!startsAfter) continue;
+
+      // Check if this is the earliest valid placement found so far
+      if (best == null) {
+        best = p;
+      } else {
+        final isBetter =
+            p.row < best.row ||
+            (p.row == best.row && p.startCol < best.startCol);
+        if (isBetter) {
+          best = p;
+        }
+      }
+    }
+
+    return best;
   }
 
   /// Helper to check placement and count overlaps
