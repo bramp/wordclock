@@ -17,38 +17,10 @@ class WordDependencyGraphBuilder {
   /// - Second FIVE uses FIVE#1
   ///
   /// Nodes are reused across phrases when they don't create conflicting edges.
+  /// Tries multiple phrase orderings and picks the one with fewest nodes.
   static WordDependencyGraph build({required WordClockLanguage language}) {
-    final Map<String, List<WordNode>> nodes = {};
-    final Map<WordNode, Set<WordNode>> edges = {};
-    final Map<WordNode, Set<WordNode>> inEdges = {};
-    final Map<String, List<WordNode>> phrases = {};
-    final Set<String> processedPhrases = {};
-
-    // Helper to check if adding edge from->to would create a cycle
-    bool wouldCreateCycle(WordNode fromNode, WordNode toNode) {
-      // Check if there's already a path from toNode to fromNode
-      // If so, adding fromNode->toNode would create a cycle
-      final visited = <WordNode>{};
-      final queue = <WordNode>[toNode];
-
-      while (queue.isNotEmpty) {
-        final current = queue.removeAt(0);
-        if (current == fromNode) {
-          return true; // Found path from toNode to fromNode
-        }
-
-        if (visited.contains(current)) continue;
-        visited.add(current);
-
-        final successors = edges[current] ?? {};
-        queue.addAll(successors);
-      }
-
-      return false;
-    }
-
     // 1. Collect all unique phrases first
-    
+    final processedPhrases = <String>{};
     WordClockUtils.forEachTime(language, (time, phraseText) {
       if (!processedPhrases.contains(phraseText)) {
         processedPhrases.add(phraseText);
@@ -64,30 +36,83 @@ class WordDependencyGraphBuilder {
       (sum, count) => sum + count,
     );
 
-    // 2. Sort phrases by length (shortest first)
-    // This optimization reduces the number of node instances needed.
-    // By processing short phrases first (e.g., "JE PĚT" before "JE JEDNA DVACET PĚT"),
-    // we establish base nodes that can be reused without creating cycles.
-    allPhrases.sort((a, b) => a.length.compareTo(b.length));
+    // 2. Try multiple phrase orderings and pick the best
+    // Different languages benefit from different orderings due to cycle constraints
+    final orderings = <String, List<String>>{
+      'length_asc': List.from(allPhrases)
+        ..sort((a, b) => a.length.compareTo(b.length)),
+      'length_desc': List.from(allPhrases)
+        ..sort((a, b) => b.length.compareTo(a.length)),
+    };
 
-    // 3. Process all phrases in optimized order
-    for (final phraseText in allPhrases) {
+    WordDependencyGraph? bestGraph;
+    var bestNodeCount = 999999;
+
+    for (final entry in orderings.entries) {
+      final graph = _buildWithOrdering(entry.value, language);
+      final nodeCount = graph.nodes.values.fold(0, (s, l) => s + l.length);
+
+      if (nodeCount < bestNodeCount) {
+        bestNodeCount = nodeCount;
+        bestGraph = graph;
+      }
+
+      // Early exit if we achieved optimal
+      if (nodeCount == optimalNodeCount) break;
+    }
+
+    // Check if we achieved optimal node count
+    _warnIfSuboptimal(bestGraph!.nodes, maxOccurrences, optimalNodeCount);
+
+    return bestGraph;
+  }
+
+  /// Builds a graph with phrases processed in the given order.
+  static WordDependencyGraph _buildWithOrdering(
+    List<String> orderedPhrases,
+    WordClockLanguage language,
+  ) {
+    final Map<String, List<WordNode>> nodes = {};
+    final Map<WordNode, Set<WordNode>> edges = {};
+    final Map<WordNode, Set<WordNode>> inEdges = {};
+    final Map<String, List<WordNode>> phrases = {};
+
+    // Helper to check if adding edge from->to would create a cycle
+    bool wouldCreateCycle(WordNode fromNode, WordNode toNode) {
+      final visited = <WordNode>{};
+      final queue = <WordNode>[toNode];
+
+      while (queue.isNotEmpty) {
+        final current = queue.removeAt(0);
+        if (current == fromNode) {
+          return true;
+        }
+
+        if (visited.contains(current)) continue;
+        visited.add(current);
+
+        final successors = edges[current] ?? {};
+        queue.addAll(successors);
+      }
+
+      return false;
+    }
+
+    // Process all phrases in the given order
+    for (final phraseText in orderedPhrases) {
       final words = language.tokenize(phraseText);
       if (words.isEmpty) continue;
 
       final phraseNodes = <WordNode>[];
 
-      // Process each word in the phrase
       for (int i = 0; i < words.length; i++) {
         final word = words[i];
         final predNode = i > 0 ? phraseNodes[i - 1] : null;
 
-        // Try to find/create a node instance that doesn't create cycles.
         WordNode? selectedNode;
         final instances = nodes[word] ??= [];
 
-        // Try to find an existing instance that doesn't create a cycle.
-        selectedNode = null;
+        // Try to find an existing instance that doesn't create a cycle
         for (final node in instances) {
           if (predNode == null || !wouldCreateCycle(predNode, node)) {
             selectedNode = node;
@@ -96,10 +121,8 @@ class WordDependencyGraphBuilder {
         }
 
         if (selectedNode != null) {
-          // Reuse existing node
           selectedNode.phrases.add(phraseText);
         } else {
-          // Create new instance
           selectedNode = WordNode(
             word: word,
             instance: instances.length,
@@ -111,7 +134,6 @@ class WordDependencyGraphBuilder {
 
         phraseNodes.add(selectedNode);
 
-        // Add edge from the previous node to the selected node
         if (predNode != null) {
           edges.putIfAbsent(predNode, () => {}).add(selectedNode);
           inEdges.putIfAbsent(selectedNode, () => {}).add(predNode);
@@ -120,9 +142,6 @@ class WordDependencyGraphBuilder {
 
       phrases[phraseText] = phraseNodes;
     }
-
-    // Check if we achieved optimal node count
-    _warnIfSuboptimal(nodes, maxOccurrences, optimalNodeCount);
 
     return WordDependencyGraph(
       nodes: nodes,
