@@ -143,6 +143,9 @@ class WordDependencyGraphBuilder {
       phrases[phraseText] = phraseNodes;
     }
 
+    // Populate predecessorTokens for each node
+    _populatePredecessorTokens(phrases, language);
+
     return WordDependencyGraph(
       nodes: nodes,
       edges: edges,
@@ -150,6 +153,46 @@ class WordDependencyGraphBuilder {
       phrases: phrases,
       language: language,
     );
+  }
+
+  /// Populates the predecessorTokens field for each node based on phrases.
+  static void _populatePredecessorTokens(
+    Map<String, List<WordNode>> phrases,
+    WordClockLanguage language,
+  ) {
+    for (final entry in phrases.entries) {
+      final phraseText = entry.key;
+      final phraseNodes = entry.value;
+      final tokens = language.tokenize(phraseText);
+
+      for (int i = 0; i < phraseNodes.length; i++) {
+        final node = phraseNodes[i];
+        // Predecessors are all tokens before this node's position
+        final predecessors = tokens.sublist(0, i);
+
+        // Check if this predecessor list already exists (by value)
+        bool alreadyExists = false;
+        for (final existing in node.predecessorTokens) {
+          if (_listEquals(existing, predecessors)) {
+            alreadyExists = true;
+            break;
+          }
+        }
+
+        if (!alreadyExists) {
+          node.predecessorTokens.add(predecessors);
+        }
+      }
+    }
+  }
+
+  /// Compares two lists for value equality.
+  static bool _listEquals<T>(List<T> a, List<T> b) {
+    if (a.length != b.length) return false;
+    for (int i = 0; i < a.length; i++) {
+      if (a[i] != b[i]) return false;
+    }
+    return true;
   }
 
   /// Debug: Print graph statistics

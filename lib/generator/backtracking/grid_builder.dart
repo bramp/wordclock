@@ -311,8 +311,8 @@ class BacktrackingGridBuilder {
 
   /// Finds the earliest valid placement for a word by scanning phrases left-to-right.
   ///
-  /// This method tokenizes all phrases containing the node and scans the grid
-  /// to find placements for each predecessor word in reading order. The earliest
+  /// This method uses the pre-computed predecessor tokens for each phrase and scans
+  /// the grid to find placements for each predecessor word in reading order. The earliest
   /// valid position is after the MAX end position across all phrases.
   ///
   /// This differs from [findEarliestPlacement] which uses the pre-computed graph edges.
@@ -327,38 +327,13 @@ class BacktrackingGridBuilder {
     int maxEndRow = -1;
     int maxEndCol = -1;
 
-    // Process each phrase this node appears in
-    for (final phrase in node.phrases) {
-      final tokens = language.tokenize(phrase);
-
-      // Find which occurrence of the word we are (0-indexed)
-      // node.instance tells us which instance this node represents
-      int targetOccurrence = node.instance;
-      int occurrenceCount = 0;
-      int tokenIndex = -1;
-
-      for (int i = 0; i < tokens.length; i++) {
-        if (tokens[i] == node.word) {
-          if (occurrenceCount == targetOccurrence) {
-            tokenIndex = i;
-            break;
-          }
-          occurrenceCount++;
-        }
-      }
-
-      // If this node's word doesn't appear in this phrase at the expected position,
-      // skip this phrase (shouldn't happen with correct graph building)
-      if (tokenIndex == -1) continue;
-
-      // If tokenIndex is 0, this is the first word - no predecessors
-      if (tokenIndex == 0) continue;
+    // Process each phrase's pre-computed predecessor tokens
+    for (final predecessors in node.predecessorTokens) {
+      // If no predecessors, this is the first word - no constraint from this phrase
+      if (predecessors.isEmpty) continue;
 
       // Scan the grid left-to-right for each predecessor token
-      final (endRow, endCol) = _scanPhraseForPredecessors(
-        state,
-        tokens.sublist(0, tokenIndex),
-      );
+      final (endRow, endCol) = _scanPhraseForPredecessors(state, predecessors);
 
       // If any predecessor wasn't found, this phrase can't be satisfied
       if (endRow == -1) {

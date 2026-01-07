@@ -16,6 +16,12 @@ class WordNode {
   /// Which phrases use this word node
   final Set<String> phrases;
 
+  /// Pre-computed predecessor tokens for each phrase.
+  /// Each inner list contains the tokens that must appear BEFORE this word
+  /// in reading order for that phrase. Empty list means this is the first word.
+  /// Populated by [WordDependencyGraphBuilder] after graph construction.
+  final List<List<String>> predecessorTokens = [];
+
   /// Unique identifier for this node (e.g., "FIVE", "FIVE#1", "FIVE#2")
   String get id => instance == 0 ? word : '$word#$instance';
 
