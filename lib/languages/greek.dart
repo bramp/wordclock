@@ -10,20 +10,8 @@ final greekLanguage = WordClockLanguage(
   description: null,
   timeToWords: GreekTimeToWords(),
   paddingAlphabet: 'AEHKPTXΔΧ',
-  defaultGrid: WordGrid.fromLetters(
-    width: 11,
-    letters:
-        "EINAIMIΣHKT"
-        "ΩPAEENTEKAΔ"
-        "HKAIΔΩΔEKAX"
-        "ΠENTEIKOΣIX"
-        "ΠAPATPEIΣTP"
-        "ΔEKAEΦTAΔYO"
-        "TETAPTOΧTΩP"
-        "TEΣΣEPIΣΧXP"
-        "ENNIAHXKHEΧ"
-        "MIAΧPTEXEΞI",
-  ),
+
+  // TODO Add a defaultGrid
   timeCheckGrid: WordGrid.fromLetters(
     width: 11,
     letters:
