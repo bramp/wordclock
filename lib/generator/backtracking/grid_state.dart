@@ -80,6 +80,9 @@ class GridState {
   /// Track which phrases are fully satisfied
   final Set<String> satisfiedPhrases;
 
+  /// Count of placements per row (for efficient maxRowUsed tracking)
+  final List<int> _placementsPerRow;
+
   int _filledCellsCount = 0;
   int _totalWordsLength = 0;
   int _maxRowUsed = -1;
@@ -102,6 +105,7 @@ class GridState {
   GridState({required this.width, required this.height})
     : grid = List.generate(height, (_) => List.filled(width, null)),
       _usage = List.generate(height, (_) => List.filled(width, 0)),
+      _placementsPerRow = List.filled(height, 0),
       nodePlacements = {},
       satisfiedPhrases = {};
 
@@ -118,6 +122,7 @@ class GridState {
         newState.grid[row][col] = grid[row][col];
         newState._usage[row][col] = _usage[row][col];
       }
+      newState._placementsPerRow[row] = _placementsPerRow[row];
     }
 
     // Copy word placements
@@ -182,6 +187,7 @@ class GridState {
 
     // Record placement
     nodePlacements[node] = placement;
+    _placementsPerRow[row]++;
 
     // Update cached maxRowUsed
     if (row > _maxRowUsed) _maxRowUsed = row;
@@ -193,18 +199,20 @@ class GridState {
   void removePlacement(WordPlacement placement) {
     // Remove from map
     nodePlacements.remove(placement.node);
+    _placementsPerRow[placement.row]--;
 
-    // Update cached maxRowUsed if we removed from the max row
-    if (placement.row == _maxRowUsed) {
+    // Update cached maxRowUsed if we removed the last placement from the max row
+    if (placement.row == _maxRowUsed && _placementsPerRow[placement.row] == 0) {
+      // Scan backwards to find the new max row
       _maxRowUsed = -1;
-      for (final p in nodePlacements.values) {
-        if (p.row > _maxRowUsed) _maxRowUsed = p.row;
+      for (int r = placement.row - 1; r >= 0; r--) {
+        if (_placementsPerRow[r] > 0) {
+          _maxRowUsed = r;
+          break;
+        }
       }
     }
 
-    // TODO This is using reference counting, to know when to remove
-    // a value from a cell. But I think keeping a index of overlaps in
-    // WordPlacement may be more efficient.
     final node = placement.node;
     for (int i = 0; i < node.cells.length; i++) {
       final c = placement.startCol + i;
