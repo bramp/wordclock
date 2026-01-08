@@ -5,6 +5,23 @@ import 'package:wordclock/generator/backtracking/graph/graph_builder.dart';
 import 'package:wordclock/generator/backtracking/graph/word_node.dart';
 import 'graph/test_helpers.dart';
 
+/// Helper to place a word and update the trie cache (mimics what _solve does)
+WordPlacement? placeWordWithCache(
+  GridState state,
+  WordNode node,
+  int row,
+  int col,
+) {
+  final placement = state.placeWord(node, row, col);
+  if (placement != null) {
+    // Update trie cache: set position on all trie nodes this word owns
+    for (final trieNode in node.ownedTrieNodes) {
+      trieNode.cachedPosition = (placement.row, placement.endCol);
+    }
+  }
+  return placement;
+}
+
 void main() {
   group('_findEarliestPlacementByPhrase', () {
     group('single phrase scenarios', () {
@@ -59,7 +76,7 @@ void main() {
         final nodeB = graph.nodes['B']!.first;
 
         // Place A at (0, 0)
-        state.placeWord(nodeA, 0, 0);
+        placeWordWithCache(state, nodeA, 0, 0);
 
         final (row, col) = builder.findEarliestPlacementByPhrase(state, nodeB);
 
@@ -91,7 +108,7 @@ void main() {
         final nodeB = graph.nodes['B']!.first;
 
         // Place A at (0, 0)
-        state.placeWord(nodeA, 0, 0);
+        placeWordWithCache(state, nodeA, 0, 0);
 
         final (row, col) = builder.findEarliestPlacementByPhrase(state, nodeB);
 
@@ -125,8 +142,8 @@ void main() {
         final nodeC = graph.nodes['C']!.first;
 
         // Place A at (0, 0), B at (0, 2)
-        state.placeWord(nodeA, 0, 0);
-        state.placeWord(nodeB, 0, 2);
+        placeWordWithCache(state, nodeA, 0, 0);
+        placeWordWithCache(state, nodeB, 0, 2);
 
         final (row, col) = builder.findEarliestPlacementByPhrase(state, nodeC);
 
@@ -165,7 +182,7 @@ void main() {
         final nodeA1 = nodesA.firstWhere((n) => n.instance == 1);
 
         // Place first A at (0, 0)
-        state.placeWord(nodeA0, 0, 0);
+        placeWordWithCache(state, nodeA0, 0, 0);
 
         final (row, col) = builder.findEarliestPlacementByPhrase(state, nodeA1);
 
@@ -202,8 +219,8 @@ void main() {
         final nodeDESET1 = nodesDESET.firstWhere((n) => n.instance == 1);
 
         // Place JE at (0, 0), first DESET at (0, 3)
-        state.placeWord(nodeJE, 0, 0); // JE ends at col 1
-        state.placeWord(nodeDESET0, 0, 3); // DESET ends at col 7
+        placeWordWithCache(state, nodeJE, 0, 0); // JE ends at col 1
+        placeWordWithCache(state, nodeDESET0, 0, 3); // DESET ends at col 7
 
         final (row, col) = builder.findEarliestPlacementByPhrase(
           state,
@@ -245,10 +262,10 @@ void main() {
         final nodeC = graph.nodes['C']!.first;
 
         // Place words: A at 0, B at 2, D at 4, E at 6
-        state.placeWord(nodeA, 0, 0); // A ends at 0
-        state.placeWord(nodeB, 0, 2); // B ends at 2
-        state.placeWord(nodeD, 0, 4); // D ends at 4
-        state.placeWord(nodeE, 0, 6); // E ends at 6
+        placeWordWithCache(state, nodeA, 0, 0); // A ends at 0
+        placeWordWithCache(state, nodeB, 0, 2); // B ends at 2
+        placeWordWithCache(state, nodeD, 0, 4); // D ends at 4
+        placeWordWithCache(state, nodeE, 0, 6); // E ends at 6
 
         final (row, col) = builder.findEarliestPlacementByPhrase(state, nodeC);
 
@@ -286,12 +303,12 @@ void main() {
         final nodeC = graph.nodes['C']!.first;
 
         // Phrase 1: A at row 0, B at row 0 col 5
-        state.placeWord(nodeA, 0, 0); // A ends at (0, 0)
-        state.placeWord(nodeB, 0, 5); // B ends at (0, 5)
+        placeWordWithCache(state, nodeA, 0, 0); // A ends at (0, 0)
+        placeWordWithCache(state, nodeB, 0, 5); // B ends at (0, 5)
 
         // Phrase 2: D at row 1, E at row 1 col 2
-        state.placeWord(nodeD, 1, 0); // D ends at (1, 0)
-        state.placeWord(nodeE, 1, 2); // E ends at (1, 2)
+        placeWordWithCache(state, nodeD, 1, 0); // D ends at (1, 0)
+        placeWordWithCache(state, nodeE, 1, 2); // E ends at (1, 2)
 
         final (row, col) = builder.findEarliestPlacementByPhrase(state, nodeC);
 
@@ -354,7 +371,7 @@ void main() {
         final nodeBB = graph.nodes['BB']!.first;
 
         // Place A at (0, 1) - A ends at col 1
-        state.placeWord(nodeA, 0, 1);
+        placeWordWithCache(state, nodeA, 0, 1);
 
         final (row, col) = builder.findEarliestPlacementByPhrase(state, nodeBB);
 
@@ -362,44 +379,6 @@ void main() {
         // BB needs 2 cells, so it wraps to row 1
         expect(row, 1);
         expect(col, 0);
-      });
-    });
-
-    group('comparison with node-based method', () {
-      test('both methods agree for simple linear phrases', () {
-        final language = createMockLanguage(
-          id: 'T11',
-          phrases: ['A B C D'],
-          requiresPadding: false,
-        );
-
-        final builder = BacktrackingGridBuilder(
-          width: 20,
-          height: 3,
-          language: language,
-          seed: 0,
-        );
-
-        final graph = WordDependencyGraphBuilder.build(language: language);
-        builder.graph = graph;
-
-        final state = GridState(width: 20, height: 3);
-
-        final nodeA = graph.nodes['A']!.first;
-        final nodeB = graph.nodes['B']!.first;
-        final nodeC = graph.nodes['C']!.first;
-        final nodeD = graph.nodes['D']!.first;
-
-        // Place A, B, C
-        state.placeWord(nodeA, 0, 0);
-        state.placeWord(nodeB, 0, 2);
-        state.placeWord(nodeC, 0, 4);
-
-        // Both methods should give the same result for D
-        final byPhrase = builder.findEarliestPlacementByPhrase(state, nodeD);
-        final byNode = builder.findEarliestPlacement(state, nodeD);
-
-        expect(byPhrase, equals(byNode));
       });
     });
   });

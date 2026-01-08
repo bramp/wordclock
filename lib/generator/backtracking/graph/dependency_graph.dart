@@ -1,3 +1,4 @@
+import 'package:wordclock/generator/backtracking/graph/phrase_trie.dart';
 import 'package:wordclock/generator/backtracking/graph/word_node.dart';
 import 'package:wordclock/languages/language.dart';
 
@@ -23,12 +24,16 @@ class WordDependencyGraph {
   /// Language this graph was built for
   final WordClockLanguage language;
 
+  /// Global phrase trie for efficient predecessor lookups
+  PhraseTrie? phraseTrie;
+
   WordDependencyGraph({
     required this.nodes,
     required this.edges,
     required this.inEdges,
     required this.phrases,
     required this.language,
+    this.phraseTrie,
   });
 
   /// Get nodes sorted by priority (higher priority first)

@@ -82,6 +82,7 @@ class GridState {
 
   int _filledCellsCount = 0;
   int _totalWordsLength = 0;
+  int _maxRowUsed = -1;
 
   /// Total unique cells filled
   int get filledCells => _filledCellsCount;
@@ -104,15 +105,8 @@ class GridState {
       nodePlacements = {},
       satisfiedPhrases = {};
 
-  /// The index of the highest row currently used in any placement
-  int get maxRowUsed {
-    if (nodePlacements.isEmpty) return -1;
-    int maxRow = -1;
-    for (final p in nodePlacements.values) {
-      if (p.row > maxRow) maxRow = p.row;
-    }
-    return maxRow;
-  }
+  /// The index of the highest row currently used in any placement (cached)
+  int get maxRowUsed => _maxRowUsed;
 
   /// Create a deep copy of this state
   GridState clone() {
@@ -135,6 +129,7 @@ class GridState {
     // Copy counters
     newState._filledCellsCount = _filledCellsCount;
     newState._totalWordsLength = _totalWordsLength;
+    newState._maxRowUsed = _maxRowUsed;
 
     return newState;
   }
@@ -188,6 +183,9 @@ class GridState {
     // Record placement
     nodePlacements[node] = placement;
 
+    // Update cached maxRowUsed
+    if (row > _maxRowUsed) _maxRowUsed = row;
+
     return placement;
   }
 
@@ -195,6 +193,14 @@ class GridState {
   void removePlacement(WordPlacement placement) {
     // Remove from map
     nodePlacements.remove(placement.node);
+
+    // Update cached maxRowUsed if we removed from the max row
+    if (placement.row == _maxRowUsed) {
+      _maxRowUsed = -1;
+      for (final p in nodePlacements.values) {
+        if (p.row > _maxRowUsed) _maxRowUsed = p.row;
+      }
+    }
 
     // TODO This is using reference counting, to know when to remove
     // a value from a cell. But I think keeping a index of overlaps in
@@ -272,7 +278,7 @@ class GridState {
   }
 
   /// Convert grid to flat list of cells
-  Word toFlatList({String paddingChar = ' '}) {
+  List<Cell> toFlatList({String paddingChar = ' '}) {
     final result = <Cell>[];
     for (final row in grid) {
       result.addAll(row.map((cell) => cell ?? paddingChar));

@@ -2,6 +2,7 @@
 // TODO Remove the prints
 
 import 'package:wordclock/generator/backtracking/graph/dependency_graph.dart';
+import 'package:wordclock/generator/backtracking/graph/phrase_trie.dart';
 import 'package:wordclock/generator/backtracking/graph/word_node.dart';
 import 'package:wordclock/generator/utils/word_clock_utils.dart';
 import 'package:wordclock/languages/language.dart';
@@ -144,7 +145,7 @@ class WordDependencyGraphBuilder {
     }
 
     // Populate predecessorTokens for each node
-    _populatePredecessorTokens(phrases, language);
+    final phraseTrie = _populatePredecessorTokens(phrases, language);
 
     return WordDependencyGraph(
       nodes: nodes,
@@ -152,11 +153,13 @@ class WordDependencyGraphBuilder {
       inEdges: inEdges,
       phrases: phrases,
       language: language,
+      phraseTrie: phraseTrie,
     );
   }
 
   /// Populates the predecessorTokens and predecessorCells fields for each node.
-  static void _populatePredecessorTokens(
+  /// Returns the global PhraseTrie.
+  static PhraseTrie _populatePredecessorTokens(
     Map<String, List<WordNode>> phrases,
     WordClockLanguage language,
   ) {
@@ -189,6 +192,60 @@ class WordDependencyGraphBuilder {
         }
       }
     }
+
+    // Build trie for each node from its predecessorCells
+    return _buildPredecessorTries(phrases);
+  }
+
+  /// Builds a trie from predecessorCells for each node to deduplicate common prefixes.
+  /// Also builds a global PhraseTrie and links nodes to their predecessor terminals.
+  /// Returns the global PhraseTrie.
+  static PhraseTrie _buildPredecessorTries(
+    Map<String, List<WordNode>> phrases,
+  ) {
+    // Build the global phrase trie
+    final globalTrie = PhraseTrie();
+
+    // Process each phrase to build trie paths and link to WordNodes
+    for (final entry in phrases.entries) {
+      final phraseNodes = entry.value;
+      if (phraseNodes.isEmpty) continue;
+
+      // Mark first word as having empty predecessor
+      phraseNodes[0].hasEmptyPredecessor = true;
+
+      // For words at position 1+, build predecessor trie path
+      for (int targetIdx = 1; targetIdx < phraseNodes.length; targetIdx++) {
+        final targetNode = phraseNodes[targetIdx];
+
+        // Build trie path for predecessors [0..targetIdx-1]
+        var currentTrieNode = globalTrie.getOrCreateRoot(phraseNodes[0].cells);
+        // First node owns this root trie node
+        if (!phraseNodes[0].ownedTrieNodes.contains(currentTrieNode)) {
+          phraseNodes[0].ownedTrieNodes.add(currentTrieNode);
+        }
+
+        for (int predIdx = 1; predIdx < targetIdx; predIdx++) {
+          final predNode = phraseNodes[predIdx];
+          currentTrieNode = globalTrie.getOrCreateChild(
+            currentTrieNode,
+            predNode.cells,
+          );
+          // This predecessor node owns this trie node
+          if (!predNode.ownedTrieNodes.contains(currentTrieNode)) {
+            predNode.ownedTrieNodes.add(currentTrieNode);
+          }
+        }
+
+        // Mark as terminal and link to target node
+        currentTrieNode.isTerminal = true;
+        if (!targetNode.phraseTrieNodes.contains(currentTrieNode)) {
+          targetNode.phraseTrieNodes.add(currentTrieNode);
+        }
+      }
+    }
+
+    return globalTrie;
   }
 
   /// Compares two lists for value equality.

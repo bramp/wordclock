@@ -3,6 +3,7 @@ import 'package:wordclock/generator/backtracking/grid_state.dart';
 import 'package:wordclock/generator/backtracking/graph/dependency_graph.dart';
 import 'package:wordclock/generator/backtracking/graph/graph_builder.dart';
 import 'package:wordclock/generator/backtracking/graph/word_node.dart';
+import 'package:wordclock/generator/backtracking/graph/phrase_trie.dart';
 import 'package:wordclock/generator/utils/grid_build_result.dart';
 import 'package:wordclock/generator/utils/grid_validator.dart';
 import 'package:wordclock/languages/language.dart';
@@ -61,7 +62,7 @@ class BacktrackingGridBuilder {
   late final WordDependencyGraph graph;
 
   /// Padding alphabet cells
-  final Word paddingCells;
+  final List<Cell> paddingCells;
 
   /// If true, stop after finding the first valid grid (all words placed).
   /// If false (default), continue searching for optimal (minimum height) grid.
@@ -208,12 +209,12 @@ class BacktrackingGridBuilder {
     _iterationCount++;
     final placedWords = state.nodePlacements.length;
 
-    final now = DateTime.now();
-
-    // Periodically report progress
-    _reportProgress(now, state);
-
-    if (_shouldStop) return;
+    // Periodically report progress (check every 1000 iterations to avoid DateTime overhead)
+    if (_iterationCount % 1000 == 0) {
+      final now = DateTime.now();
+      _reportProgress(now, state);
+      if (_shouldStop) return;
+    }
 
     // Update best found so far (even if partial)
     if (placedWords > _maxWordsPlaced) {
@@ -248,7 +249,8 @@ class BacktrackingGridBuilder {
     }
 
     // Try EVERY word in this rank as the next one to place (Combinatorial)
-    for (int i = 0; i < currentRankRemaining.length; i++) {
+    final remainingLength = currentRankRemaining.length;
+    for (int i = 0; i < remainingLength; i++) {
       final node = currentRankRemaining[i];
 
       // Find EARLIEST valid placement for this word
@@ -258,56 +260,29 @@ class BacktrackingGridBuilder {
       if (r != -1) {
         final p = state.placeWord(node, r, c);
         if (p != null) {
-          final nextRemaining = List<WordNode>.from(currentRankRemaining)
-            ..removeAt(i);
+          // Update trie cache: set position on all trie nodes this word owns
+          for (final trieNode in node.ownedTrieNodes) {
+            trieNode.cachedPosition = (p.row, p.endCol);
+          }
+
+          // Build next remaining list excluding element i
+          // TODO Can this be replaced by a bitset, instead of maintaining a list?
+          final nextRemaining = <WordNode>[];
+          for (int j = 0; j < remainingLength; j++) {
+            if (j != i) nextRemaining.add(currentRankRemaining[j]);
+          }
           _solve(state, rankNodes, rankIndex, nextRemaining);
+
+          // Clear trie cache before removal
+          for (final trieNode in node.ownedTrieNodes) {
+            trieNode.cachedPosition = null;
+          }
           state.removePlacement(p);
         }
       }
 
       if (_shouldStop) return;
     }
-  }
-
-  /// Finds the earliest valid placement for a word, respecting parents and reading order.
-  /// This uses the pre-computed graph edges (parent nodes).
-  ///
-  /// Made public for testing comparison with [findEarliestPlacementByPhrase].
-  (int row, int col) findEarliestPlacement(GridState state, WordNode node) {
-    int minRow = 0;
-    int minCol = 0;
-
-    // 1. Respect parents
-    final parents = graph.inEdges[node] ?? {};
-    for (final parentNode in parents) {
-      final p = state.nodePlacements[parentNode];
-      if (p == null) continue;
-
-      if (p.row > minRow) {
-        minRow = p.row;
-        minCol = p.endCol + (language.requiresPadding ? 2 : 1);
-      } else if (p.row == minRow) {
-        minCol = max(minCol, p.endCol + (language.requiresPadding ? 2 : 1));
-      }
-    }
-
-    if (minCol >= width) {
-      minRow++;
-      minCol = 0;
-    }
-
-    // 3. Find the very first valid cell
-    for (int r = minRow; r < _minHeightFound; r++) {
-      int cStart = (r == minRow) ? minCol : 0;
-      for (int c = cStart; c <= width - node.cells.length; c++) {
-        final (canPlace, _) = _checkPlacement(state, node, r, c);
-        if (canPlace) {
-          return (r, c);
-        }
-      }
-    }
-
-    return (-1, -1);
   }
 
   /// Finds the earliest valid placement for a word by scanning phrases left-to-right.
@@ -320,56 +295,118 @@ class BacktrackingGridBuilder {
   /// The phrase-based approach correctly handles cases where duplicate words may
   /// already be satisfied by earlier placements.
   ///
+  /// Uses a pre-computed trie of predecessor sequences to deduplicate work when
+  /// multiple phrases share common prefixes.
+  ///
   /// Returns (-1, -1) if a required predecessor word is not found on the grid.
-  (int row, int col) findEarliestPlacementByPhrase(
+  (int, int) findEarliestPlacementByPhrase(GridState state, WordNode node) {
+    // If this word can be first in any phrase, it can start at (0, 0)
+    if (node.hasEmptyPredecessor) {
+      return _findFirstValidPlacement(state, node, 0, 0);
+    }
+
+    // Try to find max end position using the index
+    final maxPos = _findMaxPredecessorPositionUsingIndex(
+      state,
+      node.phraseTrieNodes,
+    );
+    if (maxPos == null) {
+      return (-1, -1); // No predecessor sequences satisfied yet
+    }
+
+    // Calculate the minimum starting position after the max end position
+    int minRow = maxPos.$1;
+    int minCol = maxPos.$2 + (language.requiresPadding ? 2 : 1);
+
+    if (minCol >= width) {
+      minRow++;
+      minCol = 0;
+    }
+
+    return _findFirstValidPlacement(state, node, minRow, minCol);
+  }
+
+  /// Find max predecessor end position by reading cached positions from trie nodes.
+  ///
+  /// Each terminal node represents the end of a predecessor sequence. We walk up
+  /// the parent chain checking that all nodes have cachedPosition set (meaning
+  /// all predecessor words are placed). Returns the max terminal position.
+  (int, int)? _findMaxPredecessorPositionUsingIndex(
+    GridState state,
+    List<PhraseTrieNode> terminalNodes,
+  ) {
+    int maxRow = -1;
+    int maxCol = -1;
+    bool anyFound = false;
+
+    // For each terminal node (end of a predecessor sequence),
+    // check if the full path has cached positions
+    for (final terminal in terminalNodes) {
+      final endPos = _getPathEndPositionFromCache(terminal);
+      if (endPos != null) {
+        anyFound = true;
+        if (endPos.$1 > maxRow || (endPos.$1 == maxRow && endPos.$2 > maxCol)) {
+          maxRow = endPos.$1;
+          maxCol = endPos.$2;
+        }
+      }
+    }
+
+    return anyFound ? (maxRow, maxCol) : null;
+  }
+
+  /// Get the end position of a predecessor path by reading cached positions.
+  /// Returns null if any node in the path doesn't have a cached position.
+  (int, int)? _getPathEndPositionFromCache(PhraseTrieNode terminal) {
+    // Walk from terminal up to root, checking all have cached positions
+    PhraseTrieNode? current = terminal;
+    while (current != null) {
+      if (current.cachedPosition == null) return null;
+      current = current.parent;
+    }
+    // All nodes have positions, return the terminal's position
+    return terminal.cachedPosition;
+  }
+
+  /// Non-cached trie-based version (falls back when cache not available).
+  (int, int) _findEarliestPlacementByTrie(GridState state, WordNode node) {
+    // If this word can be first in any phrase, it can start at (0, 0)
+    if (node.hasEmptyPredecessor) {
+      return _findFirstValidPlacement(state, node, 0, 0);
+    }
+
+    // Use trie-based scanning if available
+    final trie = node.predecessorTrie;
+    if (trie == null) {
+      return (-1, -1); // No valid predecessor sequences
+    }
+
+    // Scan using trie to find the max end position across all valid paths
+    final (maxEndRow, maxEndCol) = _scanTrieForMaxEndPosition(state, trie);
+
+    if (maxEndRow == -1) {
+      return (-1, -1);
+    }
+
+    // Calculate the minimum starting position after the max end position
+    int minRow = maxEndRow;
+    int minCol = maxEndCol + (language.requiresPadding ? 2 : 1);
+
+    if (minCol >= width) {
+      minRow++;
+      minCol = 0;
+    }
+
+    return _findFirstValidPlacement(state, node, minRow, minCol);
+  }
+
+  /// Find first valid placement starting from (minRow, minCol).
+  (int, int) _findFirstValidPlacement(
     GridState state,
     WordNode node,
+    int minRow,
+    int minCol,
   ) {
-    int maxEndRow = -1;
-    int maxEndCol = -1;
-
-    // Process each phrase's pre-computed predecessor cells
-    for (final predecessorCells in node.predecessorCells) {
-      // If no predecessors, this is the first word - no constraint from this phrase
-      if (predecessorCells.isEmpty) continue;
-
-      // Scan the grid left-to-right for each predecessor
-      final (endRow, endCol) = _scanPhraseForPredecessorCells(
-        state,
-        predecessorCells,
-      );
-
-      // If any predecessor wasn't found, this phrase can't be satisfied
-      if (endRow == -1) {
-        return (-1, -1);
-      }
-
-      // Update max end position (in reading order)
-      if (endRow > maxEndRow || (endRow == maxEndRow && endCol > maxEndCol)) {
-        maxEndRow = endRow;
-        maxEndCol = endCol;
-      }
-    }
-
-    int minRow;
-    int minCol;
-
-    // If no phrases had predecessors, we can start at (0, 0)
-    if (maxEndRow == -1) {
-      minRow = 0;
-      minCol = 0;
-    } else {
-      // Calculate the minimum starting position after the max end position
-      minRow = maxEndRow;
-      minCol = maxEndCol + (language.requiresPadding ? 2 : 1);
-
-      if (minCol >= width) {
-        minRow++;
-        minCol = 0;
-      }
-    }
-
-    // Find the first valid cell starting from minRow, minCol
     for (int r = minRow; r < _minHeightFound; r++) {
       int cStart = (r == minRow) ? minCol : 0;
       for (int c = cStart; c <= width - node.cells.length; c++) {
@@ -379,9 +416,163 @@ class BacktrackingGridBuilder {
         }
       }
     }
-
     return (-1, -1);
   }
+
+  // ============================================================
+  // Trie-based scanning (non-cached version)
+  // ============================================================
+
+  /// Scans trie to find max end position across all valid paths.
+  /// Returns (-1, -1) if no complete path is found.
+  (int, int) _scanTrieForMaxEndPosition(GridState state, PredecessorTrie trie) {
+    int maxRow = -1, maxCol = -1;
+    bool found = false;
+
+    for (final entry in trie.roots.entries) {
+      final node = entry.value;
+      final pos = _findWordCellsAfterPosition(state, node.wordCells, 0, 0);
+      if (pos == null) continue;
+
+      final result = _scanTrieNodeDFS(state, node, pos.$1, pos.$2);
+      if (result != null) {
+        found = true;
+        if (_isAfter(result, (maxRow, maxCol))) {
+          (maxRow, maxCol) = result;
+        }
+      }
+    }
+    return found ? (maxRow, maxCol) : (-1, -1);
+  }
+
+  /// DFS through trie node, returns max end position of any complete path.
+  (int, int)? _scanTrieNodeDFS(
+    GridState state,
+    PredecessorTrieNode node,
+    int row,
+    int endCol,
+  ) {
+    int maxRow = -1, maxCol = -1;
+    bool found = node.isTerminal;
+    if (found) (maxRow, maxCol) = (row, endCol);
+
+    for (final child in node.children.values) {
+      final pos = _findWordCellsAfterPosition(
+        state,
+        child.wordCells,
+        row,
+        endCol + 1,
+      );
+      if (pos == null) continue;
+
+      final result = _scanTrieNodeDFS(state, child, pos.$1, pos.$2);
+      if (result != null) {
+        found = true;
+        if (_isAfter(result, (maxRow, maxCol))) {
+          (maxRow, maxCol) = result;
+        }
+      }
+    }
+    return found ? (maxRow, maxCol) : null;
+  }
+
+  // ============================================================
+  // Trie-based scanning (cached version)
+  // ============================================================
+
+  /// Scans trie with per-call cache to avoid redundant word lookups.
+  (int, int) _scanTrieForMaxEndPositionCached(
+    GridState state,
+    PredecessorTrie trie,
+  ) {
+    final cache = <(String, int, int), (int, int)?>{};
+    int maxRow = -1, maxCol = -1;
+    bool found = false;
+
+    for (final entry in trie.roots.entries) {
+      final node = entry.value;
+      final pos = _findWordCached(state, node.wordCells, 0, 0, cache);
+      if (pos == null) continue;
+
+      final result = _scanTrieNodeDFSCached(state, node, pos.$1, pos.$2, cache);
+      if (result != null) {
+        found = true;
+        if (_isAfter(result, (maxRow, maxCol))) {
+          (maxRow, maxCol) = result;
+        }
+      }
+    }
+    return found ? (maxRow, maxCol) : (-1, -1);
+  }
+
+  /// DFS through trie with cache.
+  (int, int)? _scanTrieNodeDFSCached(
+    GridState state,
+    PredecessorTrieNode node,
+    int row,
+    int endCol,
+    Map<(String, int, int), (int, int)?> cache,
+  ) {
+    int maxRow = -1, maxCol = -1;
+    bool found = node.isTerminal;
+    if (found) (maxRow, maxCol) = (row, endCol);
+
+    for (final entry in node.children.entries) {
+      final child = entry.value;
+      final pos = _findWordCached(
+        state,
+        child.wordCells,
+        row,
+        endCol + 1,
+        cache,
+      );
+      if (pos == null) continue;
+
+      final result = _scanTrieNodeDFSCached(
+        state,
+        child,
+        pos.$1,
+        pos.$2,
+        cache,
+      );
+      if (result != null) {
+        found = true;
+        if (_isAfter(result, (maxRow, maxCol))) {
+          (maxRow, maxCol) = result;
+        }
+      }
+    }
+    return found ? (maxRow, maxCol) : null;
+  }
+
+  /// Cached word lookup helper.
+  (int, int)? _findWordCached(
+    GridState state,
+    Word wordCells,
+    int afterRow,
+    int afterCol,
+    Map<(String, int, int), (int, int)?> cache,
+  ) {
+    final key = (wordCells.join(), afterRow, afterCol);
+    if (cache.containsKey(key)) return cache[key];
+    final result = _findWordCellsAfterPosition(
+      state,
+      wordCells,
+      afterRow,
+      afterCol,
+    );
+    cache[key] = result;
+    return result;
+  }
+
+  /// Returns true if pos1 is after pos2 in reading order.
+  bool _isAfter((int, int) pos1, (int, int) pos2) {
+    return pos1.$1 > pos2.$1 || (pos1.$1 == pos2.$1 && pos1.$2 > pos2.$2);
+  }
+
+  // ============================================================
+  // Grid scanning helpers
+  // ============================================================
 
   /// Scans the grid left-to-right to find placements for a sequence of predecessor cells.
   ///
@@ -420,8 +611,7 @@ class BacktrackingGridBuilder {
 
   /// Finds the first occurrence of word cells in the grid starting at or after the given position.
   ///
-  /// Scans the grid in reading order (left-to-right, top-to-bottom) starting from
-  /// (afterRow, afterCol) and returns the position where the word is found.
+  /// Scans the grid in reading order (left-to-right, top-to-bottom).
   /// Returns null if the word is not found.
   (int row, int endCol)? _findWordCellsAfterPosition(
     GridState state,
@@ -432,28 +622,25 @@ class BacktrackingGridBuilder {
     final cells = state.grid;
     final wordLen = wordCells.length;
 
-    // Scan grid in reading order starting from (afterRow, afterCol)
     for (int r = afterRow; r < height; r++) {
       final startCol = (r == afterRow) ? afterCol : 0;
       final maxCol = width - wordLen;
 
       for (int c = startCol; c <= maxCol; c++) {
-        // Check if word starts at this position
-        bool matches = true;
-        for (int i = 0; i < wordLen; i++) {
-          if (cells[r][c + i] != wordCells[i]) {
-            matches = false;
-            break;
-          }
-        }
-
-        if (matches) {
-          return (r, c + wordLen - 1); // Return row and endCol
+        if (_matchesAt(cells, wordCells, r, c)) {
+          return (r, c + wordLen - 1);
         }
       }
     }
-
     return null;
+  }
+
+  /// Check if wordCells matches the grid at (row, col).
+  bool _matchesAt(List<List<String?>> cells, Word wordCells, int row, int col) {
+    for (int i = 0; i < wordCells.length; i++) {
+      if (cells[row][col + i] != wordCells[i]) return false;
+    }
+    return true;
   }
 
   /// Helper to check placement and count overlaps
