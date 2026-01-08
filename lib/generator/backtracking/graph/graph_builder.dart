@@ -161,9 +161,7 @@ class WordDependencyGraphBuilder {
 
   /// Builds a trie from predecessor sequences to deduplicate common prefixes.
   /// Also links nodes to their predecessor terminals and owned trie nodes.
-  static void _buildPredecessorTries(
-    Map<String, List<WordNode>> phrases,
-  ) {
+  static void _buildPredecessorTries(Map<String, List<WordNode>> phrases) {
     // Build the global phrase trie
     final globalTrie = PhraseTrie();
 

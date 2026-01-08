@@ -135,7 +135,10 @@ class BacktrackingGridBuilder {
       rankList.sort((a, b) => b.cellCodes.length.compareTo(a.cellCodes.length));
 
       // Bitmask uses 64-bit int, so max 63 words per rank (bits 0-62)
-      assert(rankList.length <= 63, 'Rank has ${rankList.length} words, max 63');
+      assert(
+        rankList.length <= 63,
+        'Rank has ${rankList.length} words, max 63',
+      );
     }
 
     // 4. Recursive Solve
@@ -344,9 +347,12 @@ class BacktrackingGridBuilder {
 
   /// Find max predecessor end position by reading cached positions from trie nodes.
   ///
-  /// Each terminal node represents the end of a predecessor sequence. We walk up
-  /// the parent chain checking that all nodes have cachedPosition set (meaning
-  /// all predecessor words are placed). Returns the max terminal position.
+  /// Each terminal node represents the end of a predecessor sequence.
+  /// Returns the max terminal position, or null if no predecessors are placed yet.
+  ///
+  /// Note: We only check the terminal node, not its ancestors. This works because
+  /// words are placed in dependency order - if a terminal has a cached position,
+  /// all its predecessors must already be placed.
   (int, int)? _findMaxPredecessorPositionUsingIndex(
     GridState state,
     List<PhraseTrieNode> terminalNodes,
@@ -356,9 +362,9 @@ class BacktrackingGridBuilder {
     bool anyFound = false;
 
     // For each terminal node (end of a predecessor sequence),
-    // check if the full path has cached positions
+    // check if it has a cached position
     for (final terminal in terminalNodes) {
-      final endPos = _getPathEndPositionFromCache(terminal);
+      final endPos = terminal.cachedPosition;
       if (endPos != null) {
         anyFound = true;
         if (endPos.$1 > maxRow || (endPos.$1 == maxRow && endPos.$2 > maxCol)) {
@@ -369,19 +375,6 @@ class BacktrackingGridBuilder {
     }
 
     return anyFound ? (maxRow, maxCol) : null;
-  }
-
-  /// Get the end position of a predecessor path by reading cached positions.
-  /// Returns null if any node in the path doesn't have a cached position.
-  (int, int)? _getPathEndPositionFromCache(PhraseTrieNode terminal) {
-    // Walk from terminal up to root, checking all have cached positions
-    PhraseTrieNode? current = terminal;
-    while (current != null) {
-      if (current.cachedPosition == null) return null;
-      current = current.parent;
-    }
-    // All nodes have positions, return the terminal's position
-    return terminal.cachedPosition;
   }
 
   /// Find first valid placement starting from (minRow, minCol).

@@ -81,5 +81,6 @@ class WordNode {
   });
 
   @override
-  String toString() => 'WordNode($id, freq=$frequency, len=${cellCodes.length})';
+  String toString() =>
+      'WordNode($id, freq=$frequency, len=${cellCodes.length})';
 }

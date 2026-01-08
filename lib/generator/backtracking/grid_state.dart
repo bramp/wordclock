@@ -296,7 +296,9 @@ class GridState {
   List<Cell> toFlatList({String paddingChar = ' '}) {
     final result = <Cell>[];
     for (final row in grid) {
-      result.addAll(row.map((code) => code == emptyCell ? paddingChar : codec.decode(code)));
+      result.addAll(
+        row.map((code) => code == emptyCell ? paddingChar : codec.decode(code)),
+      );
     }
     return result;
   }
