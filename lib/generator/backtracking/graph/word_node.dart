@@ -1,29 +1,6 @@
 import 'package:wordclock/generator/backtracking/graph/phrase_trie.dart';
 import 'package:wordclock/model/types.dart';
 
-/// A trie node for efficient predecessor sequence lookup.
-/// Each path from root to leaf represents a valid predecessor sequence.
-/// @deprecated Use [PhraseTrie] and [PhraseTrieNode] instead.
-class PredecessorTrieNode {
-  /// Children keyed by word string (cells joined)
-  final Map<String, PredecessorTrieNode> children = {};
-
-  /// True if this node represents the end of at least one predecessor sequence
-  bool isTerminal = false;
-
-  /// The word cells at this trie node (for grid scanning)
-  final Word wordCells;
-
-  PredecessorTrieNode(this.wordCells);
-}
-
-/// Root of a predecessor trie - just a container for first-word children
-/// @deprecated Use [PhraseTrie] instead.
-class PredecessorTrie {
-  /// Children keyed by first word string (cells joined)
-  final Map<String, PredecessorTrieNode> roots = {};
-}
-
 /// Represents a word node in the word-level dependency graph.
 ///
 /// Each node represents a word, potentially with an instance number if the word
@@ -41,24 +18,6 @@ class WordNode {
 
   /// Which phrases use this word node
   final Set<String> phrases;
-
-  /// Pre-computed predecessor tokens for each phrase.
-  /// Each inner list contains the tokens that must appear BEFORE this word
-  /// in reading order for that phrase. Empty list means this is the first word.
-  /// Populated by [WordDependencyGraphBuilder] after graph construction.
-  final List<List<String>> predecessorTokens = [];
-
-  /// Pre-computed predecessor cells for each phrase.
-  /// Parallel to [predecessorTokens] - each inner list contains the cells
-  /// for each predecessor token. Used for efficient grid scanning.
-  /// Populated by [WordDependencyGraphBuilder] after graph construction.
-  final List<Phrase> predecessorCells = [];
-
-  /// Pre-computed trie of predecessor sequences for efficient scanning.
-  /// Built from [predecessorCells] to deduplicate common prefixes.
-  /// Populated by [WordDependencyGraphBuilder] after graph construction.
-  /// @deprecated Use [phraseTrieNodes] instead.
-  PredecessorTrie? predecessorTrie;
 
   /// Links to all PhraseTrieNode instances representing this word in phrases.
   /// These are the TERMINAL nodes of predecessor sequences - i.e., the last

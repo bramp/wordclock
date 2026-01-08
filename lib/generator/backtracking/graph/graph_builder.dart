@@ -144,8 +144,8 @@ class WordDependencyGraphBuilder {
       phrases[phraseText] = phraseNodes;
     }
 
-    // Populate predecessorTokens for each node
-    final phraseTrie = _populatePredecessorTokens(phrases, language);
+    // Build the phrase trie and link nodes
+    _buildPredecessorTries(phrases);
 
     return WordDependencyGraph(
       nodes: nodes,
@@ -153,54 +153,12 @@ class WordDependencyGraphBuilder {
       inEdges: inEdges,
       phrases: phrases,
       language: language,
-      phraseTrie: phraseTrie,
     );
   }
 
-  /// Populates the predecessorTokens and predecessorCells fields for each node.
-  /// Returns the global PhraseTrie.
-  static PhraseTrie _populatePredecessorTokens(
-    Map<String, List<WordNode>> phrases,
-    WordClockLanguage language,
-  ) {
-    for (final entry in phrases.entries) {
-      final phraseText = entry.key;
-      final phraseNodes = entry.value;
-      final tokens = language.tokenize(phraseText);
-
-      for (int i = 0; i < phraseNodes.length; i++) {
-        final node = phraseNodes[i];
-        // Predecessors are all tokens before this node's position
-        final predecessors = tokens.sublist(0, i);
-
-        // Check if this predecessor list already exists (by value)
-        bool alreadyExists = false;
-        for (final existing in node.predecessorTokens) {
-          if (_listEquals(existing, predecessors)) {
-            alreadyExists = true;
-            break;
-          }
-        }
-
-        if (!alreadyExists) {
-          node.predecessorTokens.add(predecessors);
-          // Pre-compute cells for each predecessor token
-          final predecessorCells = predecessors
-              .map((t) => WordGrid.splitIntoCells(t))
-              .toList();
-          node.predecessorCells.add(predecessorCells);
-        }
-      }
-    }
-
-    // Build trie for each node from its predecessorCells
-    return _buildPredecessorTries(phrases);
-  }
-
-  /// Builds a trie from predecessorCells for each node to deduplicate common prefixes.
-  /// Also builds a global PhraseTrie and links nodes to their predecessor terminals.
-  /// Returns the global PhraseTrie.
-  static PhraseTrie _buildPredecessorTries(
+  /// Builds a trie from predecessor sequences to deduplicate common prefixes.
+  /// Also links nodes to their predecessor terminals and owned trie nodes.
+  static void _buildPredecessorTries(
     Map<String, List<WordNode>> phrases,
   ) {
     // Build the global phrase trie
@@ -244,17 +202,6 @@ class WordDependencyGraphBuilder {
         }
       }
     }
-
-    return globalTrie;
-  }
-
-  /// Compares two lists for value equality.
-  static bool _listEquals<T>(List<T> a, List<T> b) {
-    if (a.length != b.length) return false;
-    for (int i = 0; i < a.length; i++) {
-      if (a[i] != b[i]) return false;
-    }
-    return true;
   }
 
   /// Debug: Print graph statistics
