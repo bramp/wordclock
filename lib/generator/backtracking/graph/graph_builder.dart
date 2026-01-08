@@ -77,6 +77,7 @@ class WordDependencyGraphBuilder {
     final Map<WordNode, Set<WordNode>> edges = {};
     final Map<WordNode, Set<WordNode>> inEdges = {};
     final Map<String, List<WordNode>> phrases = {};
+    final codec = CellCodec();
 
     // Helper to check if adding edge from->to would create a cycle
     bool wouldCreateCycle(WordNode fromNode, WordNode toNode) {
@@ -124,10 +125,11 @@ class WordDependencyGraphBuilder {
         if (selectedNode != null) {
           selectedNode.phrases.add(phraseText);
         } else {
+          final cells = WordGrid.splitIntoCells(word);
           selectedNode = WordNode(
             word: word,
             instance: instances.length,
-            cells: WordGrid.splitIntoCells(word),
+            cellCodes: codec.encodeAll(cells),
             phrases: {phraseText},
           );
           instances.add(selectedNode);
@@ -153,6 +155,7 @@ class WordDependencyGraphBuilder {
       inEdges: inEdges,
       phrases: phrases,
       language: language,
+      codec: codec,
     );
   }
 
@@ -177,7 +180,7 @@ class WordDependencyGraphBuilder {
         final targetNode = phraseNodes[targetIdx];
 
         // Build trie path for predecessors [0..targetIdx-1]
-        var currentTrieNode = globalTrie.getOrCreateRoot(phraseNodes[0].cells);
+        var currentTrieNode = globalTrie.getOrCreateRoot(phraseNodes[0].word);
         // First node owns this root trie node
         if (!phraseNodes[0].ownedTrieNodes.contains(currentTrieNode)) {
           phraseNodes[0].ownedTrieNodes.add(currentTrieNode);
@@ -187,7 +190,7 @@ class WordDependencyGraphBuilder {
           final predNode = phraseNodes[predIdx];
           currentTrieNode = globalTrie.getOrCreateChild(
             currentTrieNode,
-            predNode.cells,
+            predNode.word,
           );
           // This predecessor node owns this trie node
           if (!predNode.ownedTrieNodes.contains(currentTrieNode)) {
@@ -212,7 +215,7 @@ class WordDependencyGraphBuilder {
     for (final node in sortedNodes) {
       print(
         '  ${node.id}: word=${node.word}, priority=${node.priority.toStringAsFixed(2)}, '
-        'freq=${node.frequency}, len=${node.cells.length}',
+        'freq=${node.frequency}, len=${node.cellCodes.length}',
       );
     }
 

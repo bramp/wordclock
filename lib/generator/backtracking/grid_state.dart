@@ -3,6 +3,9 @@ import 'package:wordclock/generator/backtracking/graph/word_node.dart';
 import 'package:wordclock/generator/utils/grid_validator.dart';
 import 'package:wordclock/model/types.dart';
 
+/// Sentinel value for empty cells in the integer grid
+const int emptyCell = -1;
+
 /// Represents a placed word on the grid.
 class WordPlacement {
   /// The word node that was placed
@@ -59,11 +62,14 @@ class WordPlacement {
 
 /// Represents the current state of the grid during backtracking.
 class GridState {
-  /// The grid: [row][col] -> cell content or null
-  final List<List<String?>> grid;
+  /// The grid: [row][col] -> cell code or emptyCell (-1)
+  final List<List<int>> grid;
 
   /// Reference count for each cell: [row][col] -> number of words using this cell
   final List<List<int>> _usage;
+
+  /// Codec for converting between cell strings and integer codes
+  final CellCodec codec;
 
   /// Public getter for usage (mostly for testing/assertions)
   List<List<int>> get usage => _usage;
@@ -102,8 +108,8 @@ class GridState {
   /// Density score: ratio of filled cells to total grid size
   double get density => filledCells / (width * height);
 
-  GridState({required this.width, required this.height})
-    : grid = List.generate(height, (_) => List.filled(width, null)),
+  GridState({required this.width, required this.height, required this.codec})
+    : grid = List.generate(height, (_) => List.filled(width, emptyCell)),
       _usage = List.generate(height, (_) => List.filled(width, 0)),
       _placementsPerRow = List.filled(height, 0),
       nodePlacements = {},
@@ -114,7 +120,7 @@ class GridState {
 
   /// Create a deep copy of this state
   GridState clone() {
-    final newState = GridState(width: width, height: height);
+    final newState = GridState(width: width, height: height, codec: codec);
 
     // Copy grid and usage
     for (int row = 0; row < height; row++) {
@@ -139,19 +145,19 @@ class GridState {
     return newState;
   }
 
-  /// Check if a word can be placed at the given position
+  /// Check if a word can be placed at the given position using cell codes
   ///
   /// Returns true if placement is possible
-  bool canPlaceWord(List<String> cells, int row, int col) {
+  bool canPlaceWord(List<int> cellCodes, int row, int col) {
     // Check bounds
     assert(row >= 0 && row < height);
-    assert(col >= 0 && col + cells.length <= width);
+    assert(col >= 0 && col + cellCodes.length <= width);
 
     // Check each cell
-    for (int i = 0; i < cells.length; i++) {
+    for (int i = 0; i < cellCodes.length; i++) {
       final c = col + i;
       final existing = grid[row][c];
-      if (existing != null && existing != cells[i]) {
+      if (existing != emptyCell && existing != cellCodes[i]) {
         return false;
       }
     }
@@ -163,26 +169,27 @@ class GridState {
   ///
   /// Returns the WordPlacement if successful, null if placement fails
   WordPlacement? placeWord(WordNode node, int row, int col) {
-    if (!canPlaceWord(node.cells, row, col)) return null;
+    if (!canPlaceWord(node.cellCodes, row, col)) return null;
 
-    // Place the word
-    for (int i = 0; i < node.cells.length; i++) {
+    // Place the word using cell codes
+    final cellCodes = node.cellCodes;
+    for (int i = 0; i < cellCodes.length; i++) {
       final c = col + i;
-      if (grid[row][c] == null) {
+      if (grid[row][c] == emptyCell) {
         _filledCellsCount++;
       }
-      grid[row][c] = node.cells[i];
+      grid[row][c] = cellCodes[i];
       _usage[row][c]++;
     }
 
-    _totalWordsLength += node.cells.length;
+    _totalWordsLength += cellCodes.length;
 
     // Create placement record
     final placement = WordPlacement(
       node: node,
       row: row,
       startCol: col,
-      endCol: col + node.cells.length - 1,
+      endCol: col + node.cellCodes.length - 1,
     );
 
     // Record placement
@@ -213,17 +220,17 @@ class GridState {
       }
     }
 
-    final node = placement.node;
-    for (int i = 0; i < node.cells.length; i++) {
+    final cellCodes = placement.node.cellCodes;
+    for (int i = 0; i < cellCodes.length; i++) {
       final c = placement.startCol + i;
       _usage[placement.row][c]--;
       if (_usage[placement.row][c] == 0) {
-        grid[placement.row][c] = null;
+        grid[placement.row][c] = emptyCell;
         _filledCellsCount--;
       }
     }
 
-    _totalWordsLength -= node.cells.length;
+    _totalWordsLength -= cellCodes.length;
   }
 
   /// Get all placements of a specific word (by string)
@@ -273,7 +280,7 @@ class GridState {
     for (int row = 0; row < height; row++) {
       for (int col = 0; col < width; col++) {
         final linearPos = row * width + col;
-        if (grid[row][col] != null) {
+        if (grid[row][col] != emptyCell) {
           if (lastFilledPos >= 0) {
             wasted += linearPos - lastFilledPos - 1;
           }
@@ -285,11 +292,11 @@ class GridState {
     return wasted;
   }
 
-  /// Convert grid to flat list of cells
+  /// Convert grid to flat list of cells (decodes integer codes back to strings)
   List<Cell> toFlatList({String paddingChar = ' '}) {
     final result = <Cell>[];
     for (final row in grid) {
-      result.addAll(row.map((cell) => cell ?? paddingChar));
+      result.addAll(row.map((code) => code == emptyCell ? paddingChar : codec.decode(code)));
     }
     return result;
   }
@@ -313,8 +320,8 @@ class GridState {
   String toGridString() {
     final buffer = StringBuffer();
     for (final row in grid) {
-      for (final cell in row) {
-        buffer.write(cell ?? '·');
+      for (final code in row) {
+        buffer.write(code == emptyCell ? '·' : codec.decode(code));
       }
       buffer.writeln();
     }

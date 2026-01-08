@@ -61,8 +61,14 @@ class BacktrackingGridBuilder {
   /// The word dependency graph
   late final WordDependencyGraph graph;
 
+  /// Cell codec for encoding/decoding cells to integers
+  late final CellCodec codec;
+
   /// Padding alphabet cells
   final List<Cell> paddingCells;
+
+  /// Padding cell codes (pre-encoded for efficiency)
+  late final List<int> paddingCellCodes;
 
   /// If true, stop after finding the first valid grid (all words placed).
   /// If false (default), continue searching for optimal (minimum height) grid.
@@ -95,14 +101,18 @@ class BacktrackingGridBuilder {
 
   /// Attempts to build a grid that satisfies all constraints.
   GridBuildResult build() {
-    // 1. Build word dependency graph
+    // 1. Build word dependency graph (this also creates the CellCodec)
     graph = WordDependencyGraphBuilder.build(language: language);
+    codec = graph.codec;
+
+    // Pre-encode padding cells
+    paddingCellCodes = codec.encodeAll(paddingCells);
 
     // 2. Get topological ranks
     final nodeRanks = computeRanks(graph);
 
     // 3. Initialize search
-    final state = GridState(width: width, height: height);
+    final state = GridState(width: width, height: height, codec: codec);
     _minHeightFound = height; // Initial target height
     _maxWordsPlaced = -1;
     _totalWords = graph.nodes.values.expand((instances) => instances).length;
@@ -122,8 +132,8 @@ class BacktrackingGridBuilder {
 
     // Sort words within each rank by length (longest first)
     for (final rankList in ranks) {
-      rankList.sort((a, b) => b.cells.length.compareTo(a.cells.length));
-      
+      rankList.sort((a, b) => b.cellCodes.length.compareTo(a.cellCodes.length));
+
       // Bitmask uses 64-bit int, so max 63 words per rank (bits 0-62)
       assert(rankList.length <= 63, 'Rank has ${rankList.length} words, max 63');
     }
@@ -383,7 +393,7 @@ class BacktrackingGridBuilder {
   ) {
     for (int r = minRow; r < _minHeightFound; r++) {
       int cStart = (r == minRow) ? minCol : 0;
-      for (int c = cStart; c <= width - node.cells.length; c++) {
+      for (int c = cStart; c <= width - node.cellCodes.length; c++) {
         final (canPlace, _) = _checkPlacement(state, node, r, c);
         if (canPlace) {
           return (r, c);
@@ -401,10 +411,11 @@ class BacktrackingGridBuilder {
     int col,
   ) {
     int overlaps = 0;
-    for (int i = 0; i < node.cells.length; i++) {
+    final cellCodes = node.cellCodes;
+    for (int i = 0; i < cellCodes.length; i++) {
       final existing = state.grid[row][col + i];
-      if (existing == null) continue;
-      if (existing != node.cells[i]) return (false, 0);
+      if (existing == emptyCell) continue;
+      if (existing != cellCodes[i]) return (false, 0);
       overlaps++;
     }
     return (true, overlaps);
@@ -414,10 +425,10 @@ class BacktrackingGridBuilder {
   void _fillPadding(GridState state) {
     for (int row = 0; row < height; row++) {
       for (int col = 0; col < width; col++) {
-        if (state.grid[row][col] == null) {
+        if (state.grid[row][col] == emptyCell) {
           assert(state.usage[row][col] == 0);
           state.grid[row][col] =
-              paddingCells[random.nextInt(paddingCells.length)];
+              paddingCellCodes[random.nextInt(paddingCellCodes.length)];
         }
       }
     }

@@ -1,6 +1,36 @@
 import 'package:wordclock/generator/backtracking/graph/phrase_trie.dart';
 import 'package:wordclock/model/types.dart';
 
+/// Maps cell strings to unique integer codes for fast comparison.
+/// -1 is reserved for empty cells.
+class CellCodec {
+  final Map<Cell, int> _cellToCode = {};
+  final List<Cell> _codeToCell = [];
+
+  /// Get or create an integer code for a cell string.
+  int encode(Cell cell) {
+    var code = _cellToCode[cell];
+    if (code == null) {
+      code = _codeToCell.length;
+      _cellToCode[cell] = code;
+      _codeToCell.add(cell);
+    }
+    return code;
+  }
+
+  /// Convert integer code back to cell string.
+  Cell decode(int code) => _codeToCell[code];
+
+  /// Encode a list of cells to codes.
+  List<int> encodeAll(List<Cell> cells) {
+    final result = List<int>.filled(cells.length, 0);
+    for (var i = 0; i < cells.length; i++) {
+      result[i] = encode(cells[i]);
+    }
+    return result;
+  }
+}
+
 /// Represents a word node in the word-level dependency graph.
 ///
 /// Each node represents a word, potentially with an instance number if the word
@@ -13,8 +43,8 @@ class WordNode {
   /// Only non-zero when word appears multiple times in the same phrase
   final int instance;
 
-  /// The word split into cells (usually characters, but can be multi-char)
-  final Word cells;
+  /// Integer codes for cells (for fast comparison in hot path)
+  final List<int> cellCodes;
 
   /// Which phrases use this word node
   final Set<String> phrases;
@@ -41,15 +71,15 @@ class WordNode {
   int get frequency => phrases.length;
 
   /// Priority score for placement order
-  double get priority => frequency * 10.0 + (cells.length / 10.0);
+  double get priority => frequency * 10.0 + (cellCodes.length / 10.0);
 
   WordNode({
     required this.word,
     required this.instance,
-    required this.cells,
+    required this.cellCodes,
     required this.phrases,
   });
 
   @override
-  String toString() => 'WordNode($id, freq=$frequency, len=${cells.length})';
+  String toString() => 'WordNode($id, freq=$frequency, len=${cellCodes.length})';
 }

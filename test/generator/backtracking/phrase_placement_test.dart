@@ -43,8 +43,9 @@ void main() {
         // Build graph to get the nodes
         final graph = WordDependencyGraphBuilder.build(language: language);
         builder.graph = graph;
+        builder.codec = graph.codec;
 
-        final state = GridState(width: 5, height: 3);
+        final state = GridState(width: 5, height: 3, codec: graph.codec);
         final nodeA = graph.nodes['A']!.first;
 
         final (row, col) = builder.findEarliestPlacementByPhrase(state, nodeA);
@@ -70,8 +71,9 @@ void main() {
 
         final graph = WordDependencyGraphBuilder.build(language: language);
         builder.graph = graph;
+        builder.codec = graph.codec;
 
-        final state = GridState(width: 5, height: 3);
+        final state = GridState(width: 5, height: 3, codec: graph.codec);
         final nodeA = graph.nodes['A']!.first;
         final nodeB = graph.nodes['B']!.first;
 
@@ -102,8 +104,9 @@ void main() {
 
         final graph = WordDependencyGraphBuilder.build(language: language);
         builder.graph = graph;
+        builder.codec = graph.codec;
 
-        final state = GridState(width: 5, height: 3);
+        final state = GridState(width: 5, height: 3, codec: graph.codec);
         final nodeA = graph.nodes['A']!.first;
         final nodeB = graph.nodes['B']!.first;
 
@@ -135,8 +138,9 @@ void main() {
 
         final graph = WordDependencyGraphBuilder.build(language: language);
         builder.graph = graph;
+        builder.codec = graph.codec;
 
-        final state = GridState(width: 10, height: 3);
+        final state = GridState(width: 10, height: 3, codec: graph.codec);
         final nodeA = graph.nodes['A']!.first;
         final nodeB = graph.nodes['B']!.first;
         final nodeC = graph.nodes['C']!.first;
@@ -171,8 +175,9 @@ void main() {
 
         final graph = WordDependencyGraphBuilder.build(language: language);
         builder.graph = graph;
+        builder.codec = graph.codec;
 
-        final state = GridState(width: 5, height: 3);
+        final state = GridState(width: 5, height: 3, codec: graph.codec);
 
         // Get both instances of A
         final nodesA = graph.nodes['A']!;
@@ -208,8 +213,9 @@ void main() {
 
         final graph = WordDependencyGraphBuilder.build(language: language);
         builder.graph = graph;
+        builder.codec = graph.codec;
 
-        final state = GridState(width: 20, height: 3);
+        final state = GridState(width: 20, height: 3, codec: graph.codec);
 
         final nodeJE = graph.nodes['JE']!.first;
         final nodesDESET = graph.nodes['DESET']!;
@@ -252,8 +258,9 @@ void main() {
 
         final graph = WordDependencyGraphBuilder.build(language: language);
         builder.graph = graph;
+        builder.codec = graph.codec;
 
-        final state = GridState(width: 20, height: 3);
+        final state = GridState(width: 20, height: 3, codec: graph.codec);
 
         final nodeA = graph.nodes['A']!.first;
         final nodeB = graph.nodes['B']!.first;
@@ -293,8 +300,9 @@ void main() {
 
         final graph = WordDependencyGraphBuilder.build(language: language);
         builder.graph = graph;
+        builder.codec = graph.codec;
 
-        final state = GridState(width: 10, height: 5);
+        final state = GridState(width: 10, height: 5, codec: graph.codec);
 
         final nodeA = graph.nodes['A']!.first;
         final nodeB = graph.nodes['B']!.first;
@@ -336,8 +344,9 @@ void main() {
 
         final graph = WordDependencyGraphBuilder.build(language: language);
         builder.graph = graph;
+        builder.codec = graph.codec;
 
-        final state = GridState(width: 5, height: 3);
+        final state = GridState(width: 5, height: 3, codec: graph.codec);
         final nodeB = graph.nodes['B']!.first;
 
         // Don't place A - B should not be placeable
@@ -365,8 +374,9 @@ void main() {
 
         final graph = WordDependencyGraphBuilder.build(language: language);
         builder.graph = graph;
+        builder.codec = graph.codec;
 
-        final state = GridState(width: 3, height: 5);
+        final state = GridState(width: 3, height: 5, codec: graph.codec);
         final nodeA = graph.nodes['A']!.first;
         final nodeBB = graph.nodes['BB']!.first;
 

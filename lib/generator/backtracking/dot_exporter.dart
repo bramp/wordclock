@@ -76,7 +76,7 @@ class WordGraphDotExporter {
         final label =
             '${node.id}\\n'
             'freq=${node.frequency}\\n'
-            'len=${node.cells.length}\\n'
+            'len=${node.cellCodes.length}\\n'
             'pri=${node.priority.toStringAsFixed(1)}';
 
         sb.writeln(

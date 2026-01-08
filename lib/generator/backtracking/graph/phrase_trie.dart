@@ -1,18 +1,10 @@
-import 'package:wordclock/model/types.dart';
-
 /// A node in the global phrase trie.
 ///
 /// Each path from root represents a prefix of one or more phrases.
 /// Nodes cache their grid position when the corresponding word is placed,
 /// enabling O(1) lookups instead of grid scanning.
 class PhraseTrieNode {
-  /// The word cells this node represents
-  final Word wordCells;
-
-  /// Key for this word (cells joined)
-  final String wordKey;
-
-  /// Children keyed by next word's key
+  /// Children keyed by next word
   final Map<String, PhraseTrieNode> children = {};
 
   /// True if this node is the end of a complete predecessor sequence
@@ -26,7 +18,7 @@ class PhraseTrieNode {
   /// Parent node (null for root-level nodes)
   final PhraseTrieNode? parent;
 
-  PhraseTrieNode(this.wordCells, {this.parent}) : wordKey = wordCells.join();
+  PhraseTrieNode({this.parent});
 }
 
 /// Global trie containing all phrase prefixes.
@@ -35,21 +27,19 @@ class PhraseTrieNode {
 /// of words that can precede some target word. Terminal nodes mark complete
 /// predecessor sequences.
 class PhraseTrie {
-  /// Root-level children keyed by first word's key
+  /// Root-level children keyed by first word
   final Map<String, PhraseTrieNode> roots = {};
 
   /// Get or create a root node for the given word
-  PhraseTrieNode getOrCreateRoot(Word wordCells) {
-    final key = wordCells.join();
-    return roots.putIfAbsent(key, () => PhraseTrieNode(wordCells));
+  PhraseTrieNode getOrCreateRoot(String word) {
+    return roots.putIfAbsent(word, () => PhraseTrieNode());
   }
 
   /// Get or create a child node
-  PhraseTrieNode getOrCreateChild(PhraseTrieNode parent, Word wordCells) {
-    final key = wordCells.join();
+  PhraseTrieNode getOrCreateChild(PhraseTrieNode parent, String word) {
     return parent.children.putIfAbsent(
-      key,
-      () => PhraseTrieNode(wordCells, parent: parent),
+      word,
+      () => PhraseTrieNode(parent: parent),
     );
   }
 }

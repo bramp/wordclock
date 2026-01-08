@@ -23,12 +23,16 @@ class WordDependencyGraph {
   /// Language this graph was built for
   final WordClockLanguage language;
 
+  /// Cell codec for encoding/decoding cells to integers
+  final CellCodec codec;
+
   WordDependencyGraph({
     required this.nodes,
     required this.edges,
     required this.inEdges,
     required this.phrases,
     required this.language,
+    required this.codec,
   });
 
   /// Get nodes sorted by priority (higher priority first)

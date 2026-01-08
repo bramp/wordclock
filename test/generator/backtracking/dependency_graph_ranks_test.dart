@@ -4,6 +4,8 @@ import 'package:wordclock/generator/backtracking/graph/word_node.dart';
 import 'package:wordclock/generator/backtracking/grid_builder.dart';
 import 'package:wordclock/languages/english.dart';
 
+final _testCodec = CellCodec();
+
 void main() {
   group('BacktrackingGridBuilder.computeRanks', () {
     test('computes ranks for linear dependency A -> B -> C', () {
@@ -134,6 +136,7 @@ void main() {
         inEdges: inEdges,
         phrases: <String, List<WordNode>>{},
         language: englishLanguage,
+        codec: _testCodec,
       );
 
       final ranks = _simplifyRanks(BacktrackingGridBuilder.computeRanks(graph));
@@ -223,14 +226,16 @@ WordDependencyGraph _buildGraph(Map<String, Set<String>> adjacency) {
     inEdges: inEdges,
     phrases: <String, List<WordNode>>{},
     language: englishLanguage,
+    codec: _testCodec,
   );
 }
 
 WordNode _createNode(String word, int instance) {
+  final cells = word.split('');
   return WordNode(
     word: word,
     instance: instance,
-    cells: word.split(''),
+    cellCodes: _testCodec.encodeAll(cells),
     phrases: {},
   );
 }
