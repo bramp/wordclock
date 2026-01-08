@@ -1,3 +1,12 @@
+/// A single cell in the grid (a character or multi-char unit like O' (in O'Clock)).
+typedef Cell = String;
+
+/// A word as a list of cells (e.g., ['O\'', 'C', 'L', 'O', 'C', 'K']).
+typedef Word = List<Cell>;
+
+/// A phrase as a list of words (e.g., [['F','I','V','E'], ['P','A','S','T']]).
+typedef Phrase = List<Word>;
+
 /// Represents a word node in the word-level dependency graph.
 ///
 /// Each node represents a word, potentially with an instance number if the word
@@ -11,7 +20,7 @@ class WordNode {
   final int instance;
 
   /// The word split into cells (usually characters, but can be multi-char)
-  final List<String> cells;
+  final Word cells;
 
   /// Which phrases use this word node
   final Set<String> phrases;
@@ -21,6 +30,12 @@ class WordNode {
   /// in reading order for that phrase. Empty list means this is the first word.
   /// Populated by [WordDependencyGraphBuilder] after graph construction.
   final List<List<String>> predecessorTokens = [];
+
+  /// Pre-computed predecessor cells for each phrase.
+  /// Parallel to [predecessorTokens] - each inner list contains the cells
+  /// for each predecessor token. Used for efficient grid scanning.
+  /// Populated by [WordDependencyGraphBuilder] after graph construction.
+  final List<Phrase> predecessorCells = [];
 
   /// Unique identifier for this node (e.g., "FIVE", "FIVE#1", "FIVE#2")
   String get id => instance == 0 ? word : '$word#$instance';
