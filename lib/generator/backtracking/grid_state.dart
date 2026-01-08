@@ -1,6 +1,7 @@
 import 'dart:math';
 import 'package:wordclock/generator/backtracking/graph/word_node.dart';
 import 'package:wordclock/generator/utils/grid_validator.dart';
+import 'package:wordclock/model/types.dart';
 
 /// Represents a placed word on the grid.
 class WordPlacement {
@@ -271,8 +272,8 @@ class GridState {
   }
 
   /// Convert grid to flat list of cells
-  List<String> toFlatList({String paddingChar = ' '}) {
-    final result = <String>[];
+  Word toFlatList({String paddingChar = ' '}) {
+    final result = <Cell>[];
     for (final row in grid) {
       result.addAll(row.map((cell) => cell ?? paddingChar));
     }

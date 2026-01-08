@@ -1,18 +1,11 @@
-/// A single cell in the grid (a character or multi-char unit like O' (in O'Clock)).
-typedef Cell = String;
-
-/// A word as a list of cells (e.g., ['O\'', 'C', 'L', 'O', 'C', 'K']).
-typedef Word = List<Cell>;
-
-/// A phrase as a list of words (e.g., [['F','I','V','E'], ['P','A','S','T']]).
-typedef Phrase = List<Word>;
+import 'package:wordclock/model/types.dart';
 
 /// Represents a word node in the word-level dependency graph.
 ///
 /// Each node represents a word, potentially with an instance number if the word
 /// appears multiple times in the same phrase (e.g., "FIVE TO FIVE").
 class WordNode {
-  /// The actual word text (e.g., "FIVE", "OCLOCK")
+  /// The actual word text (e.g., "FIVE", "O'CLOCK")
   final String word;
 
   /// Instance number (0 for first occurrence, 1 for second, etc.)

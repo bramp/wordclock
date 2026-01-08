@@ -155,7 +155,7 @@ class WordDependencyGraphBuilder {
     );
   }
 
-  /// Populates the predecessorTokens field for each node based on phrases.
+  /// Populates the predecessorTokens and predecessorCells fields for each node.
   static void _populatePredecessorTokens(
     Map<String, List<WordNode>> phrases,
     WordClockLanguage language,
@@ -181,6 +181,11 @@ class WordDependencyGraphBuilder {
 
         if (!alreadyExists) {
           node.predecessorTokens.add(predecessors);
+          // Pre-compute cells for each predecessor token
+          final predecessorCells = predecessors
+              .map((t) => WordGrid.splitIntoCells(t))
+              .toList();
+          node.predecessorCells.add(predecessorCells);
         }
       }
     }

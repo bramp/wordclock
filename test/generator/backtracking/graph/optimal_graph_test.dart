@@ -7,11 +7,7 @@ void main() {
   group('WordDependencyGraphBuilder Optimal Node Count', () {
     test('simple phrases with no shared words should have optimal nodes', () {
       // 3 phrases, no shared words = 9 unique words = 9 nodes
-      final language = _createMockLanguage([
-        'A B C',
-        'D E F',
-        'G H I',
-      ]);
+      final language = _createMockLanguage(['A B C', 'D E F', 'G H I']);
 
       final graph = WordDependencyGraphBuilder.build(language: language);
       final nodeCount = graph.nodes.values.fold(0, (s, l) => s + l.length);
@@ -22,10 +18,7 @@ void main() {
     test('phrases with shared prefix should reuse nodes', () {
       // "IT IS ONE" and "IT IS TWO" share "IT IS"
       // Optimal: IT, IS, ONE, TWO = 4 nodes
-      final language = _createMockLanguage([
-        'IT IS ONE',
-        'IT IS TWO',
-      ]);
+      final language = _createMockLanguage(['IT IS ONE', 'IT IS TWO']);
 
       final graph = WordDependencyGraphBuilder.build(language: language);
       final nodeCount = graph.nodes.values.fold(0, (s, l) => s + l.length);
@@ -36,10 +29,7 @@ void main() {
     test('phrases with shared suffix should reuse nodes', () {
       // "ONE OCLOCK" and "TWO OCLOCK" share "OCLOCK"
       // Optimal: ONE, TWO, OCLOCK = 3 nodes
-      final language = _createMockLanguage([
-        'ONE OCLOCK',
-        'TWO OCLOCK',
-      ]);
+      final language = _createMockLanguage(['ONE OCLOCK', 'TWO OCLOCK']);
 
       final graph = WordDependencyGraphBuilder.build(language: language);
       final nodeCount = graph.nodes.values.fold(0, (s, l) => s + l.length);
@@ -50,9 +40,7 @@ void main() {
     test('word appearing twice in same phrase needs two nodes', () {
       // "FIVE PAST FIVE" has FIVE twice
       // Optimal: FIVE, PAST, FIVE#1 = 3 nodes (2 for FIVE)
-      final language = _createMockLanguage([
-        'FIVE PAST FIVE',
-      ]);
+      final language = _createMockLanguage(['FIVE PAST FIVE']);
 
       final graph = WordDependencyGraphBuilder.build(language: language);
       final nodeCount = graph.nodes.values.fold(0, (s, l) => s + l.length);
@@ -65,24 +53,22 @@ void main() {
       // A -> B -> D
       // A -> C -> D
       // Optimal: A, B, C, D = 4 nodes
-      final language = _createMockLanguage([
-        'A B D',
-        'A C D',
-      ]);
+      final language = _createMockLanguage(['A B D', 'A C D']);
 
       final graph = WordDependencyGraphBuilder.build(language: language);
       final nodeCount = graph.nodes.values.fold(0, (s, l) => s + l.length);
 
-      expect(nodeCount, equals(4), reason: 'Diamond pattern should reuse A and D');
+      expect(
+        nodeCount,
+        equals(4),
+        reason: 'Diamond pattern should reuse A and D',
+      );
     });
 
     test('cycle-inducing pattern requires extra node', () {
       // A -> B and B -> A would create cycle
       // But "A B" and "B A" need: A, B, A#1 or A, B, B#1 = 3 nodes minimum
-      final language = _createMockLanguage([
-        'A B',
-        'B A',
-      ]);
+      final language = _createMockLanguage(['A B', 'B A']);
 
       final graph = WordDependencyGraphBuilder.build(language: language);
       final nodeCount = graph.nodes.values.fold(0, (s, l) => s + l.length);
@@ -96,10 +82,7 @@ void main() {
       // Similar to CZ: "JE PĚT" and "JE PĚT NULA PĚT"
       // PĚT appears twice in second phrase
       // Optimal: JE, PĚT, NULA, PĚT#1 = 4 nodes
-      final language = _createMockLanguage([
-        'JE PET',
-        'JE PET NULA PET',
-      ]);
+      final language = _createMockLanguage(['JE PET', 'JE PET NULA PET']);
 
       final graph = WordDependencyGraphBuilder.build(language: language);
       final nodeCount = graph.nodes.values.fold(0, (s, l) => s + l.length);
@@ -112,10 +95,7 @@ void main() {
       // A -> X -> B
       // C -> X -> D
       // Optimal: A, X, B, C, D = 5 nodes (X shared)
-      final language = _createMockLanguage([
-        'A X B',
-        'C X D',
-      ]);
+      final language = _createMockLanguage(['A X B', 'C X D']);
 
       final graph = WordDependencyGraphBuilder.build(language: language);
       final nodeCount = graph.nodes.values.fold(0, (s, l) => s + l.length);
@@ -127,7 +107,7 @@ void main() {
     test('Catalan-like pattern with CINC appearing in different positions', () {
       // Simplified CA pattern:
       // "SON LES CINC" - CINC at end
-      // "CINC DE SET" - CINC at start  
+      // "CINC DE SET" - CINC at start
       // "SON LES CINC I CINC" - CINC twice
       final language = _createMockLanguage([
         'SON LES CINC',

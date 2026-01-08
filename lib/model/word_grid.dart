@@ -1,5 +1,7 @@
+import 'package:wordclock/model/types.dart';
+
 class WordGrid {
-  final List<String> cells;
+  final List<Cell> cells;
 
   /// Whether apostrophes were merged when creating this grid from letters.
   /// If created directly from cells, this defaults to false.
@@ -32,11 +34,11 @@ class WordGrid {
     );
   }
 
-  static List<String> splitIntoCells(
+  static List<Cell> splitIntoCells(
     String letters, {
     bool mergeApostrophes = true,
   }) {
-    final List<String> result = [];
+    final List<Cell> result = [];
     for (int i = 0; i < letters.length; i++) {
       final char = letters[i];
       // Merge ' or ’ with the previous character if applicable
