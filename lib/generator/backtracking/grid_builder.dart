@@ -123,10 +123,15 @@ class BacktrackingGridBuilder {
     // Sort words within each rank by length (longest first)
     for (final rankList in ranks) {
       rankList.sort((a, b) => b.cells.length.compareTo(a.cells.length));
+      
+      // Bitmask uses 64-bit int, so max 63 words per rank (bits 0-62)
+      assert(rankList.length <= 63, 'Rank has ${rankList.length} words, max 63');
     }
 
     // 4. Recursive Solve
-    _solve(state, ranks, 0, ranks[0]);
+    // Use bitmask where bit i means rankNodes[rankIndex][i] is remaining
+    final initialMask = ranks[0].isEmpty ? 0 : (1 << ranks[0].length) - 1;
+    _solve(state, ranks, 0, initialMask);
 
     // 5. Build Result
     final finalState = _bestState;
@@ -199,12 +204,14 @@ class BacktrackingGridBuilder {
   bool get _shouldStop =>
       _stopRequested || (findFirstValid && _maxWordsPlaced == _totalWords);
 
-  /// The main recursive solve function
+  /// The main recursive solve function.
+  /// [remainingMask] is a bitmask where bit i set means rankNodes[rankIndex][i]
+  /// is still remaining to be placed.
   void _solve(
     GridState state,
     List<List<WordNode>> rankNodes,
     int rankIndex,
-    List<WordNode> currentRankRemaining,
+    int remainingMask,
   ) {
     _iterationCount++;
     final placedWords = state.nodePlacements.length;
@@ -237,25 +244,29 @@ class BacktrackingGridBuilder {
     }
 
     // Finished current rank? Move to next.
-    if (currentRankRemaining.isEmpty) {
+    if (remainingMask == 0) {
       final nextRankIndex = rankIndex + 1;
-      _solve(
-        state,
-        rankNodes,
-        nextRankIndex,
-        nextRankIndex < rankNodes.length ? rankNodes[nextRankIndex] : [],
-      );
+      final nextMask = nextRankIndex < rankNodes.length
+          ? (1 << rankNodes[nextRankIndex].length) - 1
+          : 0;
+      _solve(state, rankNodes, nextRankIndex, nextMask);
       return;
     }
 
-    // Try EVERY word in this rank as the next one to place (Combinatorial)
-    final remainingLength = currentRankRemaining.length;
-    for (int i = 0; i < remainingLength; i++) {
-      final node = currentRankRemaining[i];
+    // Try each remaining word in this rank (iterate over set bits)
+    final rankList = rankNodes[rankIndex];
+    int mask = remainingMask;
+    while (mask != 0) {
+      // Get index of lowest set bit: (mask & -mask) isolates it,
+      // then bitLength - 1 gives the 0-based index
+      final lowestBit = mask & -mask;
+      final i = lowestBit.bitLength - 1;
+      mask &= mask - 1; // Clear the lowest set bit for next iteration
+
+      final node = rankList[i];
 
       // Find EARLIEST valid placement for this word
       final (r, c) = findEarliestPlacementByPhrase(state, node);
-      //final (r, c) = findEarliestPlacement(state, node);
 
       if (r != -1) {
         final p = state.placeWord(node, r, c);
@@ -265,13 +276,8 @@ class BacktrackingGridBuilder {
             trieNode.cachedPosition = (p.row, p.endCol);
           }
 
-          // Build next remaining list excluding element i
-          // TODO Can this be replaced by a bitset, instead of maintaining a list?
-          final nextRemaining = <WordNode>[];
-          for (int j = 0; j < remainingLength; j++) {
-            if (j != i) nextRemaining.add(currentRankRemaining[j]);
-          }
-          _solve(state, rankNodes, rankIndex, nextRemaining);
+          // Recurse with this word removed from mask (no allocation needed!)
+          _solve(state, rankNodes, rankIndex, remainingMask & ~lowestBit);
 
           // Clear trie cache before removal
           for (final trieNode in node.ownedTrieNodes) {
