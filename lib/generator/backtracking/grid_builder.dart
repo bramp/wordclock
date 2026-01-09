@@ -87,6 +87,7 @@ class BacktrackingGridBuilder {
   /// Internal state for the best grid found
   GridState? _bestState;
   int _minHeightFound = 1000;
+  int _maxAllowedOffset = 1000000; // _minHeightFound * width, pre-computed
   int _maxWordsPlaced = -1;
   int _totalWords = 0;
   bool _stopRequested = false;
@@ -118,6 +119,7 @@ class BacktrackingGridBuilder {
     // 2. Initialize search
     final state = GridState(width: width, height: height, codec: codec);
     _minHeightFound = height; // Initial target height
+    _maxAllowedOffset = height * width;
     _maxWordsPlaced = -1;
     _bestState = null;
     _stopRequested = false;
@@ -302,13 +304,14 @@ class BacktrackingGridBuilder {
     }
 
     // Pruning: if we've reached or exceeded the best height, backtrack
-    if (state.maxEndOffset >= _minHeightFound * width) return;
+    if (state.maxEndOffset >= _maxAllowedOffset) return;
 
     // All words placed?
     if (placedWords == allNodes.length) {
       final currentHeight = state.maxEndOffset ~/ width + 1;
       if (currentHeight <= _minHeightFound) {
         _minHeightFound = currentHeight;
+        _maxAllowedOffset = currentHeight * width;
         _bestState = state.clone();
       }
       return;
@@ -403,13 +406,14 @@ class BacktrackingGridBuilder {
     }
 
     // Pruning: if we've reached or exceeded the best height, backtrack
-    if (state.maxEndOffset >= _minHeightFound * width) return;
+    if (state.maxEndOffset >= _maxAllowedOffset) return;
 
     // Finished all ranks?
     if (rankIndex >= rankNodes.length) {
       final currentHeight = state.maxEndOffset ~/ width + 1;
       if (currentHeight <= _minHeightFound) {
         _minHeightFound = currentHeight;
+        _maxAllowedOffset = currentHeight * width;
         _bestState = state.clone();
       }
       return;
@@ -532,11 +536,10 @@ class BacktrackingGridBuilder {
   int _findFirstValidPlacement(GridState state, WordNode node, int minOffset) {
     final wordLen = node.cellCodes.length;
     final maxCol = width - wordLen;
-    final maxOffset = _minHeightFound * width;
 
     // Start from minOffset, scan in reading order
     int offset = minOffset;
-    while (offset < maxOffset) {
+    while (offset < _maxAllowedOffset) {
       final col = offset % width;
       // Skip if word wouldn't fit on this row
       if (col <= maxCol) {
