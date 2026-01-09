@@ -665,8 +665,6 @@ class BacktrackingGridBuilder {
   /// 2. **Inline check:** The cell compatibility check is inlined rather than
   ///    calling [GridState.canPlaceWord]. This eliminates function call overhead
   ///    in what is often the hottest loop in the solver.
-  /// 3. **Local variables:** Grid and cellCodes are cached in local variables
-  ///    to avoid repeated field access.
   int _findFirstValidPlacement(GridState state, WordNode node, int minOffset) {
     final wordLen = node.cellCodes.length;
     final maxCol = width - wordLen;
@@ -674,31 +672,25 @@ class BacktrackingGridBuilder {
     final grid = state.grid;
 
     // Start from minOffset, scan in reading order
-    int offset = minOffset;
-    while (offset < _maxAllowedOffset) {
+    for (int offset = minOffset; offset < _maxAllowedOffset; offset++) {
       final col = offset % width;
       // Row-skip optimization: jump to next row if word doesn't fit
       if (col > maxCol) {
-        offset = (offset ~/ width + 1) * width;
+        offset =
+            (offset ~/ width) * width + width - 1; // -1 because loop will ++
         continue;
       }
 
-      // Inline placement check (avoids function call overhead)
+      // Inline placement check
       bool valid = true;
       for (int i = 0; i < wordLen; i++) {
         final existing = grid[offset + i];
         if (existing != emptyCell && existing != cellCodes[i]) {
           valid = false;
-          // Skip past this conflict - can't place anything starting here
-          // that would include this position
           break;
         }
       }
-
-      if (valid) {
-        return offset;
-      }
-      offset++;
+      if (valid) return offset;
     }
     return -1;
   }
