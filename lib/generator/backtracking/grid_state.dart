@@ -83,9 +83,6 @@ class GridState {
   /// Track word placements as a stack (LIFO for backtracking)
   final List<WordPlacement> _placementStack;
 
-  /// Track which phrases are fully satisfied
-  final Set<String> satisfiedPhrases;
-
   int _filledCellsCount = 0;
   int _totalWordsLength = 0;
 
@@ -113,8 +110,7 @@ class GridState {
   GridState({required this.width, required this.height, required this.codec})
     : grid = List.filled(width * height, emptyCell),
       _usage = List.filled(width * height, 0),
-      _placementStack = [],
-      satisfiedPhrases = {};
+      _placementStack = [];
 
   /// The index of the highest row currently used in any placement
   /// Derived from the top of the placement stack (LIFO order means top has max offset)
@@ -132,9 +128,6 @@ class GridState {
 
     // Copy placement stack
     newState._placementStack.addAll(_placementStack);
-
-    // Copy satisfied phrases
-    newState.satisfiedPhrases.addAll(satisfiedPhrases);
 
     // Copy counters
     newState._filledCellsCount = _filledCellsCount;
@@ -289,7 +282,6 @@ class GridState {
       '  Overlaps: $totalOverlapCells (compactness: ${(compactness * 100).toStringAsFixed(1)}%)',
     );
     buffer.writeln('  Words placed: ${_placementStack.length}');
-    buffer.writeln('  Satisfied phrases: ${satisfiedPhrases.length}');
     return buffer.toString();
   }
 
