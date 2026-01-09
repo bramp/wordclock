@@ -51,6 +51,96 @@ class GridBuildProgress {
 /// Return true to continue, false to stop the search.
 typedef ProgressCallback = bool Function(GridBuildProgress progress);
 
+/// Pre-computed graph structure indexed for efficient backtracking.
+///
+/// Groups together the sorted node list and successor indices that are
+/// computed once during setup and used throughout the search.
+///
+/// ## Why this exists
+/// During backtracking, we need to:
+/// 1. Iterate nodes in a specific order (by rank, then length)
+/// 2. Look up successors by index (not by node reference)
+/// 3. Track which nodes have been placed using a bitset
+///
+/// This class pre-computes and caches these structures to avoid
+/// repeated lookups during the hot path.
+class IndexedGraph {
+  /// Nodes sorted by (rank ascending, length descending).
+  /// Lower indices = lower rank (fewer dependencies), longer words.
+  final List<WordNode> nodes;
+
+  /// For each node index, the list of successor indices.
+  /// `successorIndices[i]` contains indices of nodes that depend on node i.
+  final List<List<int>> successorIndices;
+
+  /// Initial in-degree (predecessor count) for each node.
+  /// Used to compute the initial eligible mask.
+  final List<int> initialInDegree;
+
+  /// Nodes with in-degree 0 (can be placed immediately).
+  /// Encoded as a bitmask where bit i set means node i is initially eligible.
+  final int initialEligibleMask;
+
+  IndexedGraph._(
+    this.nodes,
+    this.successorIndices,
+    this.initialInDegree,
+    this.initialEligibleMask,
+  );
+
+  /// Build an IndexedGraph from a dependency graph.
+  ///
+  /// Sorts nodes by (rank, length) and pre-computes successor indices.
+  factory IndexedGraph.build(WordDependencyGraph graph) {
+    final allNodes = graph.nodes.values.expand((i) => i).toList();
+
+    // Compute ranks for sorting
+    final ranks = BacktrackingGridBuilder.computeRanks(graph);
+
+    // Sort all nodes by (rank, length desc) - this way iterating bits in order
+    // processes lower ranks first, and within each rank, longer words first
+    allNodes.sort((a, b) {
+      final rankCmp = ranks[a]!.compareTo(ranks[b]!);
+      if (rankCmp != 0) return rankCmp;
+      return b.cellCodes.length.compareTo(a.cellCodes.length); // longer first
+    });
+
+    // Map node -> index for quick lookup (after sorting!)
+    final nodeIndex = <WordNode, int>{};
+    for (int i = 0; i < allNodes.length; i++) {
+      nodeIndex[allNodes[i]] = i;
+    }
+
+    // Pre-compute successor indices for each node
+    final successorIndices = <List<int>>[];
+    for (final node in allNodes) {
+      final succs = graph.edges[node] ?? <WordNode>{};
+      successorIndices.add(succs.map((s) => nodeIndex[s]!).toList());
+    }
+
+    // Compute initial in-degree for each node (count of predecessors)
+    final inDegree = List<int>.filled(allNodes.length, 0);
+    for (final entry in graph.edges.entries) {
+      for (final succ in entry.value) {
+        inDegree[nodeIndex[succ]!]++;
+      }
+    }
+
+    // Initial eligible mask: nodes with in-degree 0 (no predecessors)
+    int eligibleMask = 0;
+    for (int i = 0; i < allNodes.length; i++) {
+      if (inDegree[i] == 0) {
+        eligibleMask |= (1 << i);
+      }
+    }
+
+    return IndexedGraph._(allNodes, successorIndices, inDegree, eligibleMask);
+  }
+
+  /// Number of nodes in the graph
+  int get length => nodes.length;
+}
+
 /// A backtracking-based grid builder that finds optimal word placements.
 ///
 /// ## Performance Optimizations
@@ -260,64 +350,20 @@ class BacktrackingGridBuilder {
       'Use --use-ranks flag for languages with more words.',
     );
 
-    // Compute ranks for sorting
-    final ranks = computeRanks(graph);
+    // Build indexed graph (sorts nodes, computes successor indices)
+    final indexedGraph = IndexedGraph.build(graph);
 
-    // Sort all nodes by (rank, length desc) - this way iterating bits in order
-    // processes lower ranks first, and within each rank, longer words first
-    allNodes.sort((a, b) {
-      final rankCmp = ranks[a]!.compareTo(ranks[b]!);
-      if (rankCmp != 0) return rankCmp;
-      return b.cellCodes.length.compareTo(a.cellCodes.length); // longer first
-    });
-
-    // Map node -> index for quick lookup (after sorting!)
-    final nodeIndex = <WordNode, int>{};
-    for (int i = 0; i < allNodes.length; i++) {
-      nodeIndex[allNodes[i]] = i;
-    }
-
-    // Pre-compute successor indices for each node
-    final successorIndices = <List<int>>[];
-    for (final node in allNodes) {
-      final succs = graph.edges[node] ?? <WordNode>{};
-      successorIndices.add(succs.map((s) => nodeIndex[s]!).toList());
-    }
-
-    // Pre-compute predecessor indices for each node (for cache invalidation)
-    final predecessorIndices = List.generate(allNodes.length, (_) => <int>[]);
-    for (int i = 0; i < allNodes.length; i++) {
-      for (final succIdx in successorIndices[i]) {
-        predecessorIndices[succIdx].add(i);
-      }
-    }
-
-    // Compute initial in-degree for each node (count of predecessors)
-    final inDegree = List<int>.filled(allNodes.length, 0);
-    for (final entry in graph.edges.entries) {
-      for (final succ in entry.value) {
-        inDegree[nodeIndex[succ]!]++;
-      }
-    }
-
-    // Initial eligible mask: nodes with in-degree 0 (no predecessors)
-    int eligibleMask = 0;
-    for (int i = 0; i < allNodes.length; i++) {
-      if (inDegree[i] == 0) {
-        eligibleMask |= (1 << i);
-      }
-    }
+    // Create mutable copy of in-degree for tracking during search
+    final inDegree = List<int>.of(indexedGraph.initialInDegree);
 
     // Placement cache: -2 = not computed, -1 = no valid placement, >= 0 = offset
-    final placementCache = List<int>.filled(allNodes.length, -2);
+    final placementCache = List<int>.filled(indexedGraph.length, -2);
 
     _solveFrontier(
       state,
-      allNodes,
-      successorIndices,
-      predecessorIndices,
+      indexedGraph,
       inDegree,
-      eligibleMask,
+      indexedGraph.initialEligibleMask,
       placementCache,
     );
   }
@@ -350,6 +396,8 @@ class BacktrackingGridBuilder {
   /// Words become eligible when all their dependencies (predecessors) are placed.
   ///
   /// ## Parameters
+  /// - [indexedGraph]: Pre-computed graph with nodes sorted by (rank, length)
+  ///   and successor indices for O(1) lookup.
   /// - [eligibleMask]: Bitmask where bit i set means node i is eligible for placement.
   ///   Bits are ordered by (rank, length) so iterating LSB-first processes
   ///   lower-rank, longer words first.
@@ -368,15 +416,15 @@ class BacktrackingGridBuilder {
   ///    d. Backtrack: remove word, restore in-degrees, invalidate caches
   void _solveFrontier(
     GridState state,
-    List<WordNode> allNodes,
-    List<List<int>> successorIndices,
-    List<List<int>> predecessorIndices,
+    IndexedGraph indexedGraph,
     List<int> inDegree,
     int eligibleMask,
     List<int> placementCache,
   ) {
     _iterationCount++;
     final placedWords = state.placementCount;
+    final allNodes = indexedGraph.nodes;
+    final successorIndices = indexedGraph.successorIndices;
 
     // Periodically report progress
     if (_iterationCount % 1000 == 0) {
@@ -471,9 +519,7 @@ class BacktrackingGridBuilder {
         // Recurse
         _solveFrontier(
           state,
-          allNodes,
-          successorIndices,
-          predecessorIndices,
+          indexedGraph,
           inDegree,
           newEligibleMask,
           placementCache,
