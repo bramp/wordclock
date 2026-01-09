@@ -145,18 +145,16 @@ class GridState {
     return newState;
   }
 
-  /// Check if a word can be placed at the given position using cell codes
+  /// Check if a word can be placed at the given 1D offset using cell codes
   ///
   /// Returns true if placement is possible
-  bool canPlaceWord(List<int> cellCodes, int row, int col) {
+  bool canPlaceWord(List<int> cellCodes, int offset) {
     // Check bounds
-    assert(row >= 0 && row < height);
-    assert(col >= 0 && col + cellCodes.length <= width);
+    assert(offset >= 0 && offset % width + cellCodes.length <= width);
 
     // Check each cell
-    final baseIdx = row * width + col;
     for (int i = 0; i < cellCodes.length; i++) {
-      final existing = grid[baseIdx + i];
+      final existing = grid[offset + i];
       if (existing != emptyCell && existing != cellCodes[i]) {
         return false;
       }
@@ -165,17 +163,16 @@ class GridState {
     return true;
   }
 
-  /// Place a word node on the grid
+  /// Place a word node on the grid at the given 1D offset
   ///
   /// Returns the WordPlacement if successful, null if placement fails
-  WordPlacement? placeWord(WordNode node, int row, int col) {
-    if (!canPlaceWord(node.cellCodes, row, col)) return null;
+  WordPlacement? placeWord(WordNode node, int offset) {
+    if (!canPlaceWord(node.cellCodes, offset)) return null;
 
     // Place the word using cell codes
     final cellCodes = node.cellCodes;
-    final baseIdx = row * width + col;
     for (int i = 0; i < cellCodes.length; i++) {
-      final idx = baseIdx + i;
+      final idx = offset + i;
       if (grid[idx] == emptyCell) {
         _filledCellsCount++;
       }
@@ -185,12 +182,14 @@ class GridState {
 
     _totalWordsLength += cellCodes.length;
 
-    // Create placement record
+    // Create placement record (convert offset to row/col)
+    final row = offset ~/ width;
+    final col = offset % width;
     final placement = WordPlacement(
       node: node,
       row: row,
       startCol: col,
-      endCol: col + node.cellCodes.length - 1,
+      endCol: col + cellCodes.length - 1,
     );
 
     // Record placement

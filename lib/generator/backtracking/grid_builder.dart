@@ -333,12 +333,10 @@ class BacktrackingGridBuilder {
       final offset = findEarliestPlacementByPhrase(state, node);
 
       if (offset != -1) {
-        final row = offset ~/ width;
-        final col = offset % width;
-        final p = state.placeWord(node, row, col);
+        final p = state.placeWord(node, offset);
         if (p != null) {
           // Update trie cache with end offset
-          final endOffset = p.row * width + p.endCol;
+          final endOffset = offset + p.length - 1;
           for (final trieNode in node.ownedTrieNodes) {
             trieNode.cachedEndOffset = endOffset;
           }
@@ -446,12 +444,10 @@ class BacktrackingGridBuilder {
       final offset = findEarliestPlacementByPhrase(state, node);
 
       if (offset != -1) {
-        final row = offset ~/ width;
-        final col = offset % width;
-        final p = state.placeWord(node, row, col);
+        final p = state.placeWord(node, offset);
         if (p != null) {
           // Update trie cache: set end offset on all trie nodes this word owns
-          final endOffset = p.row * width + p.endCol;
+          final endOffset = offset + p.length - 1;
           for (final trieNode in node.ownedTrieNodes) {
             trieNode.cachedEndOffset = endOffset;
           }

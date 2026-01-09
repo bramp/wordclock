@@ -6,16 +6,11 @@ import 'package:wordclock/generator/backtracking/graph/word_node.dart';
 import 'graph/test_helpers.dart';
 
 /// Helper to place a word and update the trie cache (mimics what _solve does)
-WordPlacement? placeWordWithCache(
-  GridState state,
-  WordNode node,
-  int row,
-  int col,
-) {
-  final placement = state.placeWord(node, row, col);
+WordPlacement? placeWordWithCache(GridState state, WordNode node, int offset) {
+  final placement = state.placeWord(node, offset);
   if (placement != null) {
     // Update trie cache: set end offset on all trie nodes this word owns
-    final endOffset = placement.row * state.width + placement.endCol;
+    final endOffset = offset + placement.length - 1;
     for (final trieNode in node.ownedTrieNodes) {
       trieNode.cachedEndOffset = endOffset;
     }
@@ -86,7 +81,7 @@ void main() {
         final nodeB = graph.nodes['B']!.first;
 
         // Place A at (0, 0)
-        placeWordWithCache(state, nodeA, 0, 0);
+        placeWordWithCache(state, nodeA, 0);
 
         final offset = builder.findEarliestPlacementByPhrase(state, nodeB);
         final (row, col) = offsetToRowCol(offset, 5);
@@ -120,7 +115,7 @@ void main() {
         final nodeB = graph.nodes['B']!.first;
 
         // Place A at (0, 0)
-        placeWordWithCache(state, nodeA, 0, 0);
+        placeWordWithCache(state, nodeA, 0);
 
         final offset = builder.findEarliestPlacementByPhrase(state, nodeB);
         final (row, col) = offsetToRowCol(offset, 5);
@@ -156,8 +151,8 @@ void main() {
         final nodeC = graph.nodes['C']!.first;
 
         // Place A at (0, 0), B at (0, 2)
-        placeWordWithCache(state, nodeA, 0, 0);
-        placeWordWithCache(state, nodeB, 0, 2);
+        placeWordWithCache(state, nodeA, 0);
+        placeWordWithCache(state, nodeB, 2);
 
         final offset = builder.findEarliestPlacementByPhrase(state, nodeC);
         final (row, col) = offsetToRowCol(offset, 10);
@@ -198,7 +193,7 @@ void main() {
         final nodeA1 = nodesA.firstWhere((n) => n.instance == 1);
 
         // Place first A at (0, 0)
-        placeWordWithCache(state, nodeA0, 0, 0);
+        placeWordWithCache(state, nodeA0, 0);
 
         final offset = builder.findEarliestPlacementByPhrase(state, nodeA1);
         final (row, col) = offsetToRowCol(offset, 5);
@@ -237,8 +232,8 @@ void main() {
         final nodeDESET1 = nodesDESET.firstWhere((n) => n.instance == 1);
 
         // Place JE at (0, 0), first DESET at (0, 3)
-        placeWordWithCache(state, nodeJE, 0, 0); // JE ends at col 1
-        placeWordWithCache(state, nodeDESET0, 0, 3); // DESET ends at col 7
+        placeWordWithCache(state, nodeJE, 0); // JE ends at col 1
+        placeWordWithCache(state, nodeDESET0, 3); // DESET ends at col 7
 
         final offset = builder.findEarliestPlacementByPhrase(state, nodeDESET1);
         final (row, col) = offsetToRowCol(offset, 20);
@@ -279,10 +274,10 @@ void main() {
         final nodeC = graph.nodes['C']!.first;
 
         // Place words: A at 0, B at 2, D at 4, E at 6
-        placeWordWithCache(state, nodeA, 0, 0); // A ends at 0
-        placeWordWithCache(state, nodeB, 0, 2); // B ends at 2
-        placeWordWithCache(state, nodeD, 0, 4); // D ends at 4
-        placeWordWithCache(state, nodeE, 0, 6); // E ends at 6
+        placeWordWithCache(state, nodeA, 0); // A ends at 0
+        placeWordWithCache(state, nodeB, 2); // B ends at 2
+        placeWordWithCache(state, nodeD, 4); // D ends at 4
+        placeWordWithCache(state, nodeE, 6); // E ends at 6
 
         final offset = builder.findEarliestPlacementByPhrase(state, nodeC);
         final (row, col) = offsetToRowCol(offset, 20);
@@ -322,12 +317,12 @@ void main() {
         final nodeC = graph.nodes['C']!.first;
 
         // Phrase 1: A at row 0, B at row 0 col 5
-        placeWordWithCache(state, nodeA, 0, 0); // A ends at (0, 0)
-        placeWordWithCache(state, nodeB, 0, 5); // B ends at (0, 5)
+        placeWordWithCache(state, nodeA, 0); // A ends at (0, 0)
+        placeWordWithCache(state, nodeB, 5); // B ends at (0, 5)
 
         // Phrase 2: D at row 1, E at row 1 col 2
-        placeWordWithCache(state, nodeD, 1, 0); // D ends at (1, 0)
-        placeWordWithCache(state, nodeE, 1, 2); // E ends at (1, 2)
+        placeWordWithCache(state, nodeD, 10); // D ends at (1, 0)
+        placeWordWithCache(state, nodeE, 12); // E ends at (1, 2)
 
         final offset = builder.findEarliestPlacementByPhrase(state, nodeC);
         final (row, col) = offsetToRowCol(offset, 10);
@@ -394,7 +389,7 @@ void main() {
         final nodeBB = graph.nodes['BB']!.first;
 
         // Place A at (0, 1) - A ends at col 1
-        placeWordWithCache(state, nodeA, 0, 1);
+        placeWordWithCache(state, nodeA, 1);
 
         final offset = builder.findEarliestPlacementByPhrase(state, nodeBB);
         final (row, col) = offsetToRowCol(offset, 3);
