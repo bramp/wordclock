@@ -218,9 +218,16 @@ class BacktrackingGridBuilder {
       'Use --use-ranks flag for languages with more words.',
     );
 
-    // Sort all nodes by length (longest first) - this way iterating bits in order
-    // gives us the preferred ordering
-    allNodes.sort((a, b) => b.cellCodes.length.compareTo(a.cellCodes.length));
+    // Compute ranks for sorting
+    final ranks = computeRanks(graph);
+
+    // Sort all nodes by (rank, length desc) - this way iterating bits in order
+    // processes lower ranks first, and within each rank, longer words first
+    allNodes.sort((a, b) {
+      final rankCmp = ranks[a]!.compareTo(ranks[b]!);
+      if (rankCmp != 0) return rankCmp;
+      return b.cellCodes.length.compareTo(a.cellCodes.length); // longer first
+    });
 
     // Map node -> index for quick lookup (after sorting!)
     final nodeIndex = <WordNode, int>{};
@@ -321,7 +328,8 @@ class BacktrackingGridBuilder {
     // No eligible words but not all placed - dead end
     if (eligibleMask == 0) return;
 
-    // Try each eligible word (iterate over set bits)
+    // Try each eligible word (iterate over set bits in order)
+    // Due to sorting by (rank, length), lower bits = lower rank, longer words
     int mask = eligibleMask;
     while (mask != 0) {
       // Get index of lowest set bit
