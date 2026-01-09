@@ -11,24 +11,32 @@ class WordPlacement {
   /// The word node that was placed
   final WordNode node;
 
+  /// 1D offset where the word starts
+  final int startOffset;
+
+  /// Grid width (needed to derive row/col)
+  final int _width;
+
   /// Row where the word starts (0-based)
-  final int row;
+  int get row => startOffset ~/ _width;
 
   /// Column where the word starts (0-based)
-  final int startCol;
+  int get startCol => startOffset % _width;
 
   /// Column where the word ends (inclusive, 0-based)
-  final int endCol;
+  int get endCol => startCol + node.cellCodes.length - 1;
+
+  /// 1D offset where the word ends
+  int get endOffset => startOffset + node.cellCodes.length - 1;
 
   /// Length of the word in cells
-  int get length => endCol - startCol + 1;
+  int get length => node.cellCodes.length;
 
   WordPlacement({
     required this.node,
-    required this.row,
-    required this.startCol,
-    required this.endCol,
-  });
+    required this.startOffset,
+    required int width,
+  }) : _width = width;
 
   /// Check if this placement comes after [other] in reading order
   bool comesAfter(WordPlacement other) {
@@ -112,9 +120,10 @@ class GridState {
       _usage = List.filled(width * height, 0),
       _placementStack = [];
 
-  /// The index of the highest row currently used in any placement
+  /// The highest 1D offset currently used in any placement
   /// Derived from the top of the placement stack (LIFO order means top has max offset)
-  int get maxRowUsed => _placementStack.isEmpty ? -1 : _placementStack.last.row;
+  int get maxEndOffset =>
+      _placementStack.isEmpty ? -1 : _placementStack.last.endOffset;
 
   /// Create a deep copy of this state
   GridState clone() {
@@ -173,14 +182,11 @@ class GridState {
 
     _totalWordsLength += cellCodes.length;
 
-    // Create placement record (convert offset to row/col)
-    final row = offset ~/ width;
-    final col = offset % width;
+    // Create placement record
     final placement = WordPlacement(
       node: node,
-      row: row,
-      startCol: col,
-      endCol: col + cellCodes.length - 1,
+      startOffset: offset,
+      width: width,
     );
 
     // Record placement (push to stack)
@@ -200,9 +206,8 @@ class GridState {
     _placementStack.removeLast();
 
     final cellCodes = placement.node.cellCodes;
-    final baseIdx = placement.row * width + placement.startCol;
     for (int i = 0; i < cellCodes.length; i++) {
-      final idx = baseIdx + i;
+      final idx = placement.startOffset + i;
       _usage[idx]--;
       if (_usage[idx] == 0) {
         grid[idx] = emptyCell;

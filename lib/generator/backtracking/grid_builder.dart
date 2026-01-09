@@ -301,12 +301,12 @@ class BacktrackingGridBuilder {
       _bestState = state.clone();
     }
 
-    // Pruning: if height exceeds best, backtrack
-    final currentHeight = state.maxRowUsed + 1;
-    if (currentHeight > _minHeightFound) return;
+    // Pruning: if we've reached or exceeded the best height, backtrack
+    if (state.maxEndOffset >= _minHeightFound * width) return;
 
     // All words placed?
     if (placedWords == allNodes.length) {
+      final currentHeight = state.maxEndOffset ~/ width + 1;
       if (currentHeight <= _minHeightFound) {
         _minHeightFound = currentHeight;
         _bestState = state.clone();
@@ -402,13 +402,12 @@ class BacktrackingGridBuilder {
       _bestState = state.clone();
     }
 
-    // Pruning: If currently used height already exceeds our best found, backtrack.
-    // We check maxRowUsed + 1 (the current height).
-    final currentHeight = state.maxRowUsed + 1;
-    if (currentHeight > _minHeightFound) return;
+    // Pruning: if we've reached or exceeded the best height, backtrack
+    if (state.maxEndOffset >= _minHeightFound * width) return;
 
     // Finished all ranks?
     if (rankIndex >= rankNodes.length) {
+      final currentHeight = state.maxEndOffset ~/ width + 1;
       if (currentHeight <= _minHeightFound) {
         _minHeightFound = currentHeight;
         _bestState = state.clone();
