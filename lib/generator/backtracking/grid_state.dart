@@ -80,18 +80,23 @@ class GridState {
   /// Height of the grid
   final int height;
 
-  /// Track word placements: word node -> placement
-  final Map<WordNode, WordPlacement> nodePlacements;
+  /// Track word placements as a stack (LIFO for backtracking)
+  final List<WordPlacement> _placementStack;
+
+  /// Set of placed nodes for O(1) containment check
+  final Set<WordNode> _placedNodes;
 
   /// Track which phrases are fully satisfied
   final Set<String> satisfiedPhrases;
 
-  /// Count of placements per row (for efficient maxRowUsed tracking)
-  final List<int> _placementsPerRow;
-
   int _filledCellsCount = 0;
   int _totalWordsLength = 0;
-  int _maxRowUsed = -1;
+
+  /// Number of words currently placed
+  int get placementCount => _placementStack.length;
+
+  /// Read-only access to placements (for iteration)
+  Iterable<WordPlacement> get placements => _placementStack;
 
   /// Total unique cells filled
   int get filledCells => _filledCellsCount;
@@ -111,12 +116,13 @@ class GridState {
   GridState({required this.width, required this.height, required this.codec})
     : grid = List.filled(width * height, emptyCell),
       _usage = List.filled(width * height, 0),
-      _placementsPerRow = List.filled(height, 0),
-      nodePlacements = {},
+      _placementStack = [],
+      _placedNodes = {},
       satisfiedPhrases = {};
 
-  /// The index of the highest row currently used in any placement (cached)
-  int get maxRowUsed => _maxRowUsed;
+  /// The index of the highest row currently used in any placement
+  /// Derived from the top of the placement stack (LIFO order means top has max offset)
+  int get maxRowUsed => _placementStack.isEmpty ? -1 : _placementStack.last.row;
 
   /// Create a deep copy of this state
   GridState clone() {
@@ -127,12 +133,10 @@ class GridState {
       newState.grid[i] = grid[i];
       newState._usage[i] = _usage[i];
     }
-    for (int row = 0; row < height; row++) {
-      newState._placementsPerRow[row] = _placementsPerRow[row];
-    }
 
-    // Copy word placements
-    newState.nodePlacements.addAll(nodePlacements);
+    // Copy placement stack and set
+    newState._placementStack.addAll(_placementStack);
+    newState._placedNodes.addAll(_placedNodes);
 
     // Copy satisfied phrases
     newState.satisfiedPhrases.addAll(satisfiedPhrases);
@@ -140,7 +144,6 @@ class GridState {
     // Copy counters
     newState._filledCellsCount = _filledCellsCount;
     newState._totalWordsLength = _totalWordsLength;
-    newState._maxRowUsed = _maxRowUsed;
 
     return newState;
   }
@@ -192,33 +195,23 @@ class GridState {
       endCol: col + cellCodes.length - 1,
     );
 
-    // Record placement
-    nodePlacements[node] = placement;
-    _placementsPerRow[row]++;
-
-    // Update cached maxRowUsed
-    if (row > _maxRowUsed) _maxRowUsed = row;
+    // Record placement (push to stack)
+    _placementStack.add(placement);
+    _placedNodes.add(node);
 
     return placement;
   }
 
   /// Remove a placed word from the grid (backtracking support)
+  /// Note: Must be called in LIFO order (most recent placement first)
   void removePlacement(WordPlacement placement) {
-    // Remove from map
-    nodePlacements.remove(placement.node);
-    _placementsPerRow[placement.row]--;
-
-    // Update cached maxRowUsed if we removed the last placement from the max row
-    if (placement.row == _maxRowUsed && _placementsPerRow[placement.row] == 0) {
-      // Scan backwards to find the new max row
-      _maxRowUsed = -1;
-      for (int r = placement.row - 1; r >= 0; r--) {
-        if (_placementsPerRow[r] > 0) {
-          _maxRowUsed = r;
-          break;
-        }
-      }
-    }
+    // Pop from stack (assert LIFO order)
+    assert(
+      _placementStack.isNotEmpty && _placementStack.last == placement,
+      'removePlacement must be called in LIFO order',
+    );
+    _placementStack.removeLast();
+    _placedNodes.remove(placement.node);
 
     final cellCodes = placement.node.cellCodes;
     final baseIdx = placement.row * width + placement.startCol;
@@ -236,26 +229,26 @@ class GridState {
 
   /// Get all placements of a specific word (by string)
   List<WordPlacement> getPlacementsOf(String word) {
-    return nodePlacements.values.where((p) => p.node.word == word).toList();
+    return _placementStack.where((p) => p.node.word == word).toList();
   }
 
   /// Check if a word node is placed
   bool isNodePlaced(WordNode node) {
-    return nodePlacements.containsKey(node);
+    return _placedNodes.contains(node);
   }
 
   /// Get the number of instances of a word that are placed
   int getPlacedInstanceCount(String word) {
-    return nodePlacements.keys.where((n) => n.word == word).length;
+    return _placementStack.where((p) => p.node.word == word).length;
   }
 
   /// Calculate distance from position to nearest placed word
   double distanceToNearestWord(int row, int col) {
-    if (nodePlacements.isEmpty) return double.infinity;
+    if (_placementStack.isEmpty) return double.infinity;
 
     double minDist = double.infinity;
 
-    for (final placement in nodePlacements.values) {
+    for (final placement in _placementStack) {
       // Distance to start of word
       final distStart = sqrt(
         pow(row - placement.row, 2) + pow(col - placement.startCol, 2),
@@ -307,7 +300,7 @@ class GridState {
     buffer.writeln(
       '  Overlaps: $totalOverlapCells (compactness: ${(compactness * 100).toStringAsFixed(1)}%)',
     );
-    buffer.writeln('  Words placed: ${nodePlacements.length}');
+    buffer.writeln('  Words placed: ${_placementStack.length}');
     buffer.writeln('  Satisfied phrases: ${satisfiedPhrases.length}');
     return buffer.toString();
   }

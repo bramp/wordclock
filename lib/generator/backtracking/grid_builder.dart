@@ -144,7 +144,7 @@ class BacktrackingGridBuilder {
     List<PlacedWordInfo> wordPlacements = [];
 
     if (finalState != null) {
-      placedWords = finalState.nodePlacements.length;
+      placedWords = finalState.placementCount;
       wordPlacements = _extractPlacements(finalState);
       _fillPadding(finalState);
       gridCells = finalState.toFlatList();
@@ -192,11 +192,9 @@ class BacktrackingGridBuilder {
 
   /// Extracts word placement info from a GridState
   List<PlacedWordInfo> _extractPlacements(GridState state) {
-    return state.nodePlacements.entries.map((entry) {
-      final node = entry.key;
-      final placement = entry.value;
+    return state.placements.map((placement) {
       return PlacedWordInfo(
-        word: node.word,
+        word: placement.node.word,
         row: placement.row,
         startCol: placement.startCol,
         endCol: placement.endCol,
@@ -288,7 +286,7 @@ class BacktrackingGridBuilder {
     int eligibleMask,
   ) {
     _iterationCount++;
-    final placedWords = state.nodePlacements.length;
+    final placedWords = state.placementCount;
 
     // Periodically report progress
     if (_iterationCount % 1000 == 0) {
@@ -389,7 +387,7 @@ class BacktrackingGridBuilder {
     int remainingMask,
   ) {
     _iterationCount++;
-    final placedWords = state.nodePlacements.length;
+    final placedWords = state.placementCount;
 
     // Periodically report progress (check every 1000 iterations to avoid DateTime overhead)
     if (_iterationCount % 1000 == 0) {
