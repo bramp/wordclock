@@ -86,8 +86,8 @@ class BacktrackingGridBuilder {
 
   /// Internal state for the best grid found
   GridState? _bestState;
-  int _minHeightFound = 1000;
-  int _maxAllowedOffset = 1000000; // _minHeightFound * width, pre-computed
+  int _minHeightFound;
+  int _maxAllowedOffset;
   int _maxWordsPlaced = -1;
   int _totalWords = 0;
   bool _stopRequested = false;
@@ -105,7 +105,9 @@ class BacktrackingGridBuilder {
     this.useFrontier = true,
     this.onProgress,
   }) : random = Random(seed),
-       paddingCells = WordGrid.splitIntoCells(language.paddingAlphabet);
+       paddingCells = WordGrid.splitIntoCells(language.paddingAlphabet),
+       _minHeightFound = height,
+       _maxAllowedOffset = height * width;
 
   /// Attempts to build a grid that satisfies all constraints.
   GridBuildResult build() {
@@ -116,14 +118,13 @@ class BacktrackingGridBuilder {
     // Pre-encode padding cells
     paddingCellCodes = codec.encodeAll(paddingCells);
 
-    // 2. Initialize search
+    // 2. Initialize search state
     final state = GridState(width: width, height: height, codec: codec);
-    _minHeightFound = height; // Initial target height
+    _minHeightFound = height;
     _maxAllowedOffset = height * width;
     _maxWordsPlaced = -1;
     _bestState = null;
     _stopRequested = false;
-    _lastProgressReport = DateTime.now();
     _iterationCount = 0;
     _startTime = DateTime.now();
     _stopReason = StopReason.completed;
