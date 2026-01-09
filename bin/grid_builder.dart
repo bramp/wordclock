@@ -110,6 +110,7 @@ class Config {
   final bool checkAll;
   final String algorithm;
   final int timeout;
+  final bool useRanks;
 
   Config({
     required this.gridWidth,
@@ -120,6 +121,7 @@ class Config {
     required this.checkAll,
     required this.algorithm,
     required this.timeout,
+    required this.useRanks,
   });
 }
 
@@ -165,6 +167,11 @@ void main(List<String> args) {
       help: 'Maximum search time in seconds (default: 60).',
     )
     ..addFlag(
+      'use-ranks',
+      help:
+          'Use rank-based solving instead of frontier-based (default: false).',
+    )
+    ..addFlag(
       'help',
       abbr: '?',
       negatable: false,
@@ -205,6 +212,7 @@ void main(List<String> args) {
     checkAll: results['check-all'] as bool,
     algorithm: results['algorithm'] as String,
     timeout: int.parse(results['timeout'] as String),
+    useRanks: results['use-ranks'] as bool,
   );
 
   if (config.checkAll) {
@@ -397,6 +405,7 @@ void _generateWithBacktracking(Config config) {
     height: targetHeight,
     language: config.language,
     seed: finalSeed,
+    useFrontier: !config.useRanks,
     onProgress: (progress) {
       final elapsed = DateTime.now().difference(progress.startTime);
       final elapsedSecs = elapsed.inMilliseconds / 1000.0;

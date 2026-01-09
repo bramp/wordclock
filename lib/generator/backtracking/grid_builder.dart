@@ -74,6 +74,12 @@ class BacktrackingGridBuilder {
   /// If false (default), continue searching for optimal (minimum height) grid.
   final bool findFirstValid;
 
+  /// If true (default), use frontier-based solving where words become eligible
+  /// as soon as their dependencies are satisfied.
+  /// If false, use rank-based solving where all words in a rank must complete
+  /// before moving to the next rank.
+  final bool useFrontier;
+
   /// Optional callback for progress updates (called at most once per second).
   /// Return true to continue, false to stop the search.
   final ProgressCallback? onProgress;
@@ -95,6 +101,7 @@ class BacktrackingGridBuilder {
     required this.language,
     required int seed,
     this.findFirstValid = true,
+    this.useFrontier = true,
     this.onProgress,
   }) : random = Random(seed),
        paddingCells = WordGrid.splitIntoCells(language.paddingAlphabet);
@@ -108,14 +115,10 @@ class BacktrackingGridBuilder {
     // Pre-encode padding cells
     paddingCellCodes = codec.encodeAll(paddingCells);
 
-    // 2. Get topological ranks
-    final nodeRanks = computeRanks(graph);
-
-    // 3. Initialize search
+    // 2. Initialize search
     final state = GridState(width: width, height: height, codec: codec);
     _minHeightFound = height; // Initial target height
     _maxWordsPlaced = -1;
-    _totalWords = graph.nodes.values.expand((instances) => instances).length;
     _bestState = null;
     _stopRequested = false;
     _lastProgressReport = DateTime.now();
@@ -123,28 +126,16 @@ class BacktrackingGridBuilder {
     _startTime = DateTime.now();
     _stopReason = StopReason.completed;
 
-    // Group nodes by rank
-    final maxRank = nodeRanks.isEmpty ? 0 : nodeRanks.values.reduce(max);
-    final List<List<WordNode>> ranks = List.generate(maxRank + 1, (_) => []);
-    for (final entry in nodeRanks.entries) {
-      ranks[entry.value].add(entry.key);
+    // 3. Get all nodes
+    final allNodes = graph.nodes.values.expand((i) => i).toList();
+    _totalWords = allNodes.length;
+
+    // 4. Solve using selected approach
+    if (useFrontier) {
+      _solveWithFrontier(state, allNodes);
+    } else {
+      _solveWithRanks(state, allNodes);
     }
-
-    // Sort words within each rank by length (longest first)
-    for (final rankList in ranks) {
-      rankList.sort((a, b) => b.cellCodes.length.compareTo(a.cellCodes.length));
-
-      // Bitmask uses 64-bit int, so max 63 words per rank (bits 0-62)
-      assert(
-        rankList.length <= 63,
-        'Rank has ${rankList.length} words, max 63',
-      );
-    }
-
-    // 4. Recursive Solve
-    // Use bitmask where bit i means rankNodes[rankIndex][i] is remaining
-    final initialMask = ranks[0].isEmpty ? 0 : (1 << ranks[0].length) - 1;
-    _solve(state, ranks, 0, initialMask);
 
     // 5. Build Result
     final finalState = _bestState;
@@ -217,7 +208,177 @@ class BacktrackingGridBuilder {
   bool get _shouldStop =>
       _stopRequested || (findFirstValid && _maxWordsPlaced == _totalWords);
 
-  /// The main recursive solve function.
+  /// Sets up and runs frontier-based solving using bitset for eligible tracking
+  void _solveWithFrontier(GridState state, List<WordNode> allNodes) {
+    // Bitset is limited to 64 bits (Dart int is 64-bit)
+    assert(
+      allNodes.length <= 64,
+      'Frontier solver limited to 64 nodes, got ${allNodes.length}. '
+      'Use --use-ranks flag for languages with more words.',
+    );
+
+    // Sort all nodes by length (longest first) - this way iterating bits in order
+    // gives us the preferred ordering
+    allNodes.sort((a, b) => b.cellCodes.length.compareTo(a.cellCodes.length));
+
+    // Map node -> index for quick lookup (after sorting!)
+    final nodeIndex = <WordNode, int>{};
+    for (int i = 0; i < allNodes.length; i++) {
+      nodeIndex[allNodes[i]] = i;
+    }
+
+    // Pre-compute successor indices for each node
+    final successorIndices = <List<int>>[];
+    for (final node in allNodes) {
+      final succs = graph.edges[node] ?? <WordNode>{};
+      successorIndices.add(succs.map((s) => nodeIndex[s]!).toList());
+    }
+
+    // Compute initial in-degree for each node (count of predecessors)
+    final inDegree = List<int>.filled(allNodes.length, 0);
+    for (final entry in graph.edges.entries) {
+      for (final succ in entry.value) {
+        inDegree[nodeIndex[succ]!]++;
+      }
+    }
+
+    // Initial eligible mask: nodes with in-degree 0 (no predecessors)
+    int eligibleMask = 0;
+    for (int i = 0; i < allNodes.length; i++) {
+      if (inDegree[i] == 0) {
+        eligibleMask |= (1 << i);
+      }
+    }
+
+    _solveFrontier(state, allNodes, successorIndices, inDegree, eligibleMask);
+  }
+
+  /// Sets up and runs rank-based solving
+  void _solveWithRanks(GridState state, List<WordNode> allNodes) {
+    // Group nodes by rank (topological level)
+    final ranks = computeRanks(graph);
+    final maxRank = ranks.values.fold(0, (a, b) => a > b ? a : b);
+
+    final rankNodes = List.generate(maxRank + 1, (_) => <WordNode>[]);
+    for (final node in allNodes) {
+      rankNodes[ranks[node]!].add(node);
+    }
+
+    // Sort each rank by word length (longest first for better packing)
+    for (final rank in rankNodes) {
+      rank.sort((a, b) => b.cellCodes.length.compareTo(a.cellCodes.length));
+    }
+
+    // Start with all words in rank 0 as remaining
+    final initialMask = rankNodes.isNotEmpty
+        ? (1 << rankNodes[0].length) - 1
+        : 0;
+    _solve(state, rankNodes, 0, initialMask);
+  }
+
+  /// Frontier-based recursive solve function using bitset.
+  /// Words become eligible when all their dependencies (predecessors) are placed.
+  /// [eligibleMask] is a bitmask where bit i set means node i is eligible for placement.
+  /// [inDegree] tracks how many unplaced predecessors each node has.
+  void _solveFrontier(
+    GridState state,
+    List<WordNode> allNodes,
+    List<List<int>> successorIndices,
+    List<int> inDegree,
+    int eligibleMask,
+  ) {
+    _iterationCount++;
+    final placedWords = state.nodePlacements.length;
+
+    // Periodically report progress
+    if (_iterationCount % 1000 == 0) {
+      final now = DateTime.now();
+      _reportProgress(now, state);
+      if (_shouldStop) return;
+    }
+
+    // Update best found so far
+    if (placedWords > _maxWordsPlaced) {
+      _maxWordsPlaced = placedWords;
+      _bestState = state.clone();
+    }
+
+    // Pruning: if height exceeds best, backtrack
+    final currentHeight = state.maxRowUsed + 1;
+    if (currentHeight > _minHeightFound) return;
+
+    // All words placed?
+    if (placedWords == allNodes.length) {
+      if (currentHeight <= _minHeightFound) {
+        _minHeightFound = currentHeight;
+        _bestState = state.clone();
+      }
+      return;
+    }
+
+    // No eligible words but not all placed - dead end
+    if (eligibleMask == 0) return;
+
+    // Try each eligible word (iterate over set bits)
+    int mask = eligibleMask;
+    while (mask != 0) {
+      // Get index of lowest set bit
+      final lowestBit = mask & -mask;
+      final nodeIdx = lowestBit.bitLength - 1;
+      mask &= mask - 1; // Clear lowest bit for next iteration
+
+      final node = allNodes[nodeIdx];
+
+      // Find earliest valid placement
+      final (r, c) = findEarliestPlacementByPhrase(state, node);
+
+      if (r != -1) {
+        final p = state.placeWord(node, r, c);
+        if (p != null) {
+          // Update trie cache
+          for (final trieNode in node.ownedTrieNodes) {
+            trieNode.cachedPosition = (p.row, p.endCol);
+          }
+
+          // Update eligible mask: remove placed node
+          int newEligibleMask = eligibleMask & ~lowestBit;
+
+          // Decrement in-degree of successors and add newly eligible
+          for (final succIdx in successorIndices[nodeIdx]) {
+            inDegree[succIdx]--;
+            if (inDegree[succIdx] == 0) {
+              newEligibleMask |= (1 << succIdx);
+            }
+          }
+
+          // Recurse
+          _solveFrontier(
+            state,
+            allNodes,
+            successorIndices,
+            inDegree,
+            newEligibleMask,
+          );
+
+          // Restore in-degree for successors
+          for (final succIdx in successorIndices[nodeIdx]) {
+            inDegree[succIdx]++;
+          }
+
+          // Clear trie cache and remove placement
+          for (final trieNode in node.ownedTrieNodes) {
+            trieNode.cachedPosition = null;
+          }
+          state.removePlacement(p);
+        }
+      }
+
+      if (_shouldStop) return;
+    }
+  }
+
+  /// Rank-based recursive solve function.
+  /// Processes words rank-by-rank (topological levels).
   /// [remainingMask] is a bitmask where bit i set means rankNodes[rankIndex][i]
   /// is still remaining to be placed.
   void _solve(
