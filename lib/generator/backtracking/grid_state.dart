@@ -168,7 +168,12 @@ class GridState {
   /// Returns the WordPlacement if successful, null if placement fails
   WordPlacement? placeWord(WordNode node, int offset) {
     if (!canPlaceWord(node.cellCodes, offset)) return null;
+    return placeWordUnchecked(node, offset);
+  }
 
+  /// Place a word node on the grid without checking validity.
+  /// Caller must ensure the placement is valid.
+  WordPlacement placeWordUnchecked(WordNode node, int offset) {
     // Place the word using cell codes
     final cellCodes = node.cellCodes;
     for (int i = 0; i < cellCodes.length; i++) {

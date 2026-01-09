@@ -242,6 +242,14 @@ class BacktrackingGridBuilder {
       successorIndices.add(succs.map((s) => nodeIndex[s]!).toList());
     }
 
+    // Pre-compute predecessor indices for each node (for cache invalidation)
+    final predecessorIndices = List.generate(allNodes.length, (_) => <int>[]);
+    for (int i = 0; i < allNodes.length; i++) {
+      for (final succIdx in successorIndices[i]) {
+        predecessorIndices[succIdx].add(i);
+      }
+    }
+
     // Compute initial in-degree for each node (count of predecessors)
     final inDegree = List<int>.filled(allNodes.length, 0);
     for (final entry in graph.edges.entries) {
@@ -258,7 +266,18 @@ class BacktrackingGridBuilder {
       }
     }
 
-    _solveFrontier(state, allNodes, successorIndices, inDegree, eligibleMask);
+    // Placement cache: -2 = not computed, -1 = no valid placement, >= 0 = offset
+    final placementCache = List<int>.filled(allNodes.length, -2);
+
+    _solveFrontier(
+      state,
+      allNodes,
+      successorIndices,
+      predecessorIndices,
+      inDegree,
+      eligibleMask,
+      placementCache,
+    );
   }
 
   /// Sets up and runs rank-based solving
@@ -288,12 +307,15 @@ class BacktrackingGridBuilder {
   /// Words become eligible when all their dependencies (predecessors) are placed.
   /// [eligibleMask] is a bitmask where bit i set means node i is eligible for placement.
   /// [inDegree] tracks how many unplaced predecessors each node has.
+  /// [placementCache] caches computed placements: -2 = not computed, -1 = invalid, >= 0 = offset
   void _solveFrontier(
     GridState state,
     List<WordNode> allNodes,
     List<List<int>> successorIndices,
+    List<List<int>> predecessorIndices,
     List<int> inDegree,
     int eligibleMask,
+    List<int> placementCache,
   ) {
     _iterationCount++;
     final placedWords = state.placementCount;
@@ -339,49 +361,94 @@ class BacktrackingGridBuilder {
 
       final node = allNodes[nodeIdx];
 
-      // Find earliest valid placement (returns 1D offset, -1 if not found)
-      final offset = findEarliestPlacementByPhrase(state, node);
+      // Check cache first, compute if not cached
+      int offset = placementCache[nodeIdx];
+      if (offset == -2) {
+        // Not cached, compute it
+        offset = findEarliestPlacementByPhrase(state, node);
+        placementCache[nodeIdx] = offset;
+      }
 
       if (offset != -1) {
-        final p = state.placeWord(node, offset);
-        if (p != null) {
-          // Update trie cache with end offset
-          final endOffset = offset + p.length - 1;
-          for (final trieNode in node.ownedTrieNodes) {
-            trieNode.cachedEndOffset = endOffset;
+        // Place word (skip validation since findEarliestPlacementByPhrase already checked)
+        final p = state.placeWordUnchecked(node, offset);
+
+        // Update trie cache with end offset
+        final endOffset = offset + p.length - 1;
+        for (final trieNode in node.ownedTrieNodes) {
+          trieNode.cachedEndOffset = endOffset;
+        }
+
+        // Update eligible mask: remove placed node
+        int newEligibleMask = eligibleMask & ~lowestBit;
+
+        // Invalidate placement cache for successors (their minOffset changed)
+        for (final succIdx in successorIndices[nodeIdx]) {
+          placementCache[succIdx] = -2; // Invalidate
+          inDegree[succIdx]--;
+          if (inDegree[succIdx] == 0) {
+            newEligibleMask |= (1 << succIdx);
           }
+        }
 
-          // Update eligible mask: remove placed node
-          int newEligibleMask = eligibleMask & ~lowestBit;
+        // Invalidate placement cache for other eligible nodes that might overlap
+        // with the placed word's range [offset, endOffset]
+        int toInvalidate = newEligibleMask;
+        while (toInvalidate != 0) {
+          final bit = toInvalidate & -toInvalidate;
+          final idx = bit.bitLength - 1;
+          toInvalidate &= toInvalidate - 1;
 
-          // Decrement in-degree of successors and add newly eligible
-          for (final succIdx in successorIndices[nodeIdx]) {
-            inDegree[succIdx]--;
-            if (inDegree[succIdx] == 0) {
-              newEligibleMask |= (1 << succIdx);
+          final cached = placementCache[idx];
+          if (cached >= 0) {
+            // Check if cached placement overlaps with placed word
+            final cachedEnd = cached + allNodes[idx].cellCodes.length - 1;
+            if (!(cachedEnd < offset || cached > endOffset)) {
+              // Ranges overlap, invalidate cache
+              placementCache[idx] = -2;
             }
           }
-
-          // Recurse
-          _solveFrontier(
-            state,
-            allNodes,
-            successorIndices,
-            inDegree,
-            newEligibleMask,
-          );
-
-          // Restore in-degree for successors
-          for (final succIdx in successorIndices[nodeIdx]) {
-            inDegree[succIdx]++;
-          }
-
-          // Clear trie cache and remove placement
-          for (final trieNode in node.ownedTrieNodes) {
-            trieNode.cachedEndOffset = -1;
-          }
-          state.removePlacement(p);
         }
+
+        // Recurse
+        _solveFrontier(
+          state,
+          allNodes,
+          successorIndices,
+          predecessorIndices,
+          inDegree,
+          newEligibleMask,
+          placementCache,
+        );
+
+        // Restore: re-invalidate cache for nodes that need recomputation
+        // Their predecessors are no longer placed, so cached results are invalid
+        for (final succIdx in successorIndices[nodeIdx]) {
+          placementCache[succIdx] = -2;
+          inDegree[succIdx]++;
+        }
+
+        // Also invalidate any node whose cached placement overlaps the removed word
+        int toRestore = eligibleMask;
+        while (toRestore != 0) {
+          final bit = toRestore & -toRestore;
+          final idx = bit.bitLength - 1;
+          toRestore &= toRestore - 1;
+
+          final cached = placementCache[idx];
+          if (cached >= 0) {
+            final cachedEnd = cached + allNodes[idx].cellCodes.length - 1;
+            if (!(cachedEnd < offset || cached > endOffset)) {
+              placementCache[idx] = -2;
+            }
+          }
+        }
+
+        // Clear trie cache and remove placement
+        for (final trieNode in node.ownedTrieNodes) {
+          trieNode.cachedEndOffset = -1;
+        }
+        state.removePlacement(p);
       }
 
       if (_shouldStop) return;
@@ -528,10 +595,19 @@ class BacktrackingGridBuilder {
   int _findMaxPredecessorEndOffset(List<PhraseTrieNode> terminalNodes) {
     int maxEndOffset = -1;
 
-    // For each terminal node (end of a predecessor sequence),
-    // check if it has a cached end offset
-    for (final terminal in terminalNodes) {
-      final endOffset = terminal.cachedEndOffset;
+    // Unroll loop for common cases (most words have 1-3 predecessor sequences)
+    final len = terminalNodes.length;
+    if (len == 1) {
+      return terminalNodes[0].cachedEndOffset;
+    } else if (len == 2) {
+      final a = terminalNodes[0].cachedEndOffset;
+      final b = terminalNodes[1].cachedEndOffset;
+      return a > b ? a : b;
+    }
+
+    // General case: iterate over all terminal nodes
+    for (int i = 0; i < len; i++) {
+      final endOffset = terminalNodes[i].cachedEndOffset;
       if (endOffset > maxEndOffset) {
         maxEndOffset = endOffset;
       }
@@ -545,31 +621,38 @@ class BacktrackingGridBuilder {
   int _findFirstValidPlacement(GridState state, WordNode node, int minOffset) {
     final wordLen = node.cellCodes.length;
     final maxCol = width - wordLen;
+    final cellCodes = node.cellCodes;
+    final grid = state.grid;
 
     // Start from minOffset, scan in reading order
     int offset = minOffset;
     while (offset < _maxAllowedOffset) {
       final col = offset % width;
       // Skip if word wouldn't fit on this row
-      if (col <= maxCol) {
-        if (_checkPlacementAt(state, node, offset)) {
-          return offset;
+      if (col > maxCol) {
+        // Jump to start of next row
+        offset = (offset ~/ width + 1) * width;
+        continue;
+      }
+
+      // Check placement inline (avoid function call overhead)
+      bool valid = true;
+      for (int i = 0; i < wordLen; i++) {
+        final existing = grid[offset + i];
+        if (existing != emptyCell && existing != cellCodes[i]) {
+          valid = false;
+          // Skip past this conflict - can't place anything starting here
+          // that would include this position
+          break;
         }
+      }
+
+      if (valid) {
+        return offset;
       }
       offset++;
     }
     return -1;
-  }
-
-  /// Helper to check placement at a 1D offset
-  bool _checkPlacementAt(GridState state, WordNode node, int offset) {
-    final cellCodes = node.cellCodes;
-    for (int i = 0; i < cellCodes.length; i++) {
-      final existing = state.grid[offset + i];
-      if (existing == emptyCell) continue;
-      if (existing != cellCodes[i]) return false;
-    }
-    return true;
   }
 
   /// Fill remaining cells with padding characters
