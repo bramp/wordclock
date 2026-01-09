@@ -147,40 +147,30 @@ class IndexedGraph {
 ///
 /// This solver includes several optimizations for the hot path:
 ///
-/// ### 1. Placement Caching (`placementCache`)
-/// Caches computed placements for each word node. When backtracking, we often
-/// re-visit the same nodes with similar grid states. The cache avoids
-/// recomputing placements when:
-/// - The node's predecessor positions haven't changed
-/// - The cached position doesn't overlap with newly placed/removed words
-///
-/// Cache is invalidated conservatively on backtrack (all eligible nodes)
-/// to ensure correctness.
-///
-/// ### 2. Inline Placement Check (`_findFirstValidPlacement`)
+/// ### 1. Inline Placement Check (`_findFirstValidPlacement`)
 /// The placement validity check is inlined rather than calling a separate
 /// method. This eliminates function call overhead in the innermost loop,
 /// which runs millions of times during search.
 ///
-/// ### 3. Row-Skip Optimization
+/// ### 2. Row-Skip Optimization
 /// When a word doesn't fit on the current row (column + length > width),
 /// we jump directly to the start of the next row instead of incrementing
 /// by 1. This avoids checking impossible positions.
 ///
-/// ### 4. Unchecked Placement (`placeWordUnchecked`)
+/// ### 3. Unchecked Placement (`placeWordUnchecked`)
 /// Since [findEarliestPlacementByPhrase] already validates the placement,
 /// we use [GridState.placeWordUnchecked] to skip redundant validation.
 ///
-/// ### 5. Loop Unrolling (`_findMaxPredecessorEndOffset`)
+/// ### 4. Loop Unrolling (`_findMaxPredecessorEndOffset`)
 /// Most words have 1-2 predecessor sequences. Unrolling the loop for these
 /// common cases avoids loop overhead.
 ///
-/// ### 6. Sorted Node Order
+/// ### 5. Sorted Node Order
 /// Nodes are sorted by (rank, length descending) so that:
 /// - Lower-rank words (fewer dependencies) are tried first
 /// - Within each rank, longer words are placed first for better packing
 ///
-/// ### 7. Bitset Frontier Tracking
+/// ### 6. Bitset Frontier Tracking
 /// Uses a 64-bit integer as a bitset to track eligible nodes, enabling
 /// O(1) updates when placing/removing words. Bit manipulation is faster
 /// than set operations.
@@ -356,15 +346,11 @@ class BacktrackingGridBuilder {
     // Create mutable copy of in-degree for tracking during search
     final inDegree = List<int>.of(indexedGraph.initialInDegree);
 
-    // Placement cache: -2 = not computed, -1 = no valid placement, >= 0 = offset
-    final placementCache = List<int>.filled(indexedGraph.length, -2);
-
     _solveFrontier(
       state,
       indexedGraph,
       inDegree,
       indexedGraph.initialEligibleMask,
-      placementCache,
     );
   }
 
@@ -403,23 +389,18 @@ class BacktrackingGridBuilder {
   ///   lower-rank, longer words first.
   /// - [inDegree]: Tracks how many unplaced predecessors each node has.
   ///   When a node's in-degree reaches 0, it becomes eligible.
-  /// - [placementCache]: Caches computed placements to avoid redundant work.
-  ///   Values: -2 = not computed, -1 = no valid placement, >= 0 = valid offset.
-  ///   **Important:** Cache is invalidated on backtrack because grid state changes
-  ///   may create earlier valid positions.
   ///
   /// ## Algorithm
   /// 1. For each eligible word (iterating bits LSB-first):
-  ///    a. Check cache; compute placement if not cached
+  ///    a. Find earliest valid placement
   ///    b. If valid placement found, place word and update eligible mask
   ///    c. Recurse with updated state
-  ///    d. Backtrack: remove word, restore in-degrees, invalidate caches
+  ///    d. Backtrack: remove word, restore in-degrees
   void _solveFrontier(
     GridState state,
     IndexedGraph indexedGraph,
     List<int> inDegree,
     int eligibleMask,
-    List<int> placementCache,
   ) {
     _iterationCount++;
     final placedWords = state.placementCount;
@@ -467,13 +448,8 @@ class BacktrackingGridBuilder {
 
       final node = allNodes[nodeIdx];
 
-      // Check cache first, compute if not cached
-      int offset = placementCache[nodeIdx];
-      if (offset == -2) {
-        // Not cached, compute it
-        offset = findEarliestPlacementByPhrase(state, node);
-        placementCache[nodeIdx] = offset;
-      }
+      // Find earliest valid placement for this word
+      final offset = findEarliestPlacementByPhrase(state, node);
 
       if (offset != -1) {
         // Place word (skip validation since findEarliestPlacementByPhrase already checked)
@@ -488,58 +464,20 @@ class BacktrackingGridBuilder {
         // Update eligible mask: remove placed node
         int newEligibleMask = eligibleMask & ~lowestBit;
 
-        // Invalidate placement cache for successors (their minOffset changed)
+        // Update in-degree for successors and mark newly eligible
         for (final succIdx in successorIndices[nodeIdx]) {
-          placementCache[succIdx] = -2; // Invalidate
           inDegree[succIdx]--;
           if (inDegree[succIdx] == 0) {
             newEligibleMask |= (1 << succIdx);
           }
         }
 
-        // Invalidate placement cache for other eligible nodes that might overlap
-        // with the placed word's range [offset, endOffset]
-        int toInvalidate = newEligibleMask;
-        while (toInvalidate != 0) {
-          final bit = toInvalidate & -toInvalidate;
-          final idx = bit.bitLength - 1;
-          toInvalidate &= toInvalidate - 1;
-
-          final cached = placementCache[idx];
-          if (cached >= 0) {
-            // Check if cached placement overlaps with placed word
-            final cachedEnd = cached + allNodes[idx].cellCodes.length - 1;
-            if (!(cachedEnd < offset || cached > endOffset)) {
-              // Ranges overlap, invalidate cache
-              placementCache[idx] = -2;
-            }
-          }
-        }
-
         // Recurse
-        _solveFrontier(
-          state,
-          indexedGraph,
-          inDegree,
-          newEligibleMask,
-          placementCache,
-        );
+        _solveFrontier(state, indexedGraph, inDegree, newEligibleMask);
 
-        // Restore: re-invalidate cache for nodes that need recomputation
-        // Their predecessors are no longer placed, so cached results are invalid
+        // Restore in-degrees for successors
         for (final succIdx in successorIndices[nodeIdx]) {
-          placementCache[succIdx] = -2;
           inDegree[succIdx]++;
-        }
-
-        // Invalidate cache for ALL eligible nodes - their cached placements were
-        // computed with the removed word placed, so may now have earlier positions
-        int toRestore = eligibleMask;
-        while (toRestore != 0) {
-          final bit = toRestore & -toRestore;
-          final idx = bit.bitLength - 1;
-          toRestore &= toRestore - 1;
-          placementCache[idx] = -2;
         }
 
         // Clear trie cache and remove placement
