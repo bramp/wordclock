@@ -10,7 +10,20 @@ final frenchLanguage = WordClockLanguage(
   description: null,
   timeToWords: FrenchTimeToWords(),
   paddingAlphabet: 'ADEMNOPRSTU',
-  // TODO Add a defaultGrid
+  defaultGrid: WordGrid.fromLetters(
+    width: 11,
+    letters:
+        "ILEESTEONZE"
+        "QUATRETROIS"
+        "MINUITDEUXN"
+        "HUITMIDISIX"
+        "UNEUFHEURER"
+        "SEPTCINQDIX"
+        "HEURESPETUT"
+        "MOINSODIXLE"
+        "VINGT-CINQM"
+        "DEMIEQUARTA",
+  ),
   timeCheckGrid: WordGrid.fromLetters(
     width: 11,
     letters:
