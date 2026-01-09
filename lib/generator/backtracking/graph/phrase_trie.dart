@@ -11,9 +11,9 @@ class PhraseTrieNode {
   /// (i.e., the next word after this would be a WordNode we're trying to place)
   bool isTerminal = false;
 
-  /// Cached grid position: (row, endCol) where this word was found
-  /// in the context of this path. Null if not yet found or invalidated.
-  (int row, int endCol)? cachedPosition;
+  /// Cached grid position: 1D offset (row * width + endCol) where this word ends.
+  /// -1 if not yet found or invalidated.
+  int cachedEndOffset = -1;
 
   /// Parent node (null for root-level nodes)
   final PhraseTrieNode? parent;

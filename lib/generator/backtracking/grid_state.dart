@@ -62,17 +62,17 @@ class WordPlacement {
 
 /// Represents the current state of the grid during backtracking.
 class GridState {
-  /// The grid: [row][col] -> cell code or emptyCell (-1)
-  final List<List<int>> grid;
+  /// The grid as 1D array: [row * width + col] -> cell code or emptyCell (-1)
+  final List<int> grid;
 
-  /// Reference count for each cell: [row][col] -> number of words using this cell
-  final List<List<int>> _usage;
+  /// Reference count for each cell as 1D array: [row * width + col] -> number of words using this cell
+  final List<int> _usage;
 
   /// Codec for converting between cell strings and integer codes
   final CellCodec codec;
 
   /// Public getter for usage (mostly for testing/assertions)
-  List<List<int>> get usage => _usage;
+  List<int> get usage => _usage;
 
   /// Width of the grid
   final int width;
@@ -109,8 +109,8 @@ class GridState {
   double get density => filledCells / (width * height);
 
   GridState({required this.width, required this.height, required this.codec})
-    : grid = List.generate(height, (_) => List.filled(width, emptyCell)),
-      _usage = List.generate(height, (_) => List.filled(width, 0)),
+    : grid = List.filled(width * height, emptyCell),
+      _usage = List.filled(width * height, 0),
       _placementsPerRow = List.filled(height, 0),
       nodePlacements = {},
       satisfiedPhrases = {};
@@ -122,12 +122,12 @@ class GridState {
   GridState clone() {
     final newState = GridState(width: width, height: height, codec: codec);
 
-    // Copy grid and usage
+    // Copy grid and usage (1D arrays - simple copy)
+    for (int i = 0; i < grid.length; i++) {
+      newState.grid[i] = grid[i];
+      newState._usage[i] = _usage[i];
+    }
     for (int row = 0; row < height; row++) {
-      for (int col = 0; col < width; col++) {
-        newState.grid[row][col] = grid[row][col];
-        newState._usage[row][col] = _usage[row][col];
-      }
       newState._placementsPerRow[row] = _placementsPerRow[row];
     }
 
@@ -154,9 +154,9 @@ class GridState {
     assert(col >= 0 && col + cellCodes.length <= width);
 
     // Check each cell
+    final baseIdx = row * width + col;
     for (int i = 0; i < cellCodes.length; i++) {
-      final c = col + i;
-      final existing = grid[row][c];
+      final existing = grid[baseIdx + i];
       if (existing != emptyCell && existing != cellCodes[i]) {
         return false;
       }
@@ -173,13 +173,14 @@ class GridState {
 
     // Place the word using cell codes
     final cellCodes = node.cellCodes;
+    final baseIdx = row * width + col;
     for (int i = 0; i < cellCodes.length; i++) {
-      final c = col + i;
-      if (grid[row][c] == emptyCell) {
+      final idx = baseIdx + i;
+      if (grid[idx] == emptyCell) {
         _filledCellsCount++;
       }
-      grid[row][c] = cellCodes[i];
-      _usage[row][c]++;
+      grid[idx] = cellCodes[i];
+      _usage[idx]++;
     }
 
     _totalWordsLength += cellCodes.length;
@@ -221,11 +222,12 @@ class GridState {
     }
 
     final cellCodes = placement.node.cellCodes;
+    final baseIdx = placement.row * width + placement.startCol;
     for (int i = 0; i < cellCodes.length; i++) {
-      final c = placement.startCol + i;
-      _usage[placement.row][c]--;
-      if (_usage[placement.row][c] == 0) {
-        grid[placement.row][c] = emptyCell;
+      final idx = baseIdx + i;
+      _usage[idx]--;
+      if (_usage[idx] == 0) {
+        grid[idx] = emptyCell;
         _filledCellsCount--;
       }
     }
@@ -276,16 +278,13 @@ class GridState {
     int wasted = 0;
     int lastFilledPos = -1;
 
-    // Scan in reading order
-    for (int row = 0; row < height; row++) {
-      for (int col = 0; col < width; col++) {
-        final linearPos = row * width + col;
-        if (grid[row][col] != emptyCell) {
-          if (lastFilledPos >= 0) {
-            wasted += linearPos - lastFilledPos - 1;
-          }
-          lastFilledPos = linearPos;
+    // Scan in reading order (already 1D)
+    for (int i = 0; i < grid.length; i++) {
+      if (grid[i] != emptyCell) {
+        if (lastFilledPos >= 0) {
+          wasted += i - lastFilledPos - 1;
         }
+        lastFilledPos = i;
       }
     }
 
@@ -294,13 +293,9 @@ class GridState {
 
   /// Convert grid to flat list of cells (decodes integer codes back to strings)
   List<Cell> toFlatList({String paddingChar = ' '}) {
-    final result = <Cell>[];
-    for (final row in grid) {
-      result.addAll(
-        row.map((code) => code == emptyCell ? paddingChar : codec.decode(code)),
-      );
-    }
-    return result;
+    return grid
+        .map((code) => code == emptyCell ? paddingChar : codec.decode(code))
+        .toList();
   }
 
   @override
@@ -321,8 +316,9 @@ class GridState {
   /// Debug: Print grid with visual representation
   String toGridString() {
     final buffer = StringBuffer();
-    for (final row in grid) {
-      for (final code in row) {
+    for (int row = 0; row < height; row++) {
+      for (int col = 0; col < width; col++) {
+        final code = grid[row * width + col];
         buffer.write(code == emptyCell ? '·' : codec.decode(code));
       }
       buffer.writeln();

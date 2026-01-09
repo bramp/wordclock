@@ -14,12 +14,19 @@ WordPlacement? placeWordWithCache(
 ) {
   final placement = state.placeWord(node, row, col);
   if (placement != null) {
-    // Update trie cache: set position on all trie nodes this word owns
+    // Update trie cache: set end offset on all trie nodes this word owns
+    final endOffset = placement.row * state.width + placement.endCol;
     for (final trieNode in node.ownedTrieNodes) {
-      trieNode.cachedPosition = (placement.row, placement.endCol);
+      trieNode.cachedEndOffset = endOffset;
     }
   }
   return placement;
+}
+
+/// Helper to convert 1D offset to (row, col)
+(int row, int col) offsetToRowCol(int offset, int width) {
+  if (offset == -1) return (-1, -1);
+  return (offset ~/ width, offset % width);
 }
 
 void main() {
@@ -48,7 +55,8 @@ void main() {
         final state = GridState(width: 5, height: 3, codec: graph.codec);
         final nodeA = graph.nodes['A']!.first;
 
-        final (row, col) = builder.findEarliestPlacementByPhrase(state, nodeA);
+        final offset = builder.findEarliestPlacementByPhrase(state, nodeA);
+        final (row, col) = offsetToRowCol(offset, 5);
 
         expect(row, 0);
         expect(col, 0);
@@ -80,7 +88,8 @@ void main() {
         // Place A at (0, 0)
         placeWordWithCache(state, nodeA, 0, 0);
 
-        final (row, col) = builder.findEarliestPlacementByPhrase(state, nodeB);
+        final offset = builder.findEarliestPlacementByPhrase(state, nodeB);
+        final (row, col) = offsetToRowCol(offset, 5);
 
         // B should come after A which ends at col 0
         expect(row, 0);
@@ -113,7 +122,8 @@ void main() {
         // Place A at (0, 0)
         placeWordWithCache(state, nodeA, 0, 0);
 
-        final (row, col) = builder.findEarliestPlacementByPhrase(state, nodeB);
+        final offset = builder.findEarliestPlacementByPhrase(state, nodeB);
+        final (row, col) = offsetToRowCol(offset, 5);
 
         // B should come after A with 1 cell padding
         // A ends at col 0, so B starts at col 2 (col 1 is padding)
@@ -149,7 +159,8 @@ void main() {
         placeWordWithCache(state, nodeA, 0, 0);
         placeWordWithCache(state, nodeB, 0, 2);
 
-        final (row, col) = builder.findEarliestPlacementByPhrase(state, nodeC);
+        final offset = builder.findEarliestPlacementByPhrase(state, nodeC);
+        final (row, col) = offsetToRowCol(offset, 10);
 
         // C should come after B which ends at col 2
         expect(row, 0);
@@ -189,7 +200,8 @@ void main() {
         // Place first A at (0, 0)
         placeWordWithCache(state, nodeA0, 0, 0);
 
-        final (row, col) = builder.findEarliestPlacementByPhrase(state, nodeA1);
+        final offset = builder.findEarliestPlacementByPhrase(state, nodeA1);
+        final (row, col) = offsetToRowCol(offset, 5);
 
         // Second A should come after first A which ends at col 0
         expect(row, 0);
@@ -228,10 +240,8 @@ void main() {
         placeWordWithCache(state, nodeJE, 0, 0); // JE ends at col 1
         placeWordWithCache(state, nodeDESET0, 0, 3); // DESET ends at col 7
 
-        final (row, col) = builder.findEarliestPlacementByPhrase(
-          state,
-          nodeDESET1,
-        );
+        final offset = builder.findEarliestPlacementByPhrase(state, nodeDESET1);
+        final (row, col) = offsetToRowCol(offset, 20);
 
         // Second DESET should come after first DESET which ends at col 7
         expect(row, 0);
@@ -274,7 +284,8 @@ void main() {
         placeWordWithCache(state, nodeD, 0, 4); // D ends at 4
         placeWordWithCache(state, nodeE, 0, 6); // E ends at 6
 
-        final (row, col) = builder.findEarliestPlacementByPhrase(state, nodeC);
+        final offset = builder.findEarliestPlacementByPhrase(state, nodeC);
+        final (row, col) = offsetToRowCol(offset, 20);
 
         // C should come after the MAX of (B's end=2, E's end=6) = 6
         expect(row, 0);
@@ -318,7 +329,8 @@ void main() {
         placeWordWithCache(state, nodeD, 1, 0); // D ends at (1, 0)
         placeWordWithCache(state, nodeE, 1, 2); // E ends at (1, 2)
 
-        final (row, col) = builder.findEarliestPlacementByPhrase(state, nodeC);
+        final offset = builder.findEarliestPlacementByPhrase(state, nodeC);
+        final (row, col) = offsetToRowCol(offset, 10);
 
         // Max in reading order: (0, 5) vs (1, 2) -> (1, 2) is later
         expect(row, 1);
@@ -350,7 +362,8 @@ void main() {
         final nodeB = graph.nodes['B']!.first;
 
         // Don't place A - B should not be placeable
-        final (row, col) = builder.findEarliestPlacementByPhrase(state, nodeB);
+        final offset = builder.findEarliestPlacementByPhrase(state, nodeB);
+        final (row, col) = offsetToRowCol(offset, 5);
 
         expect(row, -1);
         expect(col, -1);
@@ -383,7 +396,8 @@ void main() {
         // Place A at (0, 1) - A ends at col 1
         placeWordWithCache(state, nodeA, 0, 1);
 
-        final (row, col) = builder.findEarliestPlacementByPhrase(state, nodeBB);
+        final offset = builder.findEarliestPlacementByPhrase(state, nodeBB);
+        final (row, col) = offsetToRowCol(offset, 3);
 
         // BB needs to start after col 1, but only col 2 is available on row 0
         // BB needs 2 cells, so it wraps to row 1

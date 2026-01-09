@@ -329,15 +329,18 @@ class BacktrackingGridBuilder {
 
       final node = allNodes[nodeIdx];
 
-      // Find earliest valid placement
-      final (r, c) = findEarliestPlacementByPhrase(state, node);
+      // Find earliest valid placement (returns 1D offset, -1 if not found)
+      final offset = findEarliestPlacementByPhrase(state, node);
 
-      if (r != -1) {
-        final p = state.placeWord(node, r, c);
+      if (offset != -1) {
+        final row = offset ~/ width;
+        final col = offset % width;
+        final p = state.placeWord(node, row, col);
         if (p != null) {
-          // Update trie cache
+          // Update trie cache with end offset
+          final endOffset = p.row * width + p.endCol;
           for (final trieNode in node.ownedTrieNodes) {
-            trieNode.cachedPosition = (p.row, p.endCol);
+            trieNode.cachedEndOffset = endOffset;
           }
 
           // Update eligible mask: remove placed node
@@ -367,7 +370,7 @@ class BacktrackingGridBuilder {
 
           // Clear trie cache and remove placement
           for (final trieNode in node.ownedTrieNodes) {
-            trieNode.cachedPosition = null;
+            trieNode.cachedEndOffset = -1;
           }
           state.removePlacement(p);
         }
@@ -439,15 +442,18 @@ class BacktrackingGridBuilder {
 
       final node = rankList[i];
 
-      // Find EARLIEST valid placement for this word
-      final (r, c) = findEarliestPlacementByPhrase(state, node);
+      // Find EARLIEST valid placement for this word (returns 1D offset, -1 if not found)
+      final offset = findEarliestPlacementByPhrase(state, node);
 
-      if (r != -1) {
-        final p = state.placeWord(node, r, c);
+      if (offset != -1) {
+        final row = offset ~/ width;
+        final col = offset % width;
+        final p = state.placeWord(node, row, col);
         if (p != null) {
-          // Update trie cache: set position on all trie nodes this word owns
+          // Update trie cache: set end offset on all trie nodes this word owns
+          final endOffset = p.row * width + p.endCol;
           for (final trieNode in node.ownedTrieNodes) {
-            trieNode.cachedPosition = (p.row, p.endCol);
+            trieNode.cachedEndOffset = endOffset;
           }
 
           // Recurse with this word removed from mask (no allocation needed!)
@@ -455,7 +461,7 @@ class BacktrackingGridBuilder {
 
           // Clear trie cache before removal
           for (final trieNode in node.ownedTrieNodes) {
-            trieNode.cachedPosition = null;
+            trieNode.cachedEndOffset = -1;
           }
           state.removePlacement(p);
         }
@@ -478,112 +484,96 @@ class BacktrackingGridBuilder {
   /// Uses a pre-computed trie of predecessor sequences to deduplicate work when
   /// multiple phrases share common prefixes.
   ///
-  /// Returns (-1, -1) if a required predecessor word is not found on the grid.
-  (int, int) findEarliestPlacementByPhrase(GridState state, WordNode node) {
-    // If this word can be first in any phrase, it can start at (0, 0)
+  /// Returns 1D offset (row * width + col), or -1 if not found.
+  int findEarliestPlacementByPhrase(GridState state, WordNode node) {
+    // If this word can be first in any phrase, it can start at offset 0
     if (node.hasEmptyPredecessor) {
-      return _findFirstValidPlacement(state, node, 0, 0);
+      return _findFirstValidPlacement(state, node, 0);
     }
 
-    // Try to find max end position using the index
-    final maxPos = _findMaxPredecessorPositionUsingIndex(
-      state,
-      node.phraseTrieNodes,
-    );
-    if (maxPos == null) {
-      return (-1, -1); // No predecessor sequences satisfied yet
+    // Try to find max end offset using the index
+    final maxEndOffset = _findMaxPredecessorEndOffset(node.phraseTrieNodes);
+    if (maxEndOffset == -1) {
+      return -1; // No predecessor sequences satisfied yet
     }
 
-    // Calculate the minimum starting position after the max end position
-    int minRow = maxPos.$1;
-    int minCol = maxPos.$2 + (language.requiresPadding ? 2 : 1);
+    // Calculate the minimum starting offset after the max end position
+    final padding = language.requiresPadding ? 2 : 1;
+    int minOffset = maxEndOffset + padding;
 
+    // Handle row wrap: if we'd go past end of row, move to next row
+    final minCol = maxEndOffset % width + padding;
     if (minCol >= width) {
-      minRow++;
-      minCol = 0;
+      final minRow = maxEndOffset ~/ width + 1;
+      minOffset = minRow * width;
     }
 
-    return _findFirstValidPlacement(state, node, minRow, minCol);
+    return _findFirstValidPlacement(state, node, minOffset);
   }
 
-  /// Find max predecessor end position by reading cached positions from trie nodes.
+  /// Find max predecessor end offset by reading cached offsets from trie nodes.
   ///
   /// Each terminal node represents the end of a predecessor sequence.
-  /// Returns the max terminal position, or null if no predecessors are placed yet.
+  /// Returns the max terminal offset, or -1 if no predecessors are placed yet.
   ///
   /// Note: We only check the terminal node, not its ancestors. This works because
   /// words are placed in dependency order - if a terminal has a cached position,
   /// all its predecessors must already be placed.
-  (int, int)? _findMaxPredecessorPositionUsingIndex(
-    GridState state,
-    List<PhraseTrieNode> terminalNodes,
-  ) {
-    int maxRow = -1;
-    int maxCol = -1;
-    bool anyFound = false;
+  int _findMaxPredecessorEndOffset(List<PhraseTrieNode> terminalNodes) {
+    int maxEndOffset = -1;
 
     // For each terminal node (end of a predecessor sequence),
-    // check if it has a cached position
+    // check if it has a cached end offset
     for (final terminal in terminalNodes) {
-      final endPos = terminal.cachedPosition;
-      if (endPos != null) {
-        anyFound = true;
-        if (endPos.$1 > maxRow || (endPos.$1 == maxRow && endPos.$2 > maxCol)) {
-          maxRow = endPos.$1;
-          maxCol = endPos.$2;
-        }
+      final endOffset = terminal.cachedEndOffset;
+      if (endOffset > maxEndOffset) {
+        maxEndOffset = endOffset;
       }
     }
 
-    return anyFound ? (maxRow, maxCol) : null;
+    return maxEndOffset;
   }
 
-  /// Find first valid placement starting from (minRow, minCol).
-  (int, int) _findFirstValidPlacement(
-    GridState state,
-    WordNode node,
-    int minRow,
-    int minCol,
-  ) {
-    for (int r = minRow; r < _minHeightFound; r++) {
-      int cStart = (r == minRow) ? minCol : 0;
-      for (int c = cStart; c <= width - node.cellCodes.length; c++) {
-        final (canPlace, _) = _checkPlacement(state, node, r, c);
-        if (canPlace) {
-          return (r, c);
+  /// Find first valid placement starting from minOffset.
+  /// Returns 1D offset, or -1 if not found.
+  int _findFirstValidPlacement(GridState state, WordNode node, int minOffset) {
+    final wordLen = node.cellCodes.length;
+    final maxCol = width - wordLen;
+    final maxOffset = _minHeightFound * width;
+
+    // Start from minOffset, scan in reading order
+    int offset = minOffset;
+    while (offset < maxOffset) {
+      final col = offset % width;
+      // Skip if word wouldn't fit on this row
+      if (col <= maxCol) {
+        if (_checkPlacementAt(state, node, offset)) {
+          return offset;
         }
       }
+      offset++;
     }
-    return (-1, -1);
+    return -1;
   }
 
-  /// Helper to check placement and count overlaps
-  (bool, int) _checkPlacement(
-    GridState state,
-    WordNode node,
-    int row,
-    int col,
-  ) {
-    int overlaps = 0;
+  /// Helper to check placement at a 1D offset
+  bool _checkPlacementAt(GridState state, WordNode node, int offset) {
     final cellCodes = node.cellCodes;
     for (int i = 0; i < cellCodes.length; i++) {
-      final existing = state.grid[row][col + i];
+      final existing = state.grid[offset + i];
       if (existing == emptyCell) continue;
-      if (existing != cellCodes[i]) return (false, 0);
-      overlaps++;
+      if (existing != cellCodes[i]) return false;
     }
-    return (true, overlaps);
+    return true;
   }
 
   /// Fill remaining cells with padding characters
   void _fillPadding(GridState state) {
-    for (int row = 0; row < height; row++) {
-      for (int col = 0; col < width; col++) {
-        if (state.grid[row][col] == emptyCell) {
-          assert(state.usage[row][col] == 0);
-          state.grid[row][col] =
-              paddingCellCodes[random.nextInt(paddingCellCodes.length)];
-        }
+    for (int i = 0; i < state.grid.length; i++) {
+      if (state.grid[i] == emptyCell) {
+        assert(state.usage[i] == 0);
+        state.grid[i] =
+            paddingCellCodes[random.nextInt(paddingCellCodes.length)];
       }
     }
   }
