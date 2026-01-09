@@ -428,20 +428,14 @@ class BacktrackingGridBuilder {
           inDegree[succIdx]++;
         }
 
-        // Also invalidate any node whose cached placement overlaps the removed word
+        // Invalidate cache for ALL eligible nodes - their cached placements were
+        // computed with the removed word placed, so may now have earlier positions
         int toRestore = eligibleMask;
         while (toRestore != 0) {
           final bit = toRestore & -toRestore;
           final idx = bit.bitLength - 1;
           toRestore &= toRestore - 1;
-
-          final cached = placementCache[idx];
-          if (cached >= 0) {
-            final cachedEnd = cached + allNodes[idx].cellCodes.length - 1;
-            if (!(cachedEnd < offset || cached > endOffset)) {
-              placementCache[idx] = -2;
-            }
-          }
+          placementCache[idx] = -2;
         }
 
         // Clear trie cache and remove placement
