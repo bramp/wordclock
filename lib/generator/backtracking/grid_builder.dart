@@ -597,7 +597,7 @@ class BacktrackingGridBuilder {
   int findEarliestPlacementByPhrase(GridState state, WordNode node) {
     // If this word can be first in any phrase, it can start at offset 0
     if (node.hasEmptyPredecessor) {
-      return _findFirstValidPlacement(state, node, 0);
+      return findFirstValidPlacement(state, node, 0);
     }
 
     // Try to find max end offset using the index
@@ -617,7 +617,7 @@ class BacktrackingGridBuilder {
       minOffset = minRow * width;
     }
 
-    return _findFirstValidPlacement(state, node, minOffset);
+    return findFirstValidPlacement(state, node, minOffset);
   }
 
   /// Find max predecessor end offset by reading cached offsets from trie nodes.
@@ -670,7 +670,7 @@ class BacktrackingGridBuilder {
   ///    in what is often the hottest loop in the solver.
   /// 4. **Local variables:** Grid and cellCodes are cached in local variables
   ///    to avoid repeated field access.
-  int _findFirstValidPlacement(GridState state, WordNode node, int minOffset) {
+  int findFirstValidPlacement(GridState state, WordNode node, int minOffset) {
     final wordLen = node.cellCodes.length;
     final maxCol = width - wordLen;
     final maxOffset = _maxAllowedOffset - wordLen;

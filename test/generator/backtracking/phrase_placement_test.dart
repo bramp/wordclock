@@ -401,4 +401,238 @@ void main() {
       });
     });
   });
+
+  group('findFirstValidPlacement', () {
+    group('boundary conditions', () {
+      test('returns -1 when word cannot fit in grid', () {
+        // Grid is 3x2 = 6 cells, word is 4 chars - won't fit on any row
+        final language = createMockLanguage(
+          id: 'BND1',
+          phrases: ['ABCD'],
+          requiresPadding: false,
+        );
+
+        final builder = BacktrackingGridBuilder(
+          width: 3,
+          height: 2,
+          language: language,
+          seed: 0,
+        );
+
+        final graph = WordDependencyGraphBuilder.build(language: language);
+        builder.graph = graph;
+        builder.codec = graph.codec;
+
+        final state = GridState(width: 3, height: 2, codec: graph.codec);
+        final nodeABCD = graph.nodes['ABCD']!.first;
+
+        final offset = builder.findFirstValidPlacement(state, nodeABCD, 0);
+        expect(offset, -1);
+      });
+
+      test('returns -1 when minOffset is past valid placement area', () {
+        // Grid is 5x2 = 10 cells, word is 3 chars
+        // maxOffset = 10 - 3 = 7, so minOffset=8 should return -1
+        final language = createMockLanguage(
+          id: 'BND2',
+          phrases: ['ABC'],
+          requiresPadding: false,
+        );
+
+        final builder = BacktrackingGridBuilder(
+          width: 5,
+          height: 2,
+          language: language,
+          seed: 0,
+        );
+
+        final graph = WordDependencyGraphBuilder.build(language: language);
+        builder.graph = graph;
+        builder.codec = graph.codec;
+
+        final state = GridState(width: 5, height: 2, codec: graph.codec);
+        final nodeABC = graph.nodes['ABC']!.first;
+
+        // minOffset=8 is past maxOffset=7
+        final offset = builder.findFirstValidPlacement(state, nodeABC, 8);
+        expect(offset, -1);
+      });
+
+      test('finds placement at exact maxOffset boundary', () {
+        // Grid is 5x2 = 10 cells, word is 3 chars
+        // maxOffset = 10 - 3 = 7
+        // Position 7 = row 1, col 2. Word occupies cols 2,3,4 - valid!
+        final language = createMockLanguage(
+          id: 'BND3',
+          phrases: ['ABC'],
+          requiresPadding: false,
+        );
+
+        final builder = BacktrackingGridBuilder(
+          width: 5,
+          height: 2,
+          language: language,
+          seed: 0,
+        );
+
+        final graph = WordDependencyGraphBuilder.build(language: language);
+        builder.graph = graph;
+        builder.codec = graph.codec;
+
+        final state = GridState(width: 5, height: 2, codec: graph.codec);
+        final nodeABC = graph.nodes['ABC']!.first;
+
+        // Start search from offset 7 - should find it exactly there
+        final offset = builder.findFirstValidPlacement(state, nodeABC, 7);
+        final (row, col) = offsetToRowCol(offset, 5);
+
+        expect(offset, 7);
+        expect(row, 1);
+        expect(col, 2);
+      });
+    });
+
+    group('row-skip optimization', () {
+      test('skips to next row when word does not fit on current row', () {
+        // Grid is 5 wide, word is 3 chars
+        // At col 3, word would need cols 3,4,5 but col 5 doesn't exist
+        // Should skip to next row
+        final language = createMockLanguage(
+          id: 'SKIP1',
+          phrases: ['ABC'],
+          requiresPadding: false,
+        );
+
+        final builder = BacktrackingGridBuilder(
+          width: 5,
+          height: 3,
+          language: language,
+          seed: 0,
+        );
+
+        final graph = WordDependencyGraphBuilder.build(language: language);
+        builder.graph = graph;
+        builder.codec = graph.codec;
+
+        final state = GridState(width: 5, height: 3, codec: graph.codec);
+        final nodeABC = graph.nodes['ABC']!.first;
+
+        // Start at offset 3 (row 0, col 3) - word won't fit, should skip to row 1
+        final offset = builder.findFirstValidPlacement(state, nodeABC, 3);
+        final (row, col) = offsetToRowCol(offset, 5);
+
+        expect(row, 1);
+        expect(col, 0);
+      });
+    });
+
+    group('conflict detection', () {
+      test('finds valid placement after conflict', () {
+        // Place "XY" at start, then try to place "AB" which conflicts
+        final language = createMockLanguage(
+          id: 'CONF1',
+          phrases: ['XY', 'AB'],
+          requiresPadding: false,
+        );
+
+        final builder = BacktrackingGridBuilder(
+          width: 5,
+          height: 2,
+          language: language,
+          seed: 0,
+        );
+
+        final graph = WordDependencyGraphBuilder.build(language: language);
+        builder.graph = graph;
+        builder.codec = graph.codec;
+
+        final state = GridState(width: 5, height: 2, codec: graph.codec);
+        final nodeXY = graph.nodes['XY']!.first;
+        final nodeAB = graph.nodes['AB']!.first;
+
+        // Place XY at offset 0
+        state.placeWord(nodeXY, 0);
+
+        // Try to place AB starting from 0 - should skip past conflict
+        final offset = builder.findFirstValidPlacement(state, nodeAB, 0);
+        final (row, col) = offsetToRowCol(offset, 5);
+
+        expect(row, 0);
+        expect(col, 2); // First position after XY
+      });
+
+      test('allows overlapping placement when cells match', () {
+        // Place "AB" then try to place "BC" - the B should overlap
+        final language = createMockLanguage(
+          id: 'OVER1',
+          phrases: ['AB BC'],
+          requiresPadding: false,
+        );
+
+        final builder = BacktrackingGridBuilder(
+          width: 5,
+          height: 2,
+          language: language,
+          seed: 0,
+        );
+
+        final graph = WordDependencyGraphBuilder.build(language: language);
+        builder.graph = graph;
+        builder.codec = graph.codec;
+
+        final state = GridState(width: 5, height: 2, codec: graph.codec);
+        final nodeAB = graph.nodes['AB']!.first;
+        final nodeBC = graph.nodes['BC']!.first;
+
+        // Place AB at offset 0 (cells 0=A, 1=B)
+        state.placeWord(nodeAB, 0);
+
+        // Try to place BC starting from 0 - should find offset 1 where B overlaps
+        final offset = builder.findFirstValidPlacement(state, nodeBC, 0);
+        final (row, col) = offsetToRowCol(offset, 5);
+
+        expect(row, 0);
+        expect(col, 1); // BC overlaps with AB's B
+      });
+
+      test('handles conflict at various positions in word', () {
+        // Grid: "AAAAB" (5 chars)
+        // Try to place "AB" - should work at offset 3 (A at pos 3, B at pos 4)
+        final language = createMockLanguage(
+          id: 'CONF2',
+          phrases: ['AAAAB', 'AB'],
+          requiresPadding: false,
+        );
+
+        final builder = BacktrackingGridBuilder(
+          width: 5,
+          height: 2,
+          language: language,
+          seed: 0,
+        );
+
+        final graph = WordDependencyGraphBuilder.build(language: language);
+        builder.graph = graph;
+        builder.codec = graph.codec;
+
+        final state = GridState(width: 5, height: 2, codec: graph.codec);
+        final nodeAAAAB = graph.nodes['AAAAB']!.first;
+        final nodeAB = graph.nodes['AB']!.first;
+
+        // Place AAAAB at offset 0 (fills entire first row)
+        state.placeWord(nodeAAAAB, 0);
+
+        // Try to place AB starting from 0
+        // offset 0: A matches, but B conflicts with A at pos 1
+        // offset 1: A matches, but B conflicts with A at pos 2
+        // offset 2: A matches, but B conflicts with A at pos 3
+        // offset 3: A matches, B matches! Found it.
+        final offset = builder.findFirstValidPlacement(state, nodeAB, 0);
+        final (row, col) = offsetToRowCol(offset, 5);
+
+        expect(row, 0);
+        expect(col, 3);
+      });
+    });
+  });
 }
