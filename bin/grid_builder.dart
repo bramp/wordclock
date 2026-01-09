@@ -109,6 +109,7 @@ class Config {
   final int targetHeight;
   final bool checkAll;
   final String algorithm;
+  final int timeout;
 
   Config({
     required this.gridWidth,
@@ -118,6 +119,7 @@ class Config {
     required this.targetHeight,
     required this.checkAll,
     required this.algorithm,
+    required this.timeout,
   });
 }
 
@@ -155,6 +157,12 @@ void main(List<String> args) {
       'dot',
       help:
           'Output the dependency graph in DOT format (character-level for greedy, word-level for backtracking).',
+    )
+    ..addOption(
+      'timeout',
+      abbr: 't',
+      defaultsTo: '60',
+      help: 'Maximum search time in seconds (default: 60).',
     )
     ..addFlag(
       'help',
@@ -196,6 +204,7 @@ void main(List<String> args) {
     targetHeight: int.parse(results['height'] as String),
     checkAll: results['check-all'] as bool,
     algorithm: results['algorithm'] as String,
+    timeout: int.parse(results['timeout'] as String),
   );
 
   if (config.checkAll) {
@@ -376,7 +385,7 @@ void _generateWithGreedy(Config config) {
 void _generateWithBacktracking(Config config) {
   final int finalSeed = config.seed ?? 0;
   final int targetHeight = config.targetHeight > 0 ? config.targetHeight : 10;
-  const int maxSearchTimeSeconds = 60;
+  final int maxSearchTimeSeconds = config.timeout;
 
   print('Timeout: ${maxSearchTimeSeconds}s');
   print('');
