@@ -83,9 +83,6 @@ class GridState {
   /// Track word placements as a stack (LIFO for backtracking)
   final List<WordPlacement> _placementStack;
 
-  /// Set of placed nodes for O(1) containment check
-  final Set<WordNode> _placedNodes;
-
   /// Track which phrases are fully satisfied
   final Set<String> satisfiedPhrases;
 
@@ -117,7 +114,6 @@ class GridState {
     : grid = List.filled(width * height, emptyCell),
       _usage = List.filled(width * height, 0),
       _placementStack = [],
-      _placedNodes = {},
       satisfiedPhrases = {};
 
   /// The index of the highest row currently used in any placement
@@ -134,9 +130,8 @@ class GridState {
       newState._usage[i] = _usage[i];
     }
 
-    // Copy placement stack and set
+    // Copy placement stack
     newState._placementStack.addAll(_placementStack);
-    newState._placedNodes.addAll(_placedNodes);
 
     // Copy satisfied phrases
     newState.satisfiedPhrases.addAll(satisfiedPhrases);
@@ -197,7 +192,6 @@ class GridState {
 
     // Record placement (push to stack)
     _placementStack.add(placement);
-    _placedNodes.add(node);
 
     return placement;
   }
@@ -211,7 +205,6 @@ class GridState {
       'removePlacement must be called in LIFO order',
     );
     _placementStack.removeLast();
-    _placedNodes.remove(placement.node);
 
     final cellCodes = placement.node.cellCodes;
     final baseIdx = placement.row * width + placement.startCol;
@@ -230,11 +223,6 @@ class GridState {
   /// Get all placements of a specific word (by string)
   List<WordPlacement> getPlacementsOf(String word) {
     return _placementStack.where((p) => p.node.word == word).toList();
-  }
-
-  /// Check if a word node is placed
-  bool isNodePlaced(WordNode node) {
-    return _placedNodes.contains(node);
   }
 
   /// Get the number of instances of a word that are placed
