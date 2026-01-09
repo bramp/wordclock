@@ -99,8 +99,8 @@ class GridState {
   /// Number of words currently placed
   int get placementCount => _placementStack.length;
 
-  /// Read-only access to placements (for iteration)
-  Iterable<WordPlacement> get placements => _placementStack;
+  /// Direct access to placement stack (for efficient indexed access)
+  List<WordPlacement> get placements => _placementStack;
 
   /// Total unique cells filled
   int get filledCells => _filledCellsCount;

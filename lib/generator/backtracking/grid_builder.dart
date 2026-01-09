@@ -4,6 +4,7 @@ import 'package:wordclock/generator/backtracking/graph/dependency_graph.dart';
 import 'package:wordclock/generator/backtracking/graph/graph_builder.dart';
 import 'package:wordclock/generator/backtracking/graph/word_node.dart';
 import 'package:wordclock/generator/backtracking/graph/phrase_trie.dart';
+import 'package:wordclock/generator/backtracking/overlap_matrix.dart';
 import 'package:wordclock/generator/utils/grid_build_result.dart';
 import 'package:wordclock/generator/utils/grid_validator.dart';
 import 'package:wordclock/languages/language.dart';
@@ -106,6 +107,8 @@ class IndexedGraph {
     });
 
     // Map node -> index for quick lookup (after sorting!)
+    // Note: node.matrixIndex is set separately by OverlapMatrix.build and
+    // uses unsorted order - this nodeIndex is specific to IndexedGraph's sorted order.
     final nodeIndex = <WordNode, int>{};
     for (int i = 0; i < allNodes.length; i++) {
       nodeIndex[allNodes[i]] = i;
@@ -161,16 +164,12 @@ class IndexedGraph {
 /// Since [findEarliestPlacementByPhrase] already validates the placement,
 /// we use [GridState.placeWordUnchecked] to skip redundant validation.
 ///
-/// ### 4. Loop Unrolling (`_findMaxPredecessorEndOffset`)
-/// Most words have 1-2 predecessor sequences. Unrolling the loop for these
-/// common cases avoids loop overhead.
-///
-/// ### 5. Sorted Node Order
+/// ### 4. Sorted Node Order
 /// Nodes are sorted by (rank, length descending) so that:
 /// - Lower-rank words (fewer dependencies) are tried first
 /// - Within each rank, longer words are placed first for better packing
 ///
-/// ### 6. Bitset Frontier Tracking
+/// ### 5. Bitset Frontier Tracking
 /// Uses a 64-bit integer as a bitset to track eligible nodes, enabling
 /// O(1) updates when placing/removing words. Bit manipulation is faster
 /// than set operations.
@@ -185,6 +184,9 @@ class BacktrackingGridBuilder {
 
   /// Cell codec for encoding/decoding cells to integers
   late final CellCodec codec;
+
+  /// Pre-computed overlap compatibility matrix for word pairs
+  late final OverlapMatrix overlapMatrix;
 
   /// Padding alphabet cells
   final List<Cell> paddingCells;
@@ -251,9 +253,10 @@ class BacktrackingGridBuilder {
     _startTime = DateTime.now();
     _stopReason = StopReason.completed;
 
-    // 3. Get all nodes
+    // 3. Get all nodes and build overlap matrix
     final allNodes = graph.nodes.values.expand((i) => i).toList();
     _totalWords = allNodes.length;
+    overlapMatrix = OverlapMatrix.build(allNodes);
 
     // 4. Solve using selected approach
     if (useFrontier) {
@@ -455,10 +458,12 @@ class BacktrackingGridBuilder {
         // Place word (skip validation since findEarliestPlacementByPhrase already checked)
         final p = state.placeWordUnchecked(node, offset);
 
-        // Update trie cache with end offset
+        // Update trie cache with end offset and placement index
         final endOffset = offset + p.length - 1;
+        final placementIndex = state.placementCount - 1;
         for (final trieNode in node.ownedTrieNodes) {
           trieNode.cachedEndOffset = endOffset;
+          trieNode.cachedPlacementIndex = placementIndex;
         }
 
         // Update eligible mask: remove placed node
@@ -483,6 +488,7 @@ class BacktrackingGridBuilder {
         // Clear trie cache and remove placement
         for (final trieNode in node.ownedTrieNodes) {
           trieNode.cachedEndOffset = -1;
+          trieNode.cachedPlacementIndex = -1;
         }
         state.removePlacement(p);
       }
@@ -559,10 +565,12 @@ class BacktrackingGridBuilder {
       if (offset != -1) {
         final p = state.placeWord(node, offset);
         if (p != null) {
-          // Update trie cache: set end offset on all trie nodes this word owns
+          // Update trie cache with end offset and placement index
           final endOffset = offset + p.length - 1;
+          final placementIndex = state.placementCount - 1;
           for (final trieNode in node.ownedTrieNodes) {
             trieNode.cachedEndOffset = endOffset;
+            trieNode.cachedPlacementIndex = placementIndex;
           }
 
           // Recurse with this word removed from mask (no allocation needed!)
@@ -571,6 +579,7 @@ class BacktrackingGridBuilder {
           // Clear trie cache before removal
           for (final trieNode in node.ownedTrieNodes) {
             trieNode.cachedEndOffset = -1;
+            trieNode.cachedPlacementIndex = -1;
           }
           state.removePlacement(p);
         }
@@ -593,16 +602,24 @@ class BacktrackingGridBuilder {
   /// Uses a pre-computed trie of predecessor sequences to deduplicate work when
   /// multiple phrases share common prefixes.
   ///
+  /// ## Hybrid Placement-Walk Optimization
+  /// Instead of scanning cells one-by-one, we walk through the placement stack
+  /// using the overlap matrix to skip words that definitely cannot conflict.
+  /// When we find a word that COULD overlap, we fall back to cell-by-cell scan
+  /// starting from that word's offset.
+  ///
   /// Returns 1D offset (row * width + col), or -1 if not found.
   int findEarliestPlacementByPhrase(GridState state, WordNode node) {
     // If this word can be first in any phrase, it can start at offset 0
     if (node.hasEmptyPredecessor) {
-      return findFirstValidPlacement(state, node, 0);
+      return findFirstValidPlacementHybrid(state, node, 0, 0);
     }
 
-    // Try to find max end offset using the index
-    final maxEndOffset = _findMaxPredecessorEndOffset(node.phraseTrieNodes);
-    if (maxEndOffset == -1) {
+    // Try to find max end offset and placement index using the trie
+    final (maxEndOffset, maxPlacementIndex) = _findMaxPredecessorInfo(
+      node.phraseTrieNodes,
+    );
+    if (maxPlacementIndex == -1) {
       return -1; // No predecessor sequences satisfied yet
     }
 
@@ -617,45 +634,49 @@ class BacktrackingGridBuilder {
       minOffset = minRow * width;
     }
 
-    return findFirstValidPlacement(state, node, minOffset);
+    return findFirstValidPlacementHybrid(
+      state,
+      node,
+      minOffset,
+      maxPlacementIndex + 1,
+    );
   }
 
-  /// Find max predecessor end offset by reading cached offsets from trie nodes.
+  /// Find max predecessor info: returns (endOffset, placementIndex) pair.
   ///
-  /// Each terminal node represents the end of a predecessor sequence.
-  /// Returns the max terminal offset, or -1 if no predecessors are placed yet.
+  /// The placementIndex is the highest placement stack index among all
+  /// predecessor sequences, used for placement-walk optimization.
   ///
-  /// Note: We only check the terminal node, not its ancestors. This works because
-  /// words are placed in dependency order - if a terminal has a cached position,
-  /// all its predecessors must already be placed.
-  ///
-  /// **Performance optimization:** Loop is unrolled for len=1 and len=2 cases,
-  /// which covers >80% of words. This eliminates loop overhead and enables
-  /// better branch prediction.
-  int _findMaxPredecessorEndOffset(List<PhraseTrieNode> terminalNodes) {
+  /// Returns (-1, -1) if no predecessors are placed yet.
+  (int endOffset, int placementIndex) _findMaxPredecessorInfo(
+    List<PhraseTrieNode> terminalNodes,
+  ) {
     int maxEndOffset = -1;
+    int maxPlacementIndex = -1;
 
-    final len = terminalNodes.length;
-    if (len == 1) {
-      return terminalNodes[0].cachedEndOffset;
-    } else if (len == 2) {
-      final a = terminalNodes[0].cachedEndOffset;
-      final b = terminalNodes[1].cachedEndOffset;
-      return a > b ? a : b;
-    }
-
-    // General case: iterate over all terminal nodes
-    for (int i = 0; i < len; i++) {
-      final endOffset = terminalNodes[i].cachedEndOffset;
+    for (final node in terminalNodes) {
+      final endOffset = node.cachedEndOffset;
       if (endOffset > maxEndOffset) {
         maxEndOffset = endOffset;
       }
+      final placementIndex = node.cachedPlacementIndex;
+      if (placementIndex > maxPlacementIndex) {
+        maxPlacementIndex = placementIndex;
+      }
     }
 
-    return maxEndOffset;
+    return (maxEndOffset, maxPlacementIndex);
   }
 
   /// Find first valid placement starting from minOffset.
+  ///
+  /// The existing grid may contain existing words, and empty cells (emptyCell).
+  /// A valid placement is one where the word fits without conflicts.
+  ///
+  /// The search scans in reading order (left-to-right, top-to-bottom)
+  /// starting from [minOffset]. The minOffset is based on the last offset of
+  /// the previous word in the phrase, and may be in the middle of a row,
+  ///
   /// Returns 1D offset, or -1 if not found.
   ///
   /// **Performance optimizations:**
@@ -705,6 +726,79 @@ class BacktrackingGridBuilder {
       offset++;
     }
     return -1;
+  }
+
+  /// Find first valid placement using hybrid placement-walk + cell scan.
+  ///
+  /// ## Algorithm
+  /// 1. Walk through placements starting from [minPlacementIndex]
+  /// 2. Use overlap matrix to skip words that definitely cannot conflict
+  /// 3. When we find a gap that could fit the word, fall back to cell-by-cell scan
+  ///
+  /// This hybrid approach skips over large regions of non-conflicting words
+  /// quickly, but uses the proven cell-by-cell method for actual conflict checking.
+  ///
+  /// [minOffset] is the earliest offset where placement is valid (after predecessor).
+  /// [minPlacementIndex] is the first placement index to check for conflicts.
+  ///
+  /// Returns 1D offset, or -1 if not found.
+  int findFirstValidPlacementHybrid(
+    GridState state,
+    WordNode node,
+    int minOffset,
+    int minPlacementIndex,
+  ) {
+    final wordLen = node.cellCodes.length;
+    final maxOffset = _maxAllowedOffset - wordLen;
+    final placements = state.placements;
+    final placementCount = placements.length;
+    final nodeIdx = node.matrixIndex;
+
+    // Start scanning from minOffset
+    int scanStartOffset = minOffset;
+
+    for (int i = minPlacementIndex; i < placementCount; i++) {
+      final p = placements[i];
+
+      // Skip placements that end before our scan start
+      if (p.endOffset < scanStartOffset) {
+        continue;
+      }
+
+      // Check if there's a gap before this placement that could fit our word
+      // Gap size = p.startOffset - scanStartOffset
+      // On the 2nd iterations of the loop, scanStartOffset is actually placement[-1].endOffset + 1
+      if (p.startOffset - scanStartOffset >= wordLen) {
+        // Gap is big enough - fall back to cell scan
+        break;
+      }
+
+      // Check if this placement could overlap using the matrix
+      final otherIdx = p.node.matrixIndex;
+      if (nodeIdx >= 0 &&
+          otherIdx >= 0 &&
+          !overlapMatrix.canOverlapByIndex(nodeIdx, otherIdx)) {
+        // Cannot overlap - skip past this word entirely
+        scanStartOffset = p.endOffset + 1;
+        continue;
+      }
+
+      // This placement COULD conflict - fall back to cell scan from here
+      break;
+    }
+
+    // Debug: print how many cells we skipped
+    //if (scanStartOffset > minOffset) {
+    //  print('Skipped ${scanStartOffset - minOffset} cells (minOffset=$minOffset, scanStart=$scanStartOffset)');
+    //}
+
+    // Either we found a potential conflict or walked past all placements
+    // Fall back to cell-by-cell scan for the remaining range
+    if (scanStartOffset > maxOffset) {
+      return -1;
+    }
+
+    return findFirstValidPlacement(state, node, scanStartOffset);
   }
 
   /// Fill remaining cells with padding characters

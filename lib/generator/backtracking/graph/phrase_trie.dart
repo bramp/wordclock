@@ -15,6 +15,11 @@ class PhraseTrieNode {
   /// -1 if not yet found or invalidated.
   int cachedEndOffset = -1;
 
+  /// Cached placement stack index: index into GridState._placementStack where
+  /// this word was placed. -1 if not yet placed or invalidated.
+  /// Used for placement-walk optimization to skip over placed words.
+  int cachedPlacementIndex = -1;
+
   /// Parent node (null for root-level nodes)
   final PhraseTrieNode? parent;
 

@@ -1,18 +1,30 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:wordclock/generator/backtracking/grid_builder.dart';
 import 'package:wordclock/generator/backtracking/grid_state.dart';
+import 'package:wordclock/generator/backtracking/graph/dependency_graph.dart';
 import 'package:wordclock/generator/backtracking/graph/graph_builder.dart';
 import 'package:wordclock/generator/backtracking/graph/word_node.dart';
+import 'package:wordclock/generator/backtracking/overlap_matrix.dart';
 import 'graph/test_helpers.dart';
+
+/// Helper to set up builder with graph and overlap matrix
+void setupBuilder(BacktrackingGridBuilder builder, WordDependencyGraph graph) {
+  builder.graph = graph;
+  builder.codec = graph.codec;
+  final allNodes = graph.nodes.values.expand((i) => i).toList();
+  builder.overlapMatrix = OverlapMatrix.build(allNodes);
+}
 
 /// Helper to place a word and update the trie cache (mimics what _solve does)
 WordPlacement? placeWordWithCache(GridState state, WordNode node, int offset) {
   final placement = state.placeWord(node, offset);
   if (placement != null) {
-    // Update trie cache: set end offset on all trie nodes this word owns
+    // Update trie cache with end offset and placement index
     final endOffset = offset + placement.length - 1;
+    final placementIndex = state.placementCount - 1;
     for (final trieNode in node.ownedTrieNodes) {
       trieNode.cachedEndOffset = endOffset;
+      trieNode.cachedPlacementIndex = placementIndex;
     }
   }
   return placement;
@@ -44,8 +56,7 @@ void main() {
 
         // Build graph to get the nodes
         final graph = WordDependencyGraphBuilder.build(language: language);
-        builder.graph = graph;
-        builder.codec = graph.codec;
+        setupBuilder(builder, graph);
 
         final state = GridState(width: 5, height: 3, codec: graph.codec);
         final nodeA = graph.nodes['A']!.first;
@@ -73,8 +84,7 @@ void main() {
         );
 
         final graph = WordDependencyGraphBuilder.build(language: language);
-        builder.graph = graph;
-        builder.codec = graph.codec;
+        setupBuilder(builder, graph);
 
         final state = GridState(width: 5, height: 3, codec: graph.codec);
         final nodeA = graph.nodes['A']!.first;
@@ -107,8 +117,7 @@ void main() {
         );
 
         final graph = WordDependencyGraphBuilder.build(language: language);
-        builder.graph = graph;
-        builder.codec = graph.codec;
+        setupBuilder(builder, graph);
 
         final state = GridState(width: 5, height: 3, codec: graph.codec);
         final nodeA = graph.nodes['A']!.first;
@@ -142,8 +151,7 @@ void main() {
         );
 
         final graph = WordDependencyGraphBuilder.build(language: language);
-        builder.graph = graph;
-        builder.codec = graph.codec;
+        setupBuilder(builder, graph);
 
         final state = GridState(width: 10, height: 3, codec: graph.codec);
         final nodeA = graph.nodes['A']!.first;
@@ -180,8 +188,7 @@ void main() {
         );
 
         final graph = WordDependencyGraphBuilder.build(language: language);
-        builder.graph = graph;
-        builder.codec = graph.codec;
+        setupBuilder(builder, graph);
 
         final state = GridState(width: 5, height: 3, codec: graph.codec);
 
@@ -219,8 +226,7 @@ void main() {
         );
 
         final graph = WordDependencyGraphBuilder.build(language: language);
-        builder.graph = graph;
-        builder.codec = graph.codec;
+        setupBuilder(builder, graph);
 
         final state = GridState(width: 20, height: 3, codec: graph.codec);
 
@@ -262,8 +268,7 @@ void main() {
         );
 
         final graph = WordDependencyGraphBuilder.build(language: language);
-        builder.graph = graph;
-        builder.codec = graph.codec;
+        setupBuilder(builder, graph);
 
         final state = GridState(width: 20, height: 3, codec: graph.codec);
 
@@ -305,8 +310,7 @@ void main() {
         );
 
         final graph = WordDependencyGraphBuilder.build(language: language);
-        builder.graph = graph;
-        builder.codec = graph.codec;
+        setupBuilder(builder, graph);
 
         final state = GridState(width: 10, height: 5, codec: graph.codec);
 
@@ -350,8 +354,7 @@ void main() {
         );
 
         final graph = WordDependencyGraphBuilder.build(language: language);
-        builder.graph = graph;
-        builder.codec = graph.codec;
+        setupBuilder(builder, graph);
 
         final state = GridState(width: 5, height: 3, codec: graph.codec);
         final nodeB = graph.nodes['B']!.first;
@@ -381,8 +384,7 @@ void main() {
         );
 
         final graph = WordDependencyGraphBuilder.build(language: language);
-        builder.graph = graph;
-        builder.codec = graph.codec;
+        setupBuilder(builder, graph);
 
         final state = GridState(width: 3, height: 5, codec: graph.codec);
         final nodeA = graph.nodes['A']!.first;
@@ -420,8 +422,7 @@ void main() {
         );
 
         final graph = WordDependencyGraphBuilder.build(language: language);
-        builder.graph = graph;
-        builder.codec = graph.codec;
+        setupBuilder(builder, graph);
 
         final state = GridState(width: 3, height: 2, codec: graph.codec);
         final nodeABCD = graph.nodes['ABCD']!.first;
@@ -447,8 +448,7 @@ void main() {
         );
 
         final graph = WordDependencyGraphBuilder.build(language: language);
-        builder.graph = graph;
-        builder.codec = graph.codec;
+        setupBuilder(builder, graph);
 
         final state = GridState(width: 5, height: 2, codec: graph.codec);
         final nodeABC = graph.nodes['ABC']!.first;
@@ -476,8 +476,7 @@ void main() {
         );
 
         final graph = WordDependencyGraphBuilder.build(language: language);
-        builder.graph = graph;
-        builder.codec = graph.codec;
+        setupBuilder(builder, graph);
 
         final state = GridState(width: 5, height: 2, codec: graph.codec);
         final nodeABC = graph.nodes['ABC']!.first;
@@ -511,8 +510,7 @@ void main() {
         );
 
         final graph = WordDependencyGraphBuilder.build(language: language);
-        builder.graph = graph;
-        builder.codec = graph.codec;
+        setupBuilder(builder, graph);
 
         final state = GridState(width: 5, height: 3, codec: graph.codec);
         final nodeABC = graph.nodes['ABC']!.first;
@@ -543,8 +541,7 @@ void main() {
         );
 
         final graph = WordDependencyGraphBuilder.build(language: language);
-        builder.graph = graph;
-        builder.codec = graph.codec;
+        setupBuilder(builder, graph);
 
         final state = GridState(width: 5, height: 2, codec: graph.codec);
         final nodeXY = graph.nodes['XY']!.first;
@@ -577,8 +574,7 @@ void main() {
         );
 
         final graph = WordDependencyGraphBuilder.build(language: language);
-        builder.graph = graph;
-        builder.codec = graph.codec;
+        setupBuilder(builder, graph);
 
         final state = GridState(width: 5, height: 2, codec: graph.codec);
         final nodeAB = graph.nodes['AB']!.first;
@@ -612,8 +608,7 @@ void main() {
         );
 
         final graph = WordDependencyGraphBuilder.build(language: language);
-        builder.graph = graph;
-        builder.codec = graph.codec;
+        setupBuilder(builder, graph);
 
         final state = GridState(width: 5, height: 2, codec: graph.codec);
         final nodeAAAAB = graph.nodes['AAAAB']!.first;
