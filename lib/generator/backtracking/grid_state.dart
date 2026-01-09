@@ -1,4 +1,4 @@
-import 'dart:math';
+import 'dart:typed_data';
 import 'package:wordclock/generator/backtracking/graph/word_node.dart';
 import 'package:wordclock/generator/utils/grid_validator.dart';
 import 'package:wordclock/model/types.dart';
@@ -71,16 +71,18 @@ class WordPlacement {
 /// Represents the current state of the grid during backtracking.
 class GridState {
   /// The grid as 1D array: [row * width + col] -> cell code or emptyCell (-1)
-  final List<int> grid;
+  /// Uses Int8List for better cache locality and faster iteration.
+  final Int8List grid;
 
-  /// Reference count for each cell as 1D array: [row * width + col] -> number of words using this cell
-  final List<int> _usage;
+  /// Reference count for each cell: [row * width + col] -> number of words using this cell.
+  /// Uses Uint8List since overlap count is always small (typically 0-3).
+  final Uint8List _usage;
 
   /// Codec for converting between cell strings and integer codes
   final CellCodec codec;
 
   /// Public getter for usage (mostly for testing/assertions)
-  List<int> get usage => _usage;
+  Uint8List get usage => _usage;
 
   /// Width of the grid
   final int width;
@@ -116,9 +118,19 @@ class GridState {
   double get density => filledCells / (width * height);
 
   GridState({required this.width, required this.height, required this.codec})
-    : grid = List.filled(width * height, emptyCell),
-      _usage = List.filled(width * height, 0),
+    : grid = Int8List(width * height)..fillRange(0, width * height, emptyCell),
+      _usage = Uint8List(width * height),
       _placementStack = [];
+
+  /// Private constructor for cloning
+  GridState._cloneFrom({
+    required this.width,
+    required this.height,
+    required this.codec,
+    required this.grid,
+    required Uint8List usage,
+  }) : _usage = usage,
+       _placementStack = [];
 
   /// The highest 1D offset currently used in any placement
   /// Derived from the top of the placement stack (LIFO order means top has max offset)
@@ -127,13 +139,13 @@ class GridState {
 
   /// Create a deep copy of this state
   GridState clone() {
-    final newState = GridState(width: width, height: height, codec: codec);
-
-    // Copy grid and usage (1D arrays - simple copy)
-    for (int i = 0; i < grid.length; i++) {
-      newState.grid[i] = grid[i];
-      newState._usage[i] = _usage[i];
-    }
+    final newState = GridState._cloneFrom(
+      width: width,
+      height: height,
+      codec: codec,
+      grid: Int8List.fromList(grid),
+      usage: Uint8List.fromList(_usage),
+    );
 
     // Copy placement stack
     newState._placementStack.addAll(_placementStack);
@@ -235,57 +247,6 @@ class GridState {
     }
 
     _totalWordsLength -= cellCodes.length;
-  }
-
-  /// Get all placements of a specific word (by string)
-  List<WordPlacement> getPlacementsOf(String word) {
-    return _placementStack.where((p) => p.node.word == word).toList();
-  }
-
-  /// Get the number of instances of a word that are placed
-  int getPlacedInstanceCount(String word) {
-    return _placementStack.where((p) => p.node.word == word).length;
-  }
-
-  /// Calculate distance from position to nearest placed word
-  double distanceToNearestWord(int row, int col) {
-    if (_placementStack.isEmpty) return double.infinity;
-
-    double minDist = double.infinity;
-
-    for (final placement in _placementStack) {
-      // Distance to start of word
-      final distStart = sqrt(
-        pow(row - placement.row, 2) + pow(col - placement.startCol, 2),
-      );
-      minDist = min(minDist, distStart);
-
-      // Distance to end of word
-      final distEnd = sqrt(
-        pow(row - placement.row, 2) + pow(col - placement.endCol, 2),
-      );
-      minDist = min(minDist, distEnd);
-    }
-
-    return minDist;
-  }
-
-  /// Count wasted cells (empty cells between placed words in reading order)
-  int countWastedCells() {
-    int wasted = 0;
-    int lastFilledPos = -1;
-
-    // Scan in reading order (already 1D)
-    for (int i = 0; i < grid.length; i++) {
-      if (grid[i] != emptyCell) {
-        if (lastFilledPos >= 0) {
-          wasted += i - lastFilledPos - 1;
-        }
-        lastFilledPos = i;
-      }
-    }
-
-    return wasted;
   }
 
   /// Convert grid to flat list of cells (decodes integer codes back to strings)
