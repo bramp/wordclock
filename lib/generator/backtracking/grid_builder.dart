@@ -16,6 +16,36 @@ import 'package:wordclock/model/word_grid.dart';
 
 /// A backtracking-based grid builder that finds optimal word placements.
 ///
+/// ## Problem Statement
+///
+/// Build a Qlocktwo-style word clock grid that displays times by lighting up consecutive letters
+/// to form words. The grid must be compact (typically 11x10) and efficiently represent all
+/// possible time phrases.
+///
+/// ## Grid Constraints
+///
+/// 1. **Grid Dimensions**: Typically 11 columns x 10 rows.
+/// 2. **Word Consecutiveness**: Words must be horizontal, left-to-right.
+/// 3. **Word Order**: Words in a phrase must appear in reading order (row-major).
+/// 4. **Word Separation**:
+///    - If on same row: at least 1 cell gap.
+///    - If on different rows: no gap needed (newline acts as separator).
+/// 5. **No Conflicts**: A cell can only contain one character at a time.
+/// 6. **Character Matching**: Overlapping words must share the exact same character.
+///
+/// ## Algorithm
+///
+/// The algorithm uses a depth-first backtracking search to find a valid grid layout.
+/// It places words one by one, backtracking when a placement leads to an invalid state
+/// (e.g., words cannot fit).
+///
+/// ### Strategy
+/// 1. **Graph Construction**: Builds a word-level dependency graph (DAG) where edges represent
+///    reading order constraints.
+/// 2. **Ordering**: Words are sorted by topological rank and length.
+/// 3. **Placement**: For each word, we find the *earliest possible* valid position (greedy placement)
+///    that respects all dependencies and separation rules.
+///
 /// ## Key Optimizations
 ///
 /// ### 1. Space-Based Pruning
@@ -36,6 +66,21 @@ import 'package:wordclock/model/word_grid.dart';
 /// ### 4. Phrase Trie Caching
 /// Uses a trie structure to cache predecessor placement positions, avoiding
 /// redundant scans when multiple phrases share common prefixes.
+///
+/// ## Usage
+///
+/// ```dart
+/// final builder = BacktrackingGridBuilder(
+///   width: 11,
+///   height: 10,
+///   language: englishLanguage,
+///   seed: 42,
+/// );
+/// final result = builder.build();
+/// if (result.grid.isNotEmpty) {
+///   print('Success!');
+/// }
+/// ```
 class BacktrackingGridBuilder {
   final int width;
   final int height;
