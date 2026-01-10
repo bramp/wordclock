@@ -69,8 +69,6 @@ class IndexedWordList {
     });
 
     // Map node -> index for quick lookup (after sorting!)
-    // Note: node.matrixIndex is set separately by OverlapMatrix.build and
-    // uses unsorted order - this nodeIndex is specific to IndexedWordList's sorted order.
     final nodeIndex = <WordNode, int>{};
     for (int i = 0; i < allNodes.length; i++) {
       nodeIndex[allNodes[i]] = i;

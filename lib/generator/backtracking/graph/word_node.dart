@@ -64,10 +64,6 @@ class WordNode {
   /// True if any phrase has this word as the first word (no predecessors)
   bool hasEmptyPredecessor = false;
 
-  /// Index in the overlap matrix for O(1) lookup.
-  /// Set by [IndexedGraph.build], -1 if not set.
-  int matrixIndex = -1;
-
   /// Unique identifier for this node (e.g., "FIVE", "FIVE#1", "FIVE#2")
   String get id => instance == 0 ? word : '$word#$instance';
 

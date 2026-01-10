@@ -4,7 +4,6 @@ import 'package:wordclock/generator/backtracking/graph/dependency_graph.dart';
 import 'package:wordclock/generator/backtracking/graph/graph_builder.dart';
 import 'package:wordclock/generator/backtracking/graph/word_node.dart';
 import 'package:wordclock/generator/backtracking/graph/phrase_trie.dart';
-import 'package:wordclock/generator/backtracking/overlap_matrix.dart';
 import 'package:wordclock/generator/backtracking/indexed_word_list.dart';
 import 'package:wordclock/generator/utils/grid_build_result.dart';
 import 'package:wordclock/generator/utils/grid_validator.dart';
@@ -55,33 +54,26 @@ typedef ProgressCallback = bool Function(GridBuildProgress progress);
 
 /// A backtracking-based grid builder that finds optimal word placements.
 ///
-/// ## Performance Optimizations
+/// ## Key Optimizations
 ///
-/// This solver includes several optimizations for the hot path:
+/// ### 1. Space-Based Pruning
+/// Uses precomputed minimum cell contributions to detect infeasible states early.
+/// If the remaining words can't possibly fit in the remaining grid space, we
+/// backtrack immediately without exploring that branch.
 ///
-/// ### 1. Inline Placement Check (`_findFirstValidPlacement`)
-/// The placement validity check is inlined rather than calling a separate
-/// method. This eliminates function call overhead in the innermost loop,
-/// which runs millions of times during search.
+/// ### 2. Bitset Frontier Tracking
+/// Uses a 64-bit integer as a bitset to track eligible words, enabling O(1)
+/// updates when placing/removing words. Words become eligible when all their
+/// dependencies (predecessor words in phrases) are placed.
 ///
-/// ### 2. Row-Skip Optimization
-/// When a word doesn't fit on the current row (column + length > width),
-/// we jump directly to the start of the next row instead of incrementing
-/// by 1. This avoids checking impossible positions.
-///
-/// ### 3. Unchecked Placement (`placeWordUnchecked`)
-/// Since [findEarliestPlacementByPhrase] already validates the placement,
-/// we use [GridState.placeWordUnchecked] to skip redundant validation.
-///
-/// ### 4. Sorted Node Order
-/// Nodes are sorted by (rank, length descending) so that:
+/// ### 3. Sorted Word Order
+/// Words are sorted by (rank, length descending) so that:
 /// - Lower-rank words (fewer dependencies) are tried first
 /// - Within each rank, longer words are placed first for better packing
 ///
-/// ### 5. Bitset Frontier Tracking
-/// Uses a 64-bit integer as a bitset to track eligible nodes, enabling
-/// O(1) updates when placing/removing words. Bit manipulation is faster
-/// than set operations.
+/// ### 4. Phrase Trie Caching
+/// Uses a trie structure to cache predecessor placement positions, avoiding
+/// redundant scans when multiple phrases share common prefixes.
 class BacktrackingGridBuilder {
   final int width;
   final int height;
@@ -93,9 +85,6 @@ class BacktrackingGridBuilder {
 
   /// Cell codec for encoding/decoding cells to integers
   late final CellCodec codec;
-
-  /// Pre-computed overlap compatibility matrix for word pairs
-  late final OverlapMatrix overlapMatrix;
 
   /// Padding alphabet cells
   final List<Cell> paddingCells;
@@ -162,10 +151,9 @@ class BacktrackingGridBuilder {
     _startTime = DateTime.now();
     _stopReason = StopReason.completed;
 
-    // 3. Get all nodes and build overlap matrix
+    // 3. Get all nodes
     final allNodes = graph.nodes.values.expand((i) => i).toList();
     _totalWords = allNodes.length;
-    overlapMatrix = OverlapMatrix.build(allNodes);
 
     // 4. Solve using selected approach
     if (useFrontier) {
@@ -321,6 +309,10 @@ class BacktrackingGridBuilder {
     int unplacedMask,
   ) {
     _iterationCount++;
+
+    // TODO We have placedWords, and unplacedMask. One is on the state, one is a
+    // argument. I wonder if we can merge these, and/or ensure they all exist on
+    // the state object.
     final placedWords = state.placementCount;
     final allNodes = wordList.nodes;
     final successorIndices = wordList.successorIndices;
@@ -552,35 +544,24 @@ class BacktrackingGridBuilder {
 
   /// Finds the earliest valid placement for a word by scanning phrases left-to-right.
   ///
-  /// This method uses the pre-computed predecessor cells for each phrase and scans
-  /// the grid to find placements for each predecessor word in reading order. The earliest
-  /// valid position is after the MAX end position across all phrases.
-  ///
-  /// This differs from [findEarliestPlacement] which uses the pre-computed graph edges.
-  /// The phrase-based approach correctly handles cases where duplicate words may
-  /// already be satisfied by earlier placements.
+  /// This method uses the pre-computed predecessor cells for each phrase and
+  /// finds the latest end position among all satisfied predecessor sequences.
+  /// The earliest valid position for this word is after that position.
   ///
   /// Uses a pre-computed trie of predecessor sequences to deduplicate work when
-  /// multiple phrases share common prefixes.
-  ///
-  /// ## Hybrid Placement-Walk Optimization
-  /// Instead of scanning cells one-by-one, we walk through the placement stack
-  /// using the overlap matrix to skip words that definitely cannot conflict.
-  /// When we find a word that COULD overlap, we fall back to cell-by-cell scan
-  /// starting from that word's offset.
+  /// multiple phrases share common prefixes. Each trie node caches the end offset
+  /// of its predecessor word when placed, enabling O(1) lookups.
   ///
   /// Returns 1D offset (row * width + col), or -1 if not found.
   int findEarliestPlacementByPhrase(GridState state, WordNode node) {
     // If this word can be first in any phrase, it can start at offset 0
     if (node.hasEmptyPredecessor) {
-      return findFirstValidPlacementHybrid(state, node, 0, 0);
+      return findFirstValidPlacement(state, node, 0);
     }
 
-    // Try to find max end offset and placement index using the trie
-    final (maxEndOffset, maxPlacementIndex) = _findMaxPredecessorInfo(
-      node.phraseTrieNodes,
-    );
-    if (maxPlacementIndex == -1) {
+    // Try to find max end offset using the trie
+    final maxEndOffset = _findMaxPredecessorEndOffset(node.phraseTrieNodes);
+    if (maxEndOffset == -1) {
       return -1; // No predecessor sequences satisfied yet
     }
 
@@ -595,38 +576,21 @@ class BacktrackingGridBuilder {
       minOffset = minRow * width;
     }
 
-    return findFirstValidPlacementHybrid(
-      state,
-      node,
-      minOffset,
-      maxPlacementIndex + 1,
-    );
+    return findFirstValidPlacement(state, node, minOffset);
   }
 
-  /// Find max predecessor info: returns (endOffset, placementIndex) pair.
+  /// Find max predecessor end offset from trie nodes.
   ///
-  /// The placementIndex is the highest placement stack index among all
-  /// predecessor sequences, used for placement-walk optimization.
-  ///
-  /// Returns (-1, -1) if no predecessors are placed yet.
-  (int endOffset, int placementIndex) _findMaxPredecessorInfo(
-    List<PhraseTrieNode> terminalNodes,
-  ) {
+  /// Returns -1 if no predecessors are placed yet.
+  int _findMaxPredecessorEndOffset(List<PhraseTrieNode> terminalNodes) {
     int maxEndOffset = -1;
-    int maxPlacementIndex = -1;
-
     for (final node in terminalNodes) {
       final endOffset = node.cachedEndOffset;
       if (endOffset > maxEndOffset) {
         maxEndOffset = endOffset;
       }
-      final placementIndex = node.cachedPlacementIndex;
-      if (placementIndex > maxPlacementIndex) {
-        maxPlacementIndex = placementIndex;
-      }
     }
-
-    return (maxEndOffset, maxPlacementIndex);
+    return maxEndOffset;
   }
 
   /// Find first valid placement starting from minOffset.
@@ -687,79 +651,6 @@ class BacktrackingGridBuilder {
       offset++;
     }
     return -1;
-  }
-
-  /// Find first valid placement using hybrid placement-walk + cell scan.
-  ///
-  /// ## Algorithm
-  /// 1. Walk through placements starting from [minPlacementIndex]
-  /// 2. Use overlap matrix to skip words that definitely cannot conflict
-  /// 3. When we find a gap that could fit the word, fall back to cell-by-cell scan
-  ///
-  /// This hybrid approach skips over large regions of non-conflicting words
-  /// quickly, but uses the proven cell-by-cell method for actual conflict checking.
-  ///
-  /// [minOffset] is the earliest offset where placement is valid (after predecessor).
-  /// [minPlacementIndex] is the first placement index to check for conflicts.
-  ///
-  /// Returns 1D offset, or -1 if not found.
-  int findFirstValidPlacementHybrid(
-    GridState state,
-    WordNode node,
-    int minOffset,
-    int minPlacementIndex,
-  ) {
-    final wordLen = node.cellCodes.length;
-    final maxOffset = _maxAllowedOffset - wordLen;
-    final placements = state.placements;
-    final placementCount = placements.length;
-    final nodeIdx = node.matrixIndex;
-
-    // Start scanning from minOffset
-    int scanStartOffset = minOffset;
-
-    for (int i = minPlacementIndex; i < placementCount; i++) {
-      final p = placements[i];
-
-      // Skip placements that end before our scan start
-      if (p.endOffset < scanStartOffset) {
-        continue;
-      }
-
-      // Check if there's a gap before this placement that could fit our word
-      // Gap size = p.startOffset - scanStartOffset
-      // On the 2nd iterations of the loop, scanStartOffset is actually placement[-1].endOffset + 1
-      if (p.startOffset - scanStartOffset >= wordLen) {
-        // Gap is big enough - fall back to cell scan
-        break;
-      }
-
-      // Check if this placement could overlap using the matrix
-      final otherIdx = p.node.matrixIndex;
-      if (nodeIdx >= 0 &&
-          otherIdx >= 0 &&
-          !overlapMatrix.canOverlapByIndex(nodeIdx, otherIdx)) {
-        // Cannot overlap - skip past this word entirely
-        scanStartOffset = p.endOffset + 1;
-        continue;
-      }
-
-      // This placement COULD conflict - fall back to cell scan from here
-      break;
-    }
-
-    // Debug: print how many cells we skipped
-    //if (scanStartOffset > minOffset) {
-    //  print('Skipped ${scanStartOffset - minOffset} cells (minOffset=$minOffset, scanStart=$scanStartOffset)');
-    //}
-
-    // Either we found a potential conflict or walked past all placements
-    // Fall back to cell-by-cell scan for the remaining range
-    if (scanStartOffset > maxOffset) {
-      return -1;
-    }
-
-    return findFirstValidPlacement(state, node, scanStartOffset);
   }
 
   /// Fill remaining cells with padding characters

@@ -4,15 +4,12 @@ import 'package:wordclock/generator/backtracking/grid_state.dart';
 import 'package:wordclock/generator/backtracking/graph/dependency_graph.dart';
 import 'package:wordclock/generator/backtracking/graph/graph_builder.dart';
 import 'package:wordclock/generator/backtracking/graph/word_node.dart';
-import 'package:wordclock/generator/backtracking/overlap_matrix.dart';
 import 'graph/test_helpers.dart';
 
-/// Helper to set up builder with graph and overlap matrix
+/// Helper to set up builder with graph
 void setupBuilder(BacktrackingGridBuilder builder, WordDependencyGraph graph) {
   builder.graph = graph;
   builder.codec = graph.codec;
-  final allNodes = graph.nodes.values.expand((i) => i).toList();
-  builder.overlapMatrix = OverlapMatrix.build(allNodes);
 }
 
 /// Helper to place a word and update the trie cache (mimics what _solve does)
