@@ -302,10 +302,6 @@ class BacktrackingGridBuilder {
   ) {
     _iterationCount++;
 
-    // TODO We have placedWords, and unplacedMask. One is on the state, one is a
-    // argument. I wonder if we can merge these, and/or ensure they all exist on
-    // the state object.
-    final placedWords = state.placementCount;
     final allNodes = wordList.nodes;
     final successorIndices = wordList.successorIndices;
 
@@ -317,8 +313,8 @@ class BacktrackingGridBuilder {
     }
 
     // Update best found so far
-    if (placedWords > _maxWordsPlaced) {
-      _maxWordsPlaced = placedWords;
+    if (state.placementCount > _maxWordsPlaced) {
+      _maxWordsPlaced = state.placementCount;
       _bestState = state.clone();
     }
 
@@ -326,7 +322,7 @@ class BacktrackingGridBuilder {
     if (state.maxEndOffset >= _maxAllowedOffset) return;
 
     // All words placed?
-    if (placedWords == allNodes.length) {
+    if (unplacedMask == 0) {
       final currentHeight = state.maxEndOffset ~/ width + 1;
       if (currentHeight <= _minHeightFound) {
         _minHeightFound = currentHeight;
