@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "278878387316",
+    "project_id": "wordclock-me",
+    "storage_bucket": "wordclock-me.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:278878387316:android:c6296c4c5cf42426962521",
+        "android_client_info": {
+          "package_name": "net.bramp.wordclock"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCQ3hPzj9hRtHZwROOIPOExEeK3Re_DT5Q"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

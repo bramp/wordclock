@@ -31,3 +31,6 @@
 - [ ] Default to the language the user natively speaks
 - [ ] Translate the app
 - [ ] Fix the issue where foreign characters take a while to load. We should pre-load the google fonts, and maybe bundle them with the app - especially if we can strip them to just the required characters (to keep the app small).
+- [ ] Add Google Analytics
+  - [ ] For GDPR compliance, you may need to add a consent banner
+  - [ ] Add tracking of how long the user keeps the app open for.

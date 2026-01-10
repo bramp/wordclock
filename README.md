@@ -70,6 +70,40 @@ This project uses [pre-commit](https://pre-commit.com/) to ensure code quality.
 
 Now, every time you commit, the hooks (formatting, analysis, testing) will run automatically.
 
+### Firebase Analytics
+
+This project uses Firebase Analytics to track user engagement and app usage.
+
+**Current Configuration:**
+- ✅ Web and Android platforms are configured
+- ✅ Google Analytics measurement ID: `G-8L3MVJBV65`
+- ✅ Firebase project: `wordclock-me`
+
+**Adding iOS or other platforms:**
+
+If you need to add Firebase support for additional platforms (iOS, macOS, etc.):
+
+1. Install FlutterFire CLI:
+   ```bash
+   dart pub global activate flutterfire_cli
+   ```
+
+2. Reconfigure Firebase:
+   ```bash
+   flutterfire configure
+   ```
+
+3. Select the platforms you want to add when prompted
+
+This will update `lib/firebase_options.dart` and add platform-specific configuration files (e.g., `GoogleService-Info.plist` for iOS).
+
+**Testing Analytics:**
+
+To verify analytics is working:
+- **Web**: Check browser DevTools → Network for Firebase Analytics requests
+- **Android**: Enable debug mode with `adb shell setprop debug.firebase.analytics.app com.bramp.wordclock`
+- **Firebase Console**: View real-time events at [Firebase Console](https://console.firebase.google.com/) → Analytics → DebugView
+
 ## Tools and Utilities
 
 The project includes several CLI tools for development and visualization.

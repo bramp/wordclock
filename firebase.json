@@ -1,0 +1,1 @@
+{"flutter":{"platforms":{"android":{"default":{"projectId":"wordclock-me","appId":"1:278878387316:android:c6296c4c5cf42426962521","fileOutput":"android/app/google-services.json"}},"dart":{"lib/firebase_options.dart":{"projectId":"wordclock-me","configurations":{"android":"1:278878387316:android:c6296c4c5cf42426962521","web":"1:278878387316:web:e70f28d9dd7a2c1c962521"}}}}}}

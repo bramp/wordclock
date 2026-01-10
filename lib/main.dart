@@ -1,8 +1,14 @@
 import 'package:flutter/material.dart';
+import 'package:wordclock/services/analytics_service.dart';
 import 'package:wordclock/settings/settings_controller.dart';
 import 'package:wordclock/ui/clock_face.dart';
 
-void main() {
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+
+  // Initialize Firebase Analytics
+  await AnalyticsService.initialize();
+
   final settingsController = SettingsController();
   runApp(WordClockApp(settingsController: settingsController));
 }
@@ -29,6 +35,9 @@ class WordClockApp extends StatelessWidget {
             scaffoldBackgroundColor:
                 settingsController.settings.backgroundColor,
           ),
+          navigatorObservers: [
+            if (AnalyticsService.observer != null) AnalyticsService.observer!,
+          ],
           home: ClockFace(settingsController: settingsController),
         );
       },

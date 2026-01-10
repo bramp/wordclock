@@ -2,6 +2,7 @@ import 'package:clock/clock.dart';
 import 'package:flutter/material.dart';
 import 'package:wordclock/model/adjustable_clock.dart';
 import 'package:wordclock/generator/utils/word_clock_utils.dart';
+import 'package:wordclock/services/analytics_service.dart';
 import 'package:wordclock/settings/theme_settings.dart';
 import 'package:wordclock/generator/backtracking/grid_builder.dart';
 import 'package:wordclock/model/word_grid.dart';
@@ -70,6 +71,13 @@ class SettingsController extends ChangeNotifier {
   void setBackgroundType(BackgroundType type) {
     if (_currentSettings.backgroundType == type) return;
     _currentSettings = _currentSettings.copyWith(backgroundType: type);
+
+    // Track background type change in analytics
+    AnalyticsService.logThemeChange(
+      settingName: 'background_type',
+      value: type.toString(),
+    );
+
     notifyListeners();
   }
 
@@ -78,6 +86,10 @@ class SettingsController extends ChangeNotifier {
     _currentLanguage = language;
     _allActiveIndices = null;
     _regenerateGrid();
+
+    // Track language change in analytics
+    AnalyticsService.logLanguageChange(language.id);
+
     notifyListeners();
   }
 
