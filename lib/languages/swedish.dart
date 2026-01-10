@@ -10,20 +10,19 @@ final swedishLanguage = WordClockLanguage(
   description: null,
   timeToWords: SwedishTimeToWords(),
   paddingAlphabet: 'AEFIKLMNOPQRSTUVXYZ',
-  // Seed: 0
   defaultGrid: WordGrid.fromLetters(
     width: 11,
     letters:
-        "KLOCKANQUPA"
-        "ÄRNMKVARTMK"
-        "SFEMQTTJUGO"
-        "ZIOQKIEÖVER"
-        "RAHALVPOFEM"
-        "STIOQTOLVKO"
-        "LELVANLESEX"
-        "AÄTTAPFYRAA"
-        "FNYETTTRESO"
-        "LVNIOTVÅSJU",
+        "KLOCKANIÄRY"
+        "UUKVARTJUGO"
+        "EVHALVYOTIO"
+        "KÖVERZFEMZI"
+        "VÖVERVPHALV"
+        "TOLVELVATIO"
+        "ÄTTAFYRAETT"
+        "NIOVTVÅQSJU"
+        "SEXUTREPFEM"
+        "ANKLYMMKLAS",
   ),
   timeCheckGrid: WordGrid.fromLetters(
     width: 11,

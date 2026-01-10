@@ -14,16 +14,16 @@ final norwegianLanguage = WordClockLanguage(
   defaultGrid: WordGrid.fromLetters(
     width: 11,
     letters:
-        "KLOKKENVNUM"
-        "FGAOVERPNFI"
-        "KVARTNFEMBL"
-        "MNTlXMFOVER"
-        "GPÅNPNHALVI"
-        "ÅTTEELLEVEI"
-        "FFlREAMFEMA"
-        "NIUTRETOLVU"
-        "LTlGVlSEKSI"
-        "PSGlNETTSYV",
+        "KLOKKENEERZ"
+        "KVARTFEMTlU"
+        "OVERPÅUHALV"
+        "ELLEVEBTOLV"
+        "FlRESEKSFEM"
+        "ÅTTETTRESYV"
+        "VZLFllTlVNI"
+        "VMVNUMAIFGZ"
+        "HHFGAPNFIGS"
+        "lNBLMAEOAMN",
   ),
   timeCheckGrid: WordGrid.fromLetters(
     width: 11,

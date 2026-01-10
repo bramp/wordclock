@@ -7,39 +7,30 @@ import 'package:wordclock/model/word_grid.dart';
 void main() {
   group('Grid Consistency Tests', () {
     for (final lang in WordClockLanguages.all) {
-      group(
-        'Language: ${lang.displayName} (${lang.id})',
-        () {
-          if (lang.defaultGrid != null) {
-            test('defaultGrid valid', () {
-              _validateGrid(lang, lang.defaultGrid!);
-            });
-          }
+      group('Language: ${lang.displayName} (${lang.id})', () {
+        if (lang.defaultGrid != null) {
+          test('defaultGrid valid', () {
+            _validateGrid(lang, lang.defaultGrid!);
+          });
 
-          if (lang.timeCheckGrid != null) {
-            test(
-              'timeCheckGrid valid',
-              () {
-                _validateGrid(lang, lang.timeCheckGrid!);
-              },
-              skip: (lang.id == 'E2')
-                  ? 'Fix padding in E2 timeCheckGrid'
-                  : null,
-            );
-          }
-        },
-        skip: () {
-          if (lang.id == 'RO') return 'Fix grid issues for RO';
-          if (lang.id == 'ES') return 'Fix invalid word order for ES';
-          if (lang.id == 'D3') return 'Fix invalid word order for D3';
-          if (lang.id == 'SE') return 'Fix invalid word order for SE';
-          if (lang.id == 'RU') return 'Fix invalid word order for RU';
-          if (lang.id == 'PL') return 'Fix invalid word order for PL';
-          if (lang.id == 'PE') return 'Fix invalid word order for PE';
-          if (lang.id == 'IT') return 'Fix invalid word order for IT';
-          return null;
-        }(),
-      );
+          test(
+            'defaultGrid size is 11x10',
+            () {
+              expect(lang.defaultGrid!.width, 11);
+              expect(lang.defaultGrid!.height, 10);
+            },
+            skip: ['PL', 'PE', 'RU', 'RO'].contains(lang.id)
+                ? 'Needs fixing to fit 11x10'
+                : null,
+          );
+        }
+
+        if (lang.timeCheckGrid != null) {
+          test('timeCheckGrid valid', () {
+            _validateGrid(lang, lang.timeCheckGrid!);
+          });
+        }
+      });
     }
   });
 }

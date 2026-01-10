@@ -10,23 +10,20 @@ final turkishLanguage = WordClockLanguage(
   description: null,
   timeToWords: TurkishTimeToWords(),
   paddingAlphabet: 'ADIKMPRSY',
+  // Seed: 0
   defaultGrid: WordGrid.fromLetters(
     width: 11,
     letters:
-        "SAATKALTIPD"
-        "ALTIYIRBEŞİ"
-        "MBİRİDOKUZM"
+        "SAATKALTIYI"
         "DOKUZUDÖRDÜ"
-        "RDÖRTKONUID"
-        "SEKIZSEKIZİ"
-        "YEDİYEDİYİY"
-        "RÜÇKÜÇÜMONP"
-        "BİRBİRİDİKİ"
-        "RİKİYİMELLİ"
-        "KIRKONAOTUZ"
-        "YİRMİYYBEŞS"
-        "BUÇUKÇEYREK"
-        "PSMYGEÇİYOR",
+        "SEKIZİPBEŞİ"
+        "DYEDİYİSÜÇÜ"
+        "ONURONRBİRİ"
+        "İKİYİPYİRMİ"
+        "ÇEYREKMOTUZ"
+        "KIRKELLİONM"
+        "BEŞYGEÇİYOR"
+        "RDÖRTMBUÇUK",
   ),
   timeCheckGrid: WordGrid.fromLetters(
     width: 11,

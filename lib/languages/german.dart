@@ -14,16 +14,16 @@ final berneseGermanLanguage = WordClockLanguage(
   defaultGrid: WordGrid.fromLetters(
     width: 11,
     letters:
-        "ESTISCHBSAS"
-        "VIERTUFÜFIU"
-        "HPZWÄNZGZÄÄ"
-        "ABVOROHAUBI"
-        "EISPTSÄCHSI"
-        "AVIERIACHTI"
-        "NÜNIMZÄNIAR"
-        "TEUFIRDRÜBE"
-        "ZWÖIEQHFÜFI"
-        "ZWÖUFISIBNI",
+        "ESUISCHBFÜF"
+        "RVIERTUFZÄÄ"
+        "TZWÄNZGLVOR"
+        "TOABOOHAUBI"
+        "SÄCHSIVIERI"
+        "ZWÖUFIACHTI"
+        "LSIBNIEFÜFI"
+        "EUFIZÄNIDRÜ"
+        "ZWÖINÜNIEIS"
+        "MMFTBSASQUT",
   ),
   timeCheckGrid: WordGrid.fromLetters(
     width: 11,
@@ -54,16 +54,16 @@ final germanAlternativeLanguage = WordClockLanguage(
   defaultGrid: WordGrid.fromLetters(
     width: 11,
     letters:
-        "ESLISTGFÜNF"
-        "ZEHNGFMWVOR"
+        "ESPISTKEINL"
         "DREIVIERTEL"
-        "NACHXKGHALB"
-        "ELFVIERACHT"
-        "ZWEIGGZWÖLF"
-        "JDREIUEINSU"
-        "SIEBENSECHS"
-        "ZEHNZLFÜNFX"
-        "LAWNEUNNUHR",
+        "WZEHNGIFÜNF"
+        "GPNACHFIVOR"
+        "HALBPSIEBEN"
+        "ZWÖLFUSECHS"
+        "ZEHNFÜNFELF"
+        "ACHTLDREINS"
+        "GZWEIMNNEUN"
+        "MWGVIERFUHR",
   ),
   timeCheckGrid: WordGrid.fromLetters(
     width: 11,
@@ -94,16 +94,16 @@ final swabianGermanLanguage = WordClockLanguage(
   defaultGrid: WordGrid.fromLetters(
     width: 11,
     letters:
-        "ISCHALBÜAAH"
-        "ESVZEHNEUNE"
-        "FÜNFSIEBNEU"
-        "NACHDFÜNFEÜ"
-        "VORAZWOIEAV"
-        "DREIVIERTLI"
-        "ZWÖLFEACHTE"
-        "SECHSEOISEN"
-        "DREIEEEXGIG"
-        "VIERELFEHÜF",
+        "ESÜISCHAAHV"
+        "UDREIVIERTL"
+        "DFÜNFÜAZEHN"
+        "AVNACHINVOR"
+        "HALBEZWÖLFE"
+        "SIEBNEDREIE"
+        "SECHSEVIERE"
+        "ZEHNEUNELFE"
+        "ZWOIEEFÜNFE"
+        "XOISEGACHTE",
   ),
   timeCheckGrid: WordGrid.fromLetters(
     width: 11,
@@ -130,20 +130,20 @@ final eastGermanLanguage = WordClockLanguage(
   description: 'Alternative 3',
   timeToWords: EastGermanTimeToWords(),
   paddingAlphabet: 'AFGIJKLMNPUWXZ',
-  // Seed: 1
+  // Seed: 0
   defaultGrid: WordGrid.fromLetters(
     width: 11,
     letters:
-        "ESGISTPZEHN"
-        "IFÜNFWNNACH"
-        "JJNVORJHALB"
+        "ESPISTKEINL"
         "DREIVIERTEL"
-        "ZEHNKISECHS"
-        "ELFEINSDREI"
-        "SIEBENFÜNFU"
-        "WJVIERUACHT"
-        "PZWEIWNEUNG"
-        "LAZWÖLFAUHR",
+        "WZEHNGIFÜNF"
+        "GPNACHFIVOR"
+        "HALBPSIEBEN"
+        "ZWÖLFUSECHS"
+        "ZEHNFÜNFELF"
+        "NEUNLZWEINS"
+        "GACHTMNDREI"
+        "MWGVIERFUHR",
   ),
   timeCheckGrid: WordGrid.fromLetters(
     width: 11,
@@ -170,20 +170,20 @@ final germanLanguage = WordClockLanguage(
   description: null,
   timeToWords: GermanTimeToWords(),
   paddingAlphabet: 'AFJKLMNPUX',
-  // Seed: 8
+  // Seed: 0
   defaultGrid: WordGrid.fromLetters(
     width: 11,
     letters:
-        "ESFISTMNFJJ"
+        "ESMISTXHALB"
+        "VIERTELLEIN"
         "ZWANZIGZEHN"
-        "VIERTELFÜNF"
-        "XVORPUNACHL"
-        "PHALBNDREIM"
-        "ZWÖLFSIEBEN"
-        "JNFACHTZWEI"
-        "ELFNEUNZEHN"
-        "FÜNFFSECHSU"
-        "EINSUHRVIER",
+        "XFÜNFNFNACH"
+        "LFVORFXHALB"
+        "SIEBENSECHS"
+        "XZWÖLFUZEHN"
+        "NEUNACHTELF"
+        "ZWEIJDREINS"
+        "VIERFÜNFUHR",
   ),
   timeCheckGrid: WordGrid.fromLetters(
     width: 11,

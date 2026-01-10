@@ -10,19 +10,21 @@ final portugueseLanguage = WordClockLanguage(
   description: null,
   timeToWords: PortugueseTimeToWords(),
   paddingAlphabet: 'ACEHLMOPVYZ',
+  // TODO: Fix to fit in an 11x10 grid.
   defaultGrid: WordGrid.fromLetters(
     width: 11,
     letters:
-        "SÃOITONOITE"
-        "EMENOSHORAS"
-        "CINCONZEEEL"
-        "VINTEUMAPOZ"
-        "DEZNOVEMEIO"
-        "QUARTOYDIAM"
-        "UMEIAHAHHEA"
-        "ÉQUATROPMCC"
-        "DUASEISAYAL"
-        "TRÊSETEOPMY",
+        "SÃOÉQUATROE"
+        "MEIONOVEUMA"
+        "SEISDUASETE"
+        "OITOTRÊSDIA"
+        "EONZELMENOS"
+        "CINCOPDEZOE"
+        "ZHORASYMEIA"
+        "NOITEHORAEM"
+        "MENOSHVINTE"
+        "MEIAADEZHUM"
+        "QUARTOCINCO",
   ),
   timeCheckGrid: WordGrid.fromLetters(
     width: 11,

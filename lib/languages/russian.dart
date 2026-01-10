@@ -10,19 +10,21 @@ final russianLanguage = WordClockLanguage(
   description: null,
   timeToWords: RussianTimeToWords(),
   paddingAlphabet: 'АДМРЯ',
+  // TODO: Fix to fit in an 11x10 grid.
   defaultGrid: WordGrid.fromLetters(
     width: 11,
     letters:
-        "МИНУТРИДВЕА"
-        "ЧАСОВОДИНЧЕ"
-        "ПЯТЬЯСЕМЬТЫ"
-        "ЦАТЬЯПЯТНАД"
-        "ЧАСАЯШЕСТЬД"
-        "ДЕСЯТВЯТЬДЯ"
-        "НАДЦАТЬДДЯЯ"
-        "СОРОКРЕРММД"
-        "СЯТЬЯМАРРРА"
-        "ДВАДАДДАМДЯ",
+        "ШЕСТЬОДИНЧЕ"
+        "ДВАТРИДВЕВО"
+        "НАДЦАТЬСЕМЬ"
+        "ТЫЧАСРЕПЯТЬ"
+        "ЧАСАДЕАВЯТЬ"
+        "ЯСЯТЬЯЧАСОВ"
+        "ПЯТНАДСОРОК"
+        "ЯДВАДАТРИДЕ"
+        "ЯТРИДРМЦАТЬ"
+        "ПЯТЬМДЕСЯТЬ"
+        "ДПЯТЬЯМИНУТ",
   ),
   timeCheckGrid: WordGrid.fromLetters(
     width: 11,

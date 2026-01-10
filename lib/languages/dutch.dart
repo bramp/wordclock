@@ -10,20 +10,19 @@ final dutchLanguage = WordClockLanguage(
   description: null,
   timeToWords: DutchTimeToWords(),
   paddingAlphabet: 'ACEGHKMOPSTZ',
-  // Seed: 0
   defaultGrid: WordGrid.fromLetters(
     width: 11,
     letters:
-        "HETGISEVIJF"
-        "TIENPKWARTC"
-        "SVOORAOVERE"
-        "HHALFCZEVEN"
-        "MACHTPNEGEN"
-        "ELFHTIENHKP"
-        "KMVIJFTÉÉNT"
-        "ZESZATWAALF"
-        "DRIEZOSTWEE"
-        "CKAVIERTUUR",
+        "HETGISKTIEN"
+        "HKWARTOVIJF"
+        "MOVERGEVOOR"
+        "HALFCTWAALF"
+        "CKZEVENEGEN"
+        "TIENVIJFELF"
+        "VIERACHTWEE"
+        "DRIEÉÉNZESG"
+        "TPAGECKPUUR"
+        "CZOMSAECHHM",
   ),
   timeCheckGrid: WordGrid.fromLetters(
     width: 11,

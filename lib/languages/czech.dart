@@ -14,15 +14,15 @@ final czechLanguage = WordClockLanguage(
     width: 11,
     letters:
         "JSOUJEČTYŘI"
-        "JEDENÁCTDVĚ"
-        "DVANÁCTSEDM"
-        "DEVĚTŠESTŘI"
-        "JEDNAOSMPĚT"
+        "JEDENÁCTPĚT"
+        "DVANÁCTŠEST"
+        "JEDNAOSMDVĚ"
+        "DEVĚTŘISEDM"
         "DESETNDESET"
-        "ČTYŘICETDAN"
+        "DANČTYŘICET"
         "PADESÁTNULA"
         "DVACETŘICET"
-        "PATNÁCTPĚTE",
+        "PATNÁCTEPĚT",
   ),
   timeCheckGrid: WordGrid.fromLetters(
     width: 11,

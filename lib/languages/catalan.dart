@@ -11,7 +11,20 @@ final catalanLanguage = WordClockLanguage(
   timeToWords: CatalanTimeToWords(),
   paddingAlphabet: 'ADEMNOPRUZ',
 
-  // TODO Add a defaultGrid
+  defaultGrid: WordGrid.fromLetters(
+    width: 11,
+    letters:
+        "SÓNÉSDOSLES"
+        "UNOLAZQUART"
+        "TRESNQUARTS"
+        "MENYSIZCINC"
+        "DED'QUATRESP"
+        "DDOTZENVUIT"
+        "DUESONZENOU"
+        "UNADSETDSIS"
+        "DEUZMENYSZI"
+        "UEEDNROCINC",
+  ),
   timeCheckGrid: WordGrid.fromLetters(
     width: 11,
     letters:

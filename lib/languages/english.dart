@@ -10,20 +10,19 @@ final englishAlternativeLanguage = WordClockLanguage(
   description: 'Alternative',
   timeToWords: EnglishAlternativeTimeToWords(),
   paddingAlphabet: 'ACDEFLMPRSUX',
-  // Seed: 53
   defaultGrid: WordGrid.fromLetters(
     width: 11,
     letters:
-        "QUITRISDALC"
-        "QUARTERRTER"
-        "TWENTYFIVEM"
-        "TENXFTOHALF"
-        "PASTMTHREEF"
-        "TENEONEFIVE"
-        "NINEELEVENE"
-        "SEVENTWELVE"
-        "SIXTWOEIGHT"
-        "FOURUO'CLOCK",
+        "ITEISLFIVEA"
+        "FTWENTYFIVE"
+        "PMHALFEDTEN"
+        "CQUARTERCTO"
+        "PASTLTWELVE"
+        "ELEVENEIGHT"
+        "SEVENETHREE"
+        "FIVENINETEN"
+        "UFOURRTWONE"
+        "ASIXEO'CLOCK",
   ),
   timeCheckGrid: WordGrid.fromLetters(
     width: 11,
@@ -50,20 +49,19 @@ final englishLanguage = WordClockLanguage(
   description: null,
   timeToWords: EnglishTimeToWords(),
   paddingAlphabet: 'ACDEFLMPRSUX',
-  // Seed: 1
   defaultGrid: WordGrid.fromLetters(
     width: 11,
     letters:
-        "ITEISDTENLF"
-        "ARQUARTERFM"
-        "CTWENTYFIVE"
-        "TOHALFCPAST"
-        "TWELVEEIGHT"
-        "FIVETWONINE"
-        "MSEVENEONEM"
-        "ELEVENFTENA"
-        "CSIXPTHREED"
-        "FOURDO'CLOCK",
+        "ITEISLFIVEF"
+        "PTWENTYFIVE"
+        "QUARTERHALF"
+        "MTENEDPASTO"
+        "TWELVELEVEN"
+        "EIGHTCSEVEN"
+        "CTHREELFIVE"
+        "NINEFOURTEN"
+        "ETWONEURSIX"
+        "AEDCLO'CLOCK",
   ),
   timeCheckGrid: WordGrid.fromLetters(
     width: 11,
