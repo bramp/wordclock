@@ -2,7 +2,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:wordclock/generator/backtracking/graph/graph_builder.dart';
 import 'package:wordclock/languages/all.dart';
 
-import 'test_helpers.dart';
+import '../../test_helpers.dart';
 
 void main() {
   group('WordDependencyGraph Methods', () {

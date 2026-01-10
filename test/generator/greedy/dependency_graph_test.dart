@@ -1,45 +1,8 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:wordclock/generator/greedy/dependency_graph.dart';
 import 'package:wordclock/generator/greedy/grid_generator.dart';
-import 'package:wordclock/languages/language.dart';
-import 'package:wordclock/logic/time_to_words.dart';
-
 import 'package:wordclock/logic/english_time_to_word.dart';
-
-WordClockLanguage createMockLanguage({
-  TimeToWords? timeToWords,
-  String? id,
-  String? languageCode,
-  String? displayName,
-  String? englishName,
-  String? paddingAlphabet,
-  int? minuteIncrement,
-  bool? atomizePhrases,
-  bool? requiresPadding,
-}) => WordClockLanguage(
-  id: id ?? 'mock',
-  languageCode: languageCode ?? 'mock',
-  displayName: displayName ?? 'Mock',
-  englishName: englishName ?? 'Mock',
-  timeToWords: timeToWords ?? SimpleConverter([]),
-  paddingAlphabet: paddingAlphabet ?? 'X',
-  minuteIncrement: minuteIncrement ?? 5,
-  atomizePhrases: atomizePhrases ?? false,
-  requiresPadding: requiresPadding ?? true,
-);
-
-class SimpleConverter implements TimeToWords {
-  final List<String> phrases;
-  const SimpleConverter(this.phrases);
-
-  @override
-  String convert(DateTime time) {
-    // Use the time to pick a phrase so it's stateless
-    int idx = (time.hour * 60 + time.minute) ~/ 5;
-    if (idx >= phrases.length) return phrases.last;
-    return phrases[idx];
-  }
-}
+import '../test_helpers.dart';
 
 void main() {
   test('Characters not shared between different words', () {
@@ -135,7 +98,7 @@ void main() {
     expect(grid, contains("DE"));
     expect(grid, contains("EF"));
 
-    expect(grid, "ABCXDEF");
+    expect(grid, "ABC·DEF");
   });
 
   test('Word overlap without gaps between phrases', () {

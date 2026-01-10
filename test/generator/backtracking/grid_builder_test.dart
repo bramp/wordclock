@@ -3,7 +3,7 @@ import 'package:wordclock/generator/backtracking/grid_builder.dart';
 import 'package:wordclock/generator/utils/grid_validator.dart';
 import 'package:wordclock/languages/all.dart';
 import 'package:wordclock/languages/english.dart';
-import 'graph/test_helpers.dart';
+import '../test_helpers.dart';
 
 void main() {
   for (final useFrontier in [true, false]) {

@@ -1,10 +1,7 @@
 import 'dart:math';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:wordclock/generator/backtracking/graph/word_node.dart';
 import 'package:wordclock/generator/backtracking/grid_post_processor.dart';
-import 'package:wordclock/generator/backtracking/grid_state.dart';
-import 'package:wordclock/languages/language.dart';
-import 'graph/test_helpers.dart';
+import '../test_helpers.dart';
 
 void main() {
   group('GridPostProcessor', () {
@@ -23,20 +20,6 @@ void main() {
       random = Random(0);
     });
 
-    Placement createPlacement(String word, int row, int col, int gridWidth) {
-      final node = WordNode(
-        word: word,
-        instance: 0,
-        cellCodes: codec.encodeAll(word.split('')),
-        phrases: {'PHRASE'},
-      );
-      return Placement(
-        node: node,
-        startOffset: row * gridWidth + col,
-        width: gridWidth,
-      );
-    }
-
     test('pushes first row words to the left', () {
       final processor = GridPostProcessor(
         width: 10,
@@ -46,8 +29,14 @@ void main() {
         codec: codec,
       );
 
-      final p1 = createPlacement('WORD', 0, 5, 10); // Row 0
-      final p2 = createPlacement('END', 1, 0, 10); // Row 1 (last row)
+      final p1 = createPlacement('WORD', 0, 5, 10, codec: codec); // Row 0
+      final p2 = createPlacement(
+        'END',
+        1,
+        0,
+        10,
+        codec: codec,
+      ); // Row 1 (last row)
       final result = processor.process([p1, p2]);
 
       // Row 0 is first row with words -> push left -> startCol 0
@@ -67,8 +56,20 @@ void main() {
         codec: codec,
       );
 
-      final p1 = createPlacement('WORD', 0, 0, 10); // Row 0 (first row)
-      final p2 = createPlacement('END', 1, 0, 10); // Row 1 (last row)
+      final p1 = createPlacement(
+        'WORD',
+        0,
+        0,
+        10,
+        codec: codec,
+      ); // Row 0 (first row)
+      final p2 = createPlacement(
+        'END',
+        1,
+        0,
+        10,
+        codec: codec,
+      ); // Row 1 (last row)
       final result = processor.process([p1, p2]);
 
       // Row 1 is last row with words -> push right -> startCol 7
@@ -88,10 +89,16 @@ void main() {
         codec: codec,
       );
 
-      final p1 = createPlacement('START', 0, 0, 10); // Row 0 (first)
-      final p2 = createPlacement('A', 1, 0, 10); // Row 1 (middle)
-      final p3 = createPlacement('B', 1, 2, 10); // Row 1 (middle)
-      final p4 = createPlacement('END', 2, 0, 10); // Row 2 (last)
+      final p1 = createPlacement(
+        'START',
+        0,
+        0,
+        10,
+        codec: codec,
+      ); // Row 0 (first)
+      final p2 = createPlacement('A', 1, 0, 10, codec: codec); // Row 1 (middle)
+      final p3 = createPlacement('B', 1, 2, 10, codec: codec); // Row 1 (middle)
+      final p4 = createPlacement('END', 2, 0, 10, codec: codec); // Row 2 (last)
 
       final result = processor.process([p1, p2, p3, p4]);
 
@@ -123,10 +130,10 @@ void main() {
         codec: codec,
       );
 
-      final pStart = createPlacement('START', 0, 0, 10);
-      final p1 = createPlacement('A', 1, 0, 10);
-      final p2 = createPlacement('B', 1, 2, 10);
-      final pEnd = createPlacement('END', 2, 0, 10);
+      final pStart = createPlacement('START', 0, 0, 10, codec: codec);
+      final p1 = createPlacement('A', 1, 0, 10, codec: codec);
+      final p2 = createPlacement('B', 1, 2, 10, codec: codec);
+      final pEnd = createPlacement('END', 2, 0, 10, codec: codec);
 
       final result = processor.process([pStart, p1, p2, pEnd]);
 
@@ -151,11 +158,11 @@ void main() {
         codec: codec,
       );
 
-      final pStart = createPlacement('START', 0, 0, 10);
+      final pStart = createPlacement('START', 0, 0, 10, codec: codec);
       // Row 1 (middle): overlap
-      final p1 = createPlacement('ABC', 1, 0, 10);
-      final p2 = createPlacement('B', 1, 1, 10);
-      final pEnd = createPlacement('END', 2, 0, 10);
+      final p1 = createPlacement('ABC', 1, 0, 10, codec: codec);
+      final p2 = createPlacement('B', 1, 1, 10, codec: codec);
+      final pEnd = createPlacement('END', 2, 0, 10, codec: codec);
 
       final result = processor.process([pStart, p1, p2, pEnd]);
 

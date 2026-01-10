@@ -1,35 +1,8 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:wordclock/generator/backtracking/grid_builder.dart';
 import 'package:wordclock/generator/backtracking/grid_state.dart';
-import 'package:wordclock/generator/backtracking/graph/dependency_graph.dart';
 import 'package:wordclock/generator/backtracking/graph/graph_builder.dart';
-import 'package:wordclock/generator/backtracking/graph/word_node.dart';
-import 'graph/test_helpers.dart';
-
-/// Helper to set up builder with graph
-void setupBuilder(BacktrackingGridBuilder builder, WordDependencyGraph graph) {
-  builder.graph = graph;
-  builder.codec = graph.codec;
-}
-
-/// Helper to place a word and update the trie cache (mimics what _solve does)
-Placement? placeWordWithCache(GridState state, WordNode node, int offset) {
-  final placement = state.placeWord(node, offset);
-  if (placement != null) {
-    // Update trie cache with end offset
-    final endOffset = offset + placement.length - 1;
-    for (final trieNode in node.ownedTrieNodes) {
-      trieNode.endOffset = endOffset;
-    }
-  }
-  return placement;
-}
-
-/// Helper to convert 1D offset to (row, col)
-(int row, int col) offsetToRowCol(int offset, int width) {
-  if (offset == -1) return (-1, -1);
-  return (offset ~/ width, offset % width);
-}
+import '../test_helpers.dart';
 
 void main() {
   group('_findEarliestPlacementByPhrase', () {
