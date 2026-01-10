@@ -23,7 +23,7 @@ class GridPostProcessor {
   }) : paddingCells = WordGrid.splitIntoCells(language.paddingAlphabet);
 
   /// Processes the placements and returns the final grid cells.
-  GridPostProcessResult process(List<WordPlacement> placements) {
+  GridPostProcessResult process(List<Placement> placements) {
     // 1. Distribute padding horizontally
     final shifted = distributePadding(placements);
 
@@ -39,8 +39,8 @@ class GridPostProcessor {
   /// Distributes trailing padding horizontally for each row.
   /// Last row: all padding moves to the left (words pushed right).
   /// Other rows: padding is distributed between the left and internal gaps.
-  List<WordPlacement> distributePadding(List<WordPlacement> original) {
-    final allPlacements = List<WordPlacement>.from(original);
+  List<Placement> distributePadding(List<Placement> original) {
+    final allPlacements = List<Placement>.from(original);
 
     // Find the first and last rows that actually contain words
     int firstRowWithWords = -1;
@@ -125,7 +125,7 @@ class GridPostProcessor {
   }
 
   /// Generates a grid from a list of placements
-  List<Cell?> generateGrid(List<WordPlacement> placements) {
+  List<Cell?> generateGrid(List<Placement> placements) {
     final grid = List<Cell?>.filled(width * height, null);
     for (final p in placements) {
       final cellCodes = p.node.cellCodes;
@@ -149,22 +149,22 @@ class GridPostProcessor {
 /// Result of the post-processing step.
 class GridPostProcessResult {
   final List<Cell> grid;
-  final List<WordPlacement> placements;
+  final List<Placement> placements;
 
   GridPostProcessResult({required this.grid, required this.placements});
 }
 
 /// A cluster of overlapping word placements on a single row.
 class _Cluster {
-  final List<WordPlacement> members = [];
+  final List<Placement> members = [];
   int startCol;
   int endCol;
 
-  _Cluster(WordPlacement p) : startCol = p.startCol, endCol = p.endCol {
+  _Cluster(Placement p) : startCol = p.startCol, endCol = p.endCol {
     members.add(p);
   }
 
-  void add(WordPlacement p) {
+  void add(Placement p) {
     members.add(p);
     if (p.startCol < startCol) startCol = p.startCol;
     if (p.endCol > endCol) endCol = p.endCol;

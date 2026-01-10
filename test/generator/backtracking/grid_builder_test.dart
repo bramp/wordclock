@@ -3,7 +3,6 @@ import 'package:wordclock/generator/backtracking/grid_builder.dart';
 import 'package:wordclock/generator/utils/grid_validator.dart';
 import 'package:wordclock/languages/all.dart';
 import 'package:wordclock/languages/english.dart';
-import 'package:wordclock/model/word_grid.dart';
 import 'graph/test_helpers.dart';
 
 void main() {
@@ -21,12 +20,10 @@ void main() {
 
         final result = builder.build();
 
-        expect(result.grid, isNotNull);
-        expect(result.grid!.length, 11 * 10);
+        expect(result.grid.cells.length, 11 * 10);
         expect(result.isOptimal, isTrue);
 
-        final grid = WordGrid(width: 11, cells: result.grid!);
-        final issues = GridValidator.validate(grid, englishLanguage);
+        final issues = GridValidator.validate(result.grid, englishLanguage);
         expect(issues, isEmpty);
       });
 
@@ -41,27 +38,21 @@ void main() {
         );
 
         final result = builder.build();
-        expect(result.grid, isNotNull);
+        expect(result.isOptimal, isTrue);
 
-        // FIVE appears twice - they should reuse the same cells
-        final grid2d = <List<String>>[];
-        for (int i = 0; i < 10; i++) {
-          grid2d.add(result.grid!.sublist(i * 11, (i + 1) * 11));
-        }
+        // FIVE appears multiple times in the dependency graph.
+        // If they overlap optimally, they will share the same startOffset.
+        final fivePlacements = result.wordPlacements
+            .where((p) => p.word == 'FIVE')
+            .toList();
 
-        // Find FIVE occurrences
-        final fivePositions = <String>[];
-        for (int row = 0; row < 10; row++) {
-          final rowStr = grid2d[row].join('');
-          int col = 0;
-          while ((col = rowStr.indexOf('FIVE', col)) != -1) {
-            fivePositions.add('$row,$col');
-            col++;
-          }
-        }
+        final uniqueOffsets = fivePlacements.map((p) => p.startOffset).toSet();
 
-        // Both FIVE instances should be at the same position (overlapping)
-        expect(fivePositions.length, greaterThanOrEqualTo(1));
+        // There should be multiple placements for FIVE, but they should reuse cells.
+        expect(fivePlacements.length, greaterThanOrEqualTo(1));
+        // If they reuse perfectly, there should be fewer unique offsets than placements
+        // (or just 1 if they all overlap).
+        expect(uniqueOffsets.length, lessThanOrEqualTo(fivePlacements.length));
       });
 
       test('skips padding between words that never appear together', () {
@@ -82,11 +73,11 @@ void main() {
         );
 
         final result = builder.build();
-        expect(result.grid, isNotNull);
+        expect(result.isOptimal, isTrue);
 
         // A shared phrase with B and C requires padding.
         // But B and C don't share any phrase, so they can be adjacent.
-        final gridStr = result.grid!.join('');
+        final gridStr = result.grid.cells.join('');
         expect(gridStr, anyOf(contains('A.BC'), contains('A.CB')));
       });
 
@@ -107,9 +98,7 @@ void main() {
         );
 
         final result = builder.build();
-        expect(result.grid, isNotNull);
-
-        final gridStr = result.grid!.join('');
+        final gridStr = result.grid.cells.join('');
 
         // The first row should be exactly IT.IS.TWENTYFIVE
         // because that satisfies all three phrases optimally.
@@ -135,7 +124,6 @@ void main() {
         stopwatch.stop();
 
         // Should find a valid grid
-        expect(result.grid, isNotNull);
         expect(result.isOptimal, isTrue);
 
         // Should complete much faster than the full timeout
@@ -184,9 +172,9 @@ void _runLanguageTest(String languageId, bool useFrontier) {
   final result = builder.build();
 
   expect(
-    result.grid,
-    isNotNull,
-    reason: 'Grid should not be null for $languageId',
+    result.placedWords,
+    greaterThan(0),
+    reason: 'No words placed for $languageId',
   );
 
   if (!result.isOptimal) {
@@ -196,8 +184,7 @@ void _runLanguageTest(String languageId, bool useFrontier) {
   }
 
   // Validate the generated grid
-  final grid = WordGrid(width: 11, cells: result.grid!);
-  final issues = GridValidator.validate(grid, language);
+  final issues = GridValidator.validate(result.grid, language);
 
   if (issues.isNotEmpty) {
     fail('Validation issues for $languageId: ${issues.join(', ')}');

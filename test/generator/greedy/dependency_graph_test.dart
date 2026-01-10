@@ -114,7 +114,7 @@ void main() {
       seed: 42,
       width: 7,
       targetHeight: 1,
-    ).join('');
+    ).cells.join('');
 
     expect(grid, contains("ABC"));
     expect(grid, contains("DEF"));
@@ -150,7 +150,7 @@ void main() {
       seed: 42,
       width: 10,
       targetHeight: 1,
-    ).join('');
+    ).cells.join('');
 
     expect(grid, contains("PAST"));
     expect(grid, contains("P"));
@@ -170,7 +170,7 @@ void main() {
         seed: 42,
         width: 15,
         targetHeight: 3,
-      ).join('');
+      ).cells.join('');
 
       // Line 1: FIRST (5 chars) + 10 padding at end
       // Line 2: MIDDLE (6) + gap (1) + WORD (4) = 11 chars. 4 padding distributed.

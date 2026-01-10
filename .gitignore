@@ -48,3 +48,5 @@ app.*.map.json
 ScriptableWordClockWidget
 assets/timecheck_languages.json
 check-new.js
+
+bin/grid_builder

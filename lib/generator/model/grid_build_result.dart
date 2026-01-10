@@ -1,4 +1,5 @@
-import 'package:wordclock/generator/backtracking/grid_state.dart';
+import 'package:wordclock/model/word_grid.dart';
+import 'package:wordclock/generator/model/word_placement.dart';
 
 /// Reason why the grid building stopped
 enum StopReason {
@@ -17,10 +18,9 @@ enum StopReason {
 
 /// Result of building a grid
 class GridBuildResult {
-  final List<String>? grid;
+  final WordGrid grid;
   final List<String> validationIssues;
   final int totalWords;
-  final int placedWords;
 
   /// Information about each placed word (for visualization)
   final List<WordPlacement> wordPlacements;
@@ -38,12 +38,13 @@ class GridBuildResult {
     required this.grid,
     required this.validationIssues,
     required this.totalWords,
-    required this.placedWords,
     this.wordPlacements = const [],
     this.iterationCount = 0,
     this.startTime,
     this.stopReason = StopReason.completed,
   });
+
+  int get placedWords => wordPlacements.length;
 
   bool get isOptimal => validationIssues.isEmpty && placedWords == totalWords;
 }

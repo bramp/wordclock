@@ -1,5 +1,6 @@
 import 'dart:typed_data';
 import 'package:wordclock/generator/backtracking/graph/word_node.dart';
+import 'package:wordclock/generator/model/word_placement.dart' as public;
 import 'package:wordclock/generator/utils/grid_validator.dart';
 import 'package:wordclock/model/types.dart';
 
@@ -7,7 +8,7 @@ import 'package:wordclock/model/types.dart';
 const int emptyCell = -1;
 
 /// Represents a placed word on the grid.
-class WordPlacement {
+class Placement {
   /// The word node that was placed
   final WordNode node;
 
@@ -16,9 +17,6 @@ class WordPlacement {
 
   /// Grid width (needed to derive row/col)
   final int width;
-
-  /// The word text
-  String get word => node.word;
 
   /// Row where the word starts (0-based)
   int get row => startOffset ~/ width;
@@ -35,23 +33,27 @@ class WordPlacement {
   /// Length of the word in cells
   int get length => node.cellCodes.length;
 
-  WordPlacement({
+  /// Convert to solver-agnostic placement for reporting
+  public.WordPlacement toPublic() => public.WordPlacement(
+    word: node.word,
+    startOffset: startOffset,
+    width: width,
+    length: length,
+  );
+
+  Placement({
     required this.node,
     required this.startOffset,
     required this.width,
   });
 
   /// Create a new placement shifted to a specific row and column.
-  WordPlacement shiftedTo(int row, int col) {
-    return WordPlacement(
-      node: node,
-      startOffset: row * width + col,
-      width: width,
-    );
+  Placement shiftedTo(int row, int col) {
+    return Placement(node: node, startOffset: row * width + col, width: width);
   }
 
   /// Check if this placement comes after [other] in reading order
-  bool comesAfter(WordPlacement other) {
+  bool comesAfter(Placement other) {
     // Use shared validation logic
     return GridValidator.canPlaceAfter(
       prevEndRow: other.row,
@@ -63,7 +65,7 @@ class WordPlacement {
   }
 
   /// Check if this placement has proper separation from [other] on the same row
-  bool hasSeparationFrom(WordPlacement other, {required bool requiresPadding}) {
+  bool hasSeparationFrom(Placement other, {required bool requiresPadding}) {
     // Use shared validation logic
     return GridValidator.hasSeparation(
       word1Row: other.row,
@@ -77,7 +79,7 @@ class WordPlacement {
   }
 
   @override
-  String toString() => 'WordPlacement(${node.id}@($row,$startCol-$endCol))';
+  String toString() => 'Placement(${node.id}@($row,$startCol-$endCol))';
 }
 
 /// Represents the current state of the grid during backtracking.
@@ -103,7 +105,7 @@ class GridState {
   final int height;
 
   /// Track word placements as a stack (LIFO for backtracking)
-  final List<WordPlacement> _placementStack;
+  final List<Placement> _placementStack;
 
   int _filledCellsCount = 0;
   int _totalWordsLength = 0;
@@ -112,7 +114,7 @@ class GridState {
   int get placementCount => _placementStack.length;
 
   /// Direct access to placement stack (for efficient indexed access)
-  List<WordPlacement> get placements => _placementStack;
+  List<Placement> get placements => _placementStack;
 
   /// Total unique cells filled
   int get filledCells => _filledCellsCount;
@@ -195,7 +197,7 @@ class GridState {
   /// **Performance note:** If you've already validated the placement via
   /// [findEarliestPlacementByPhrase] or similar, use [placeWordUnchecked]
   /// instead to avoid redundant validation.
-  WordPlacement? placeWord(WordNode node, int offset) {
+  Placement? placeWord(WordNode node, int offset) {
     if (!canPlaceWord(node.cellCodes, offset)) return null;
     return placeWordUnchecked(node, offset);
   }
@@ -211,7 +213,7 @@ class GridState {
   /// - `offset >= 0`
   /// - Word fits on the row: `offset % width + node.cellCodes.length <= width`
   /// - All cells are either empty or match the word's cell codes
-  WordPlacement placeWordUnchecked(WordNode node, int offset) {
+  Placement placeWordUnchecked(WordNode node, int offset) {
     // Place the word using cell codes
     final cellCodes = node.cellCodes;
     for (int i = 0; i < cellCodes.length; i++) {
@@ -226,11 +228,7 @@ class GridState {
     _totalWordsLength += cellCodes.length;
 
     // Create placement record
-    final placement = WordPlacement(
-      node: node,
-      startOffset: offset,
-      width: width,
-    );
+    final placement = Placement(node: node, startOffset: offset, width: width);
 
     // Record placement (push to stack)
     _placementStack.add(placement);
@@ -240,7 +238,7 @@ class GridState {
 
   /// Remove a placed word from the grid (backtracking support)
   /// Note: Must be called in LIFO order (most recent placement first)
-  void removePlacement(WordPlacement placement) {
+  void removePlacement(Placement placement) {
     // Pop from stack (assert LIFO order)
     assert(
       _placementStack.isNotEmpty && _placementStack.last == placement,

@@ -13,7 +13,7 @@ void setupBuilder(BacktrackingGridBuilder builder, WordDependencyGraph graph) {
 }
 
 /// Helper to place a word and update the trie cache (mimics what _solve does)
-WordPlacement? placeWordWithCache(GridState state, WordNode node, int offset) {
+Placement? placeWordWithCache(GridState state, WordNode node, int offset) {
   final placement = state.placeWord(node, offset);
   if (placement != null) {
     // Update trie cache with end offset

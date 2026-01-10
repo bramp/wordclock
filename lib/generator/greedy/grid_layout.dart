@@ -23,15 +23,17 @@ class GridLayout {
   ///
   /// Example:
   /// ```dart
-  /// final cells = GridLayout.generateCells(
+  /// final result = GridLayout.generateCells(
   ///   11,
   ///   nodes,
   ///   graph,
   ///   random,
   ///   paddingAlphabet: 'ABCDEFGHIJKLMNOPQRSTUVWXYZ',
   /// );
+  /// final cells = result.cells;
+  /// final placements = result.placements;
   /// ```
-  static List<String> generateCells(
+  static ({List<String> cells, List<RawPlacement> placements}) generateCells(
     int width,
     List<Node> orderedResult,
     Graph graph,
@@ -50,7 +52,8 @@ class GridLayout {
       requiresPadding: requiresPadding,
       targetHeight: targetHeight,
     );
-    return session.generate();
+    final cells = session.generate();
+    return (cells: cells, placements: session.placements);
   }
 
   /// Generates a random sequence of padding characters of the given [length].
@@ -67,6 +70,14 @@ class GridLayout {
       (index) => paddingCells[random.nextInt(paddingCells.length)],
     );
   }
+}
+
+/// A simple internal representation of a word placement for the greedy algorithm
+class RawPlacement {
+  final String word;
+  final int startOffset;
+  final int length;
+  RawPlacement(this.word, this.startOffset, this.length);
 }
 
 /// Internal state for a single grid generation pass.
@@ -88,6 +99,8 @@ class _GridLayoutSession {
 
   late final Node? _firstNode;
   late final Node? _lastNode;
+
+  final List<RawPlacement> placements = [];
 
   _GridLayoutSession({
     required this.width,
@@ -345,38 +358,73 @@ class _GridLayoutSession {
     }
   }
 
+  List<_GridItem> _generatePaddingItems(int length) {
+    if (length <= 0) return [];
+    final padding = GridLayout._generatePadding(length, random, paddingCells);
+    return padding.map((p) => _GridItem(p)).toList();
+  }
+
   /// Flushes the current line to the buffer, applying padding and pinning.
-  ///
-  /// If the line is shorter than [width], it fills the remaining space with padding.
-  /// It also handles "pinning" the first and last nodes of the entire grid to the
-  /// top-left and bottom-right corners respectively, if possible.
   void _flushLine({required bool isLastLine}) {
     if (_currentLineItems.isEmpty) return;
 
     final int paddingTotal = max(0, width - _currentLineLength);
-    final List<String> lineCells = [];
+    final List<_GridItem> lineItems = [];
 
     // 1. PIN TOP-LEFT
     if (_containsNode(_firstNode) &&
         _currentLineItems.first.node == _firstNode) {
-      lineCells.addAll(_currentLineItems.map((e) => e.char));
-      lineCells.addAll(
-        GridLayout._generatePadding(paddingTotal, random, paddingCells),
-      );
+      lineItems.addAll(_currentLineItems);
+      lineItems.addAll(_generatePaddingItems(paddingTotal));
     }
     // 2. PIN BOTTOM-RIGHT
     else if (isLastLine && _containsNode(_lastNode)) {
-      lineCells.addAll(
-        GridLayout._generatePadding(paddingTotal, random, paddingCells),
-      );
-      lineCells.addAll(_currentLineItems.map((e) => e.char));
+      lineItems.addAll(_generatePaddingItems(paddingTotal));
+      lineItems.addAll(_currentLineItems);
     }
     // 3. RANDOM SCATTER
     else {
-      lineCells.addAll(_distributePadding(paddingTotal));
+      lineItems.addAll(_distributePaddingItems(paddingTotal));
     }
 
-    _cells.addAll(lineCells);
+    // Record placements
+    final int rowOffset = _cells.length;
+
+    String? currentWord;
+    int? wordStart;
+    int wordLen = 0;
+
+    void flushWord() {
+      if (currentWord != null && wordStart != null) {
+        placements.add(
+          RawPlacement(currentWord!, rowOffset + wordStart!, wordLen),
+        );
+      }
+      currentWord = null;
+      wordStart = null;
+      wordLen = 0;
+    }
+
+    for (int i = 0; i < lineItems.length; i++) {
+      final item = lineItems[i];
+      final node = item.node;
+
+      if (node != null) {
+        if (currentWord != node.word) {
+          flushWord();
+          currentWord = node.word;
+          wordStart = i;
+          wordLen = 1;
+        } else {
+          wordLen++;
+        }
+      } else {
+        flushWord();
+      }
+    }
+    flushWord();
+
+    _cells.addAll(lineItems.map((e) => e.char));
     _currentLineItems = [];
     _currentLineLength = 0;
   }
@@ -387,7 +435,7 @@ class _GridLayoutSession {
   }
 
   /// Randomly distributes padding across all slots (before, after, and between atoms).
-  List<String> _distributePadding(int paddingTotal) {
+  List<_GridItem> _distributePaddingItems(int paddingTotal) {
     final atoms = _groupItemsIntoAtoms();
     final int numSlots = atoms.length + 1;
     final slotPaddings = List.filled(numSlots, 0);
@@ -396,23 +444,19 @@ class _GridLayoutSession {
       slotPaddings[random.nextInt(numSlots)]++;
     }
 
-    final List<String> lineCells = [];
+    final List<_GridItem> lineItems = [];
     for (int s = 0; s < atoms.length; s++) {
-      lineCells.addAll(
-        GridLayout._generatePadding(slotPaddings[s], random, paddingCells),
-      );
-      lineCells.addAll(atoms[s]);
+      lineItems.addAll(_generatePaddingItems(slotPaddings[s]));
+      lineItems.addAll(atoms[s]);
     }
-    lineCells.addAll(
-      GridLayout._generatePadding(slotPaddings.last, random, paddingCells),
-    );
-    return lineCells;
+    lineItems.addAll(_generatePaddingItems(slotPaddings.last));
+    return lineItems;
   }
 
   /// Groups GridItems into "atoms" (contiguous words or single gaps) that shouldn't be split by padding.
-  List<List<String>> _groupItemsIntoAtoms() {
-    List<List<String>> atoms = [];
-    List<String> currentAtom = [];
+  List<List<_GridItem>> _groupItemsIntoAtoms() {
+    List<List<_GridItem>> atoms = [];
+    List<_GridItem> currentAtom = [];
     String? currentAtomName;
 
     for (final item in _currentLineItems) {
@@ -422,15 +466,15 @@ class _GridLayoutSession {
           currentAtom = [];
           currentAtomName = null;
         }
-        atoms.add([item.char]);
+        atoms.add([item]);
       } else {
         if (currentAtomName != null && item.node!.word == currentAtomName) {
-          currentAtom.add(item.char);
+          currentAtom.add(item);
         } else {
           if (currentAtom.isNotEmpty) {
             atoms.add(currentAtom);
           }
-          currentAtom = [item.char];
+          currentAtom = [item];
           currentAtomName = item.node!.word;
         }
       }

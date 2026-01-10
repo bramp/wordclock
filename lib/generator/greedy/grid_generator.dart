@@ -31,7 +31,7 @@ class GridGenerator {
   ///   seed: 42,
   /// );
   /// ```
-  static List<String> generate({
+  static ({List<String> cells, List<RawPlacement> placements}) generate({
     required int width,
     int? seed,
     WordClockLanguage? language,
@@ -47,6 +47,14 @@ class GridGenerator {
       graph,
       random: seed != null ? random : null,
     );
+
+    if (sortedNodes.isEmpty) {
+      return (
+        cells: List.filled(width * targetHeight, ' '),
+        placements: const [],
+      );
+    }
+
     return GridLayout.generateCells(
       width,
       sortedNodes,

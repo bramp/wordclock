@@ -101,12 +101,7 @@ class SettingsController extends ChangeNotifier {
         seed: _gridSeed ?? 0,
       );
       final result = builder.build();
-      if (result.grid != null) {
-        _currentGrid = WordGrid(width: 11, cells: result.grid!);
-      } else {
-        // Fallback to empty grid or something if it fails
-        _currentGrid = WordGrid(width: 11, cells: List.filled(110, ' '));
-      }
+      _currentGrid = result.grid;
     }
   }
 

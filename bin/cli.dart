@@ -1,7 +1,6 @@
 // ignore_for_file: avoid_print
 import 'dart:io';
 
-import 'package:wordclock/generator/greedy/grid_generator.dart';
 import 'package:wordclock/languages/all.dart';
 import 'package:wordclock/languages/language.dart';
 import 'package:wordclock/model/word_grid.dart';
@@ -14,8 +13,6 @@ bool needsWideMode(List<String> cells) => cells.any((c) => c.runes.any(isWide));
 
 void main(List<String> args) {
   // Defaults
-  int width = 11;
-  int? seed;
   List<String> languages = ['EN'];
   DateTime now = DateTime.now();
 
@@ -30,10 +27,6 @@ void main(List<String> args) {
       } else {
         languages = raw.split(',');
       }
-    } else if (arg.startsWith('--width=')) {
-      width = int.parse(arg.substring(8));
-    } else if (arg.startsWith('--seed=')) {
-      seed = int.tryParse(arg.substring(7));
     } else if (!arg.startsWith('--')) {
       // Assume time in HH:mm
       try {
@@ -55,11 +48,11 @@ void main(List<String> args) {
   );
 
   for (final lang in languages) {
-    _processLanguage(lang, width, seed, now);
+    _processLanguage(lang, now);
   }
 }
 
-void _processLanguage(String lang, int width, int? seed, DateTime now) {
+void _processLanguage(String lang, DateTime now) {
   print('\n=== Language: $lang ===');
 
   // Select Language
@@ -68,7 +61,7 @@ void _processLanguage(String lang, int width, int? seed, DateTime now) {
     orElse: () => throw ArgumentError('Unsupported language: $lang'),
   );
 
-  final grid = _getOrGenerateGrid(language, width, seed);
+  final grid = _getGrid(language);
 
   final phrase = language.timeToWords.convert(now);
   print('Phrase: "$phrase"');
@@ -79,6 +72,14 @@ void _processLanguage(String lang, int width, int? seed, DateTime now) {
     requiresPadding: language.requiresPadding,
   );
   _printGrid(grid, activeIndices);
+}
+
+WordGrid _getGrid(WordClockLanguage language) {
+  if (language.defaultGrid == null) {
+    throw ArgumentError('Language "${language.id}" has no default grid.');
+  }
+
+  return language.defaultGrid!;
 }
 
 void _printGrid(WordGrid grid, Set<int> activeIndices) {
@@ -134,38 +135,4 @@ void _printGrid(WordGrid grid, Set<int> activeIndices) {
   buffer.writeln('+${'-' * dashCount}+');
 
   print(buffer.toString());
-}
-
-WordGrid _getOrGenerateGrid(WordClockLanguage language, int width, int? seed) {
-  // Use default grid if available and parameters match (or seed not specified)
-  if (language.defaultGrid != null &&
-      seed == null &&
-      (width == 11 || width == language.defaultGrid!.width)) {
-    // Check if width is compatible
-    if (width == language.defaultGrid!.width) {
-      print('Using defaultGrid for lang="${language.id}"');
-      return language.defaultGrid!;
-    } else {
-      // Width mismatch (user requested different width, or default 11 != grid width)
-      print(
-        'Generating grid for lang="${language.id}", width=$width, seed=$seed...',
-      );
-      final letters = GridGenerator.generate(
-        width: width,
-        seed: seed,
-        language: language,
-      );
-      return WordGrid(width: width, cells: letters);
-    }
-  } else {
-    print(
-      'Generating grid for lang="${language.id}", width=$width, seed=$seed...',
-    );
-    final letters = GridGenerator.generate(
-      width: width,
-      seed: seed,
-      language: language,
-    );
-    return WordGrid(width: width, cells: letters);
-  }
 }

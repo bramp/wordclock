@@ -50,15 +50,9 @@ class WordNode {
   final Set<String> phrases;
 
   /// Links to all PhraseTrieNode instances representing this word in phrases.
-  /// These are the TERMINAL nodes of predecessor sequences - i.e., the last
-  /// word before the word we're trying to place.
-  /// Populated by [WordDependencyGraphBuilder] after graph construction.
   final List<PhraseTrieNode> phraseTrieNodes = [];
 
-  /// Links to PhraseTrieNode instances that this WordNode "owns" - i.e., trie
-  /// nodes where this WordNode IS the predecessor word. When this WordNode is
-  /// placed, it should update these nodes' cachedPosition. When removed, clear them.
-  /// Populated by [WordDependencyGraphBuilder] after graph construction.
+  /// Links to PhraseTrieNode instances that this WordNode "owns"
   final List<PhraseTrieNode> ownedTrieNodes = [];
 
   /// True if any phrase has this word as the first word (no predecessors)

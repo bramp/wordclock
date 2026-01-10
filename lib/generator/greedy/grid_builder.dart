@@ -1,9 +1,11 @@
 import 'package:wordclock/generator/greedy/grid_generator.dart';
-import 'package:wordclock/generator/utils/grid_build_result.dart';
+import 'package:wordclock/generator/greedy/grid_layout.dart';
+import 'package:wordclock/generator/model/grid_build_result.dart';
 import 'package:wordclock/generator/utils/grid_validator.dart';
 import 'package:wordclock/generator/utils/word_clock_utils.dart';
 import 'package:wordclock/languages/language.dart';
 import 'package:wordclock/model/word_grid.dart';
+import 'package:wordclock/generator/model/word_placement.dart';
 
 /// A greedy grid builder that generates word clock grids.
 ///
@@ -39,11 +41,11 @@ class GreedyGridBuilder {
     final totalWords = uniqueWords.length;
 
     // Try to generate grid with user-provided seed
-    List<String>? cells;
+    ({List<String> cells, List<RawPlacement> placements})? genResult;
     String? errorMessage;
 
     try {
-      cells = GridGenerator.generate(
+      genResult = GridGenerator.generate(
         width: width,
         seed: seed,
         language: language,
@@ -53,14 +55,15 @@ class GreedyGridBuilder {
       errorMessage = e.toString();
     }
 
-    if (cells == null) {
+    if (genResult == null) {
       return GridBuildResult(
-        grid: null,
+        grid: WordGrid(width: width, cells: List.filled(width * height, ' ')),
         validationIssues: [errorMessage ?? 'Failed to generate grid'],
         totalWords: totalWords,
-        placedWords: 0,
       );
     }
+
+    final cells = genResult.cells;
 
     // Merge cells (handle apostrophes)
     final mergedCells = WordGrid.splitIntoCells(
@@ -74,7 +77,7 @@ class GreedyGridBuilder {
     List<String> finalCells;
     if (actualHeight < height) {
       // Pad with spaces
-      finalCells = List<String>.from(mergedCells);
+      finalCells = List.from(mergedCells);
       final needed = (height * width) - mergedCells.length;
       finalCells.addAll(List.filled(needed, ' '));
     } else if (actualHeight > height) {
@@ -84,23 +87,29 @@ class GreedyGridBuilder {
       finalCells = mergedCells;
     }
 
-    // Validate the grid
     final wordGrid = WordGrid(width: width, cells: finalCells);
+
+    // Build WordPlacements from raw placements
+    // Note: greedy placements might be truncated if they were past height
+    final wordPlacements = [
+      for (final raw in genResult.placements)
+        if (raw.startOffset < wordGrid.cells.length)
+          WordPlacement(
+            word: raw.word,
+            startOffset: raw.startOffset,
+            width: width,
+            length: raw.length,
+          ),
+    ];
+
+    // Validate the grid
     final issues = GridValidator.validate(wordGrid, language);
 
-    // Estimate placed words based on validation
-    int placedWords = totalWords;
-    if (issues.isNotEmpty) {
-      // Some words missing - count from validation issues
-      final missingCount = issues.where((i) => i.contains('not found')).length;
-      placedWords = totalWords - missingCount;
-    }
-
     return GridBuildResult(
-      grid: finalCells,
+      grid: wordGrid,
       validationIssues: issues,
       totalWords: totalWords,
-      placedWords: placedWords,
+      wordPlacements: wordPlacements,
     );
   }
 }

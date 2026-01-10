@@ -6,52 +6,13 @@ import 'package:wordclock/generator/backtracking/graph/word_node.dart';
 import 'package:wordclock/generator/backtracking/graph/phrase_trie.dart';
 import 'package:wordclock/generator/backtracking/indexed_word_list.dart';
 import 'package:wordclock/generator/backtracking/grid_post_processor.dart';
-import 'package:wordclock/generator/utils/grid_build_result.dart';
+import 'package:wordclock/generator/model/grid_build_result.dart';
+import 'package:wordclock/generator/model/grid_build_progress.dart';
 import 'package:wordclock/generator/utils/grid_validator.dart';
+import 'package:wordclock/generator/model/word_placement.dart' as public;
 import 'package:wordclock/languages/language.dart';
 import 'package:wordclock/model/types.dart';
 import 'package:wordclock/model/word_grid.dart';
-
-/// Progress information during grid building.
-class GridBuildProgress {
-  /// Best number of words placed so far
-  final int bestWords;
-
-  /// Total words to place
-  final int totalWords;
-
-  /// Grid width
-  final int width;
-
-  /// Current grid cells (for colored display). May contain nulls for empty cells.
-  final List<Cell?> cells;
-
-  /// Word placement info (for colored display)
-  final List<WordPlacement> wordPlacements;
-
-  /// Number of iterations (recursive calls) so far
-  final int iterationCount;
-
-  /// When the search started
-  final DateTime startTime;
-
-  /// Words placed in current search path
-  int get currentWords => wordPlacements.length;
-
-  GridBuildProgress({
-    required this.bestWords,
-    required this.totalWords,
-    required this.width,
-    required this.cells,
-    required this.wordPlacements,
-    required this.iterationCount,
-    required this.startTime,
-  });
-}
-
-/// Callback for progress updates during grid building.
-/// Return true to continue, false to stop the search.
-typedef ProgressCallback = bool Function(GridBuildProgress progress);
 
 /// A backtracking-based grid builder that finds optimal word placements.
 ///
@@ -159,13 +120,10 @@ class BacktrackingGridBuilder {
 
     // 5. Build Result
     final finalState = _bestState;
-    int placedWords = 0;
-    List<Cell> gridCells;
-    List<WordPlacement> wordPlacements = [];
+    late final List<Cell> gridCells;
+    late final List<public.WordPlacement> wordPlacements;
 
     if (finalState != null) {
-      placedWords = finalState.placementCount;
-
       // Apply post-processing (alignment and padding)
       final processor = GridPostProcessor(
         width: width,
@@ -176,20 +134,19 @@ class BacktrackingGridBuilder {
       );
       final postResult = processor.process(finalState.placements);
       gridCells = postResult.grid;
-      wordPlacements = postResult.placements;
+      wordPlacements = [for (final p in postResult.placements) p.toPublic()];
     } else {
       // Fallback: Empty grid if failed
       gridCells = List.filled(width * height, ' ');
+      wordPlacements = [];
     }
-
-    final gridToValidate = WordGrid(width: width, cells: gridCells);
-    final validationIssues = GridValidator.validate(gridToValidate, language);
+    final grid = WordGrid(width: width, cells: gridCells);
+    final validationIssues = GridValidator.validate(grid, language);
 
     return GridBuildResult(
-      grid: gridCells,
+      grid: grid,
       validationIssues: validationIssues,
       totalWords: _totalWords,
-      placedWords: placedWords,
       wordPlacements: wordPlacements,
       iterationCount: _iterationCount,
       startTime: _startTime,
@@ -208,7 +165,7 @@ class BacktrackingGridBuilder {
         totalWords: _totalWords,
         width: width,
         cells: state.toFlatList(),
-        wordPlacements: state.placements,
+        wordPlacements: [for (final p in state.placements) p.toPublic()],
         iterationCount: _iterationCount,
         startTime: _startTime,
       ),

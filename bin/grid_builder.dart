@@ -1,11 +1,11 @@
 import 'package:args/args.dart';
 import 'package:wordclock/generator/backtracking/grid_builder.dart';
-import 'package:wordclock/generator/backtracking/grid_state.dart';
 import 'package:wordclock/generator/greedy/dependency_graph.dart';
 import 'package:wordclock/generator/greedy/dot_exporter.dart';
 import 'package:wordclock/generator/greedy/grid_builder.dart';
-import 'package:wordclock/generator/utils/grid_build_result.dart';
 import 'package:wordclock/generator/utils/grid_validator.dart';
+import 'package:wordclock/generator/model/grid_build_result.dart';
+import 'package:wordclock/generator/model/word_placement.dart';
 import 'package:wordclock/generator/backtracking/graph/graph_builder.dart';
 import 'package:wordclock/generator/backtracking/dot_exporter.dart';
 import 'package:wordclock/languages/language.dart';
@@ -89,17 +89,15 @@ String _formatColoredRow(
 
 /// Prints a grid with each word colored differently
 void printColoredGrid(
-  List<String?> cells,
-  int width,
+  WordGrid grid,
   List<WordPlacement> placements, {
   String? header,
 }) {
-  final height = cells.length ~/ width;
   final colorMap = _buildColorMap(placements);
 
   if (header != null) print(header);
-  for (int row = 0; row < height; row++) {
-    print(_formatColoredRow(cells, width, row, colorMap));
+  for (int row = 0; row < grid.height; row++) {
+    print(_formatColoredRow(grid.cells, grid.width, row, colorMap));
   }
 }
 
@@ -342,7 +340,7 @@ void _generateWithGreedy(Config config) {
 
   final result = builder.build();
 
-  if (result.grid == null) {
+  if (result.placedWords == 0) {
     print('\nFailed to generate grid with greedy algorithm.');
     if (result.validationIssues.isNotEmpty) {
       print('Reasons:');
@@ -381,15 +379,23 @@ void _generateWithGreedy(Config config) {
   print('    width: ${config.gridWidth},');
   print('    letters:');
 
-  final cells = result.grid!;
-  for (int i = 0; i < targetHeight; i++) {
-    final line = cells
-        .sublist(i * config.gridWidth, (i + 1) * config.gridWidth)
+  final grid = result.grid;
+  for (int i = 0; i < grid.height; i++) {
+    final line = grid.cells
+        .sublist(i * grid.width, (i + 1) * grid.width)
         .join('');
     final escapedLine = line.replaceAll('"', r'\"');
     print('        "$escapedLine"');
   }
   print('  ),');
+
+  if (result.wordPlacements.isNotEmpty) {
+    printColoredGrid(
+      result.grid,
+      result.wordPlacements,
+      header: '\nColored grid (words highlighted):',
+    );
+  }
 }
 
 void _generateWithBacktracking(Config config) {
@@ -414,8 +420,10 @@ void _generateWithBacktracking(Config config) {
       final rate = elapsedSecs > 0 ? progress.iterationCount / elapsedSecs : 0;
       final rateStr = rate.toStringAsFixed(0);
       printColoredGrid(
-        progress.cells,
-        progress.width,
+        WordGrid(
+          width: progress.width,
+          cells: progress.cells.map((c) => c ?? '·').toList(),
+        ),
         progress.wordPlacements,
         header:
             '\n--- Search: ${progress.currentWords}/${progress.totalWords} words (Best: ${progress.bestWords}) | ${progress.iterationCount} iterations ($rateStr/s) ---',
@@ -439,7 +447,7 @@ void _generateWithBacktracking(Config config) {
   print('Iterations: ${result.iterationCount} (${rate.toStringAsFixed(0)}/s)');
   print('Stop reason: ${_stopReasonToString(result.stopReason)}');
 
-  if (result.grid == null) {
+  if (result.placedWords == 0) {
     print('\nFailed to generate grid with backtracking algorithm.');
     print('Try:');
     print('  - Increasing height');
@@ -465,13 +473,10 @@ void _generateWithBacktracking(Config config) {
     print('\n✓✓✓ Grid is optimal! ✓✓✓\n');
   }
 
-  // Print call stats for debugging
-
   // Print colored grid for visualization
   if (result.wordPlacements.isNotEmpty) {
     printColoredGrid(
-      result.grid!,
-      config.gridWidth,
+      result.grid,
       result.wordPlacements,
       header: '\nColored grid (words highlighted):',
     );
@@ -484,10 +489,10 @@ void _generateWithBacktracking(Config config) {
   print('    width: ${config.gridWidth},');
   print('    letters:');
 
-  final cells = result.grid!;
-  for (int i = 0; i < targetHeight; i++) {
-    final line = cells
-        .sublist(i * config.gridWidth, (i + 1) * config.gridWidth)
+  final grid = result.grid;
+  for (int i = 0; i < grid.height; i++) {
+    final line = grid.cells
+        .sublist(i * grid.width, (i + 1) * grid.width)
         .join('');
     final escapedLine = line.replaceAll('"', r'\"');
     print('        "$escapedLine"');
