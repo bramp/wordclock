@@ -16,12 +16,10 @@ void setupBuilder(BacktrackingGridBuilder builder, WordDependencyGraph graph) {
 WordPlacement? placeWordWithCache(GridState state, WordNode node, int offset) {
   final placement = state.placeWord(node, offset);
   if (placement != null) {
-    // Update trie cache with end offset and placement index
+    // Update trie cache with end offset
     final endOffset = offset + placement.length - 1;
-    final placementIndex = state.placementCount - 1;
     for (final trieNode in node.ownedTrieNodes) {
       trieNode.cachedEndOffset = endOffset;
-      trieNode.cachedPlacementIndex = placementIndex;
     }
   }
   return placement;

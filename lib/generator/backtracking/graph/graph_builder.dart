@@ -196,33 +196,11 @@ class WordDependencyGraphBuilder {
           }
         }
 
-        // Mark as terminal and link to target node
-        currentTrieNode.isTerminal = true;
+        // Link node to target node
         if (!targetNode.phraseTrieNodes.contains(currentTrieNode)) {
           targetNode.phraseTrieNodes.add(currentTrieNode);
         }
       }
-    }
-  }
-
-  /// Debug: Print graph statistics
-  static void printStatistics(WordDependencyGraph graph) {
-    print(graph);
-    print('\nTop 10 nodes by priority:');
-    final sortedNodes = graph.getNodesByPriority().take(10);
-    for (final node in sortedNodes) {
-      print(
-        '  ${node.id}: word=${node.word}, priority=${node.priority.toStringAsFixed(2)}, '
-        'freq=${node.frequency}, len=${node.cellCodes.length}',
-      );
-    }
-
-    print('\nSample phrases:');
-    int count = 0;
-    for (final entry in graph.phrases.entries) {
-      if (count++ >= 5) break;
-      final nodeIds = entry.value.map((n) => n.id).toList();
-      print('  "${entry.key}" -> $nodeIds');
     }
   }
 

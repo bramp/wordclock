@@ -35,16 +35,6 @@ class WordDependencyGraph {
     required this.codec,
   });
 
-  /// Get nodes sorted by priority (higher priority first)
-  List<WordNode> getNodesByPriority() {
-    final allNodes = <WordNode>[];
-    for (final instances in nodes.values) {
-      allNodes.addAll(instances);
-    }
-    allNodes.sort((a, b) => b.priority.compareTo(a.priority));
-    return allNodes;
-  }
-
   @override
   String toString() {
     final buffer = StringBuffer();

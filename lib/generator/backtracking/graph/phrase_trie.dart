@@ -7,30 +7,15 @@ class PhraseTrieNode {
   /// Children keyed by next word
   final Map<String, PhraseTrieNode> children = {};
 
-  /// True if this node is the end of a complete predecessor sequence
-  /// (i.e., the next word after this would be a WordNode we're trying to place)
-  bool isTerminal = false;
-
   /// Cached grid position: 1D offset (row * width + endCol) where this word ends.
   /// -1 if not yet found or invalidated.
   int cachedEndOffset = -1;
-
-  /// Cached placement stack index: index into GridState._placementStack where
-  /// this word was placed. -1 if not yet placed or invalidated.
-  /// Used for placement-walk optimization to skip over placed words.
-  int cachedPlacementIndex = -1;
-
-  /// Parent node (null for root-level nodes)
-  final PhraseTrieNode? parent;
-
-  PhraseTrieNode({this.parent});
 }
 
 /// Global trie containing all phrase prefixes.
 ///
 /// Built once from all language phrases. Each path represents a sequence
-/// of words that can precede some target word. Terminal nodes mark complete
-/// predecessor sequences.
+/// of words that can precede some target word.
 class PhraseTrie {
   /// Root-level children keyed by first word
   final Map<String, PhraseTrieNode> roots = {};
@@ -42,9 +27,6 @@ class PhraseTrie {
 
   /// Get or create a child node
   PhraseTrieNode getOrCreateChild(PhraseTrieNode parent, String word) {
-    return parent.children.putIfAbsent(
-      word,
-      () => PhraseTrieNode(parent: parent),
-    );
+    return parent.children.putIfAbsent(word, () => PhraseTrieNode());
   }
 }

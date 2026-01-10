@@ -17,7 +17,6 @@ void main() {
       final itInstances = graph.nodes['IT'];
       expect(itInstances, isNotNull);
       expect(itInstances!.length, 1); // Only one instance
-      expect(itInstances[0].frequency, 3); // Reused across all 3 phrases
     });
 
     test('should work with English language', () {
@@ -25,7 +24,6 @@ void main() {
       final graph = WordDependencyGraphBuilder.build(language: lang);
 
       expect(graph.nodes.length, greaterThan(0));
-      expect(graph.phrases.length, greaterThan(0));
 
       // IT and IS should appear
       expect(graph.nodes['IT'], isNotNull);

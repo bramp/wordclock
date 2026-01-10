@@ -138,6 +138,7 @@ class BacktrackingGridBuilder {
     codec = graph.codec;
 
     // Pre-encode padding cells
+    // TODO Consider removing the need to encode padding cells.
     paddingCellCodes = codec.encodeAll(paddingCells);
 
     // 2. Initialize search state
@@ -365,12 +366,10 @@ class BacktrackingGridBuilder {
         // Place word (skip validation since findEarliestPlacementByPhrase already checked)
         final p = state.placeWordUnchecked(node, offset);
 
-        // Update trie cache with end offset and placement index
+        // Update trie cache with end offset
         final endOffset = offset + p.length - 1;
-        final placementIndex = state.placementCount - 1;
         for (final trieNode in node.ownedTrieNodes) {
           trieNode.cachedEndOffset = endOffset;
-          trieNode.cachedPlacementIndex = placementIndex;
         }
 
         // Update eligible mask: remove placed node
@@ -404,7 +403,6 @@ class BacktrackingGridBuilder {
         // Clear trie cache and remove placement
         for (final trieNode in node.ownedTrieNodes) {
           trieNode.cachedEndOffset = -1;
-          trieNode.cachedPlacementIndex = -1;
         }
         state.removePlacement(p);
       }
@@ -518,12 +516,10 @@ class BacktrackingGridBuilder {
       if (offset != -1) {
         final p = state.placeWord(node, offset);
         if (p != null) {
-          // Update trie cache with end offset and placement index
+          // Update trie cache with end offset
           final endOffset = offset + p.length - 1;
-          final placementIndex = state.placementCount - 1;
           for (final trieNode in node.ownedTrieNodes) {
             trieNode.cachedEndOffset = endOffset;
-            trieNode.cachedPlacementIndex = placementIndex;
           }
 
           // Recurse with this word removed from mask (no allocation needed!)
@@ -532,7 +528,6 @@ class BacktrackingGridBuilder {
           // Clear trie cache before removal
           for (final trieNode in node.ownedTrieNodes) {
             trieNode.cachedEndOffset = -1;
-            trieNode.cachedPlacementIndex = -1;
           }
           state.removePlacement(p);
         }

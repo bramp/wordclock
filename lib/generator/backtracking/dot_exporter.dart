@@ -40,14 +40,6 @@ class WordGraphDotExporter {
       nodeById[node.id] = node;
     }
 
-    // Get max values for normalization
-    final maxFreq = allNodes
-        .map((n) => n.frequency)
-        .reduce((a, b) => a > b ? a : b);
-    final maxPriority = allNodes
-        .map((n) => n.priority)
-        .reduce((a, b) => a > b ? a : b);
-
     // Group nodes by rank for subgraph organization
     final Map<int, List<String>> nodesByRank = {};
     for (final entry in ranks.entries) {
@@ -62,25 +54,14 @@ class WordGraphDotExporter {
 
       for (final nodeId in nodesByRank[rank]!) {
         final node = nodeById[nodeId]!;
-        final normalizedFreq = node.frequency / maxFreq;
-        final normalizedPriority = node.priority / maxPriority;
 
-        // Size by frequency (bigger = more frequent)
-        final fontSize = (10 + normalizedFreq * 10).toInt();
+        // Size by length
+        final fontSize = 12;
 
-        // Color by priority (red = high priority, yellow = medium, white = low)
-        final colorValue = (255 * (1 - normalizedPriority)).toInt();
-        final color =
-            '#ff${colorValue.toRadixString(16).padLeft(2, '0')}${colorValue.toRadixString(16).padLeft(2, '0')}';
-
-        final label =
-            '${node.id}\\n'
-            'freq=${node.frequency}\\n'
-            'len=${node.cellCodes.length}\\n'
-            'pri=${node.priority.toStringAsFixed(1)}';
+        final label = '${node.id}\\nlen=${node.cellCodes.length}';
 
         sb.writeln(
-          '    "$nodeId" [label="$label", fontsize=$fontSize, fillcolor="$color"];',
+          '    "$nodeId" [label="$label", fontsize=$fontSize, fillcolor="#ffffff"];',
         );
       }
 
