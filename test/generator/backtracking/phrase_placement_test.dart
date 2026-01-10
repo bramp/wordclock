@@ -19,7 +19,7 @@ WordPlacement? placeWordWithCache(GridState state, WordNode node, int offset) {
     // Update trie cache with end offset
     final endOffset = offset + placement.length - 1;
     for (final trieNode in node.ownedTrieNodes) {
-      trieNode.cachedEndOffset = endOffset;
+      trieNode.endOffset = endOffset;
     }
   }
   return placement;

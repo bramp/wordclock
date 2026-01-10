@@ -306,7 +306,7 @@ class BacktrackingGridBuilder {
     final successorIndices = wordList.successorIndices;
 
     // Periodically report progress
-    if (_iterationCount % 1000 == 0) {
+    if (_iterationCount % 1024 == 0) {
       final now = DateTime.now();
       _reportProgress(now, state);
       if (_shouldStop) return;
@@ -353,26 +353,27 @@ class BacktrackingGridBuilder {
         // Place word (skip validation since findEarliestPlacementByPhrase already checked)
         final p = state.placeWordUnchecked(node, offset);
 
-        // Update trie cache with end offset
-        final endOffset = offset + p.length - 1;
-        for (final trieNode in node.ownedTrieNodes) {
-          trieNode.cachedEndOffset = endOffset;
-        }
-
-        // Update eligible mask: remove placed node
-        int newEligibleMask = eligibleMask & ~lowestBit;
+        // Update bitmask
         int newUnplacedMask = unplacedMask & ~lowestBit;
-
-        // Update in-degree for successors and mark newly eligible
-        for (final succIdx in successorIndices[nodeIdx]) {
-          inDegree[succIdx]--;
-          if (inDegree[succIdx] == 0) {
-            newEligibleMask |= (1 << succIdx);
-          }
-        }
 
         // Only recurse if remaining space can fit remaining words
         if (_canFitRemainingWords(state, wordList, newUnplacedMask)) {
+          // Update trie cache with end offset for successors
+          final endOffset = offset + p.length - 1;
+          for (final trieNode in node.ownedTrieNodes) {
+            trieNode.endOffset = endOffset;
+          }
+
+          int newEligibleMask = eligibleMask & ~lowestBit;
+
+          // Update in-degree for successors and mark newly eligible
+          for (final succIdx in successorIndices[nodeIdx]) {
+            inDegree[succIdx]--;
+            if (inDegree[succIdx] == 0) {
+              newEligibleMask |= (1 << succIdx);
+            }
+          }
+
           _solveFrontier(
             state,
             wordList,
@@ -380,17 +381,19 @@ class BacktrackingGridBuilder {
             newEligibleMask,
             newUnplacedMask,
           );
+
+          // Restore in-degrees for successors
+          for (final succIdx in successorIndices[nodeIdx]) {
+            inDegree[succIdx]++;
+          }
+
+          // Clear trie cache
+          for (final trieNode in node.ownedTrieNodes) {
+            trieNode.endOffset = -1;
+          }
         }
 
-        // Restore in-degrees for successors
-        for (final succIdx in successorIndices[nodeIdx]) {
-          inDegree[succIdx]++;
-        }
-
-        // Clear trie cache and remove placement
-        for (final trieNode in node.ownedTrieNodes) {
-          trieNode.cachedEndOffset = -1;
-        }
+        // Remove placement
         state.removePlacement(p);
       }
 
@@ -506,7 +509,7 @@ class BacktrackingGridBuilder {
           // Update trie cache with end offset
           final endOffset = offset + p.length - 1;
           for (final trieNode in node.ownedTrieNodes) {
-            trieNode.cachedEndOffset = endOffset;
+            trieNode.endOffset = endOffset;
           }
 
           // Recurse with this word removed from mask (no allocation needed!)
@@ -514,7 +517,7 @@ class BacktrackingGridBuilder {
 
           // Clear trie cache before removal
           for (final trieNode in node.ownedTrieNodes) {
-            trieNode.cachedEndOffset = -1;
+            trieNode.endOffset = -1;
           }
           state.removePlacement(p);
         }
@@ -567,7 +570,7 @@ class BacktrackingGridBuilder {
   int _findMaxPredecessorEndOffset(List<PhraseTrieNode> terminalNodes) {
     int maxEndOffset = -1;
     for (final node in terminalNodes) {
-      final endOffset = node.cachedEndOffset;
+      final endOffset = node.endOffset;
       if (endOffset > maxEndOffset) {
         maxEndOffset = endOffset;
       }

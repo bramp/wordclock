@@ -7,9 +7,9 @@ class PhraseTrieNode {
   /// Children keyed by next word
   final Map<String, PhraseTrieNode> children = {};
 
-  /// Cached grid position: 1D offset (row * width + endCol) where this word ends.
-  /// -1 if not yet found or invalidated.
-  int cachedEndOffset = -1;
+  /// The grid position where this word ends: 1D offset (row * width + col).
+  /// -1 if the word is not currently placed.
+  int endOffset = -1;
 }
 
 /// Global trie containing all phrase prefixes.
