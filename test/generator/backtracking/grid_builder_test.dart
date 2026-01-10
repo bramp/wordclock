@@ -1,3 +1,5 @@
+import 'dart:isolate';
+
 import 'package:flutter_test/flutter_test.dart';
 import 'package:wordclock/generator/backtracking/grid_builder.dart';
 import 'package:wordclock/generator/utils/grid_validator.dart';
@@ -138,43 +140,127 @@ void main() {
   });
 
   group('BacktrackingGridBuilder - All Languages', () {
-    for (final language in WordClockLanguages.all) {
-      test(
-        'generates valid grid for ${language.id} (${language.englishName})',
-        () {
-          final builder = BacktrackingGridBuilder(
-            width: 11,
-            height: 10,
-            language: language,
-            seed: 0,
-            findFirstValid: true,
-          );
+    // Languages that take too long (>60s) to solve - test separately
+    const slowLanguages = {'PL', 'PE', 'RO', 'RU', 'TR'};
 
-          final result = builder.build();
+    test(
+      'generates valid grids for all languages (parallel)',
+      () async {
+        // Run all language tests in parallel using isolates
+        final futures = <Future<_LanguageTestResult>>[];
+        final stopwatch = Stopwatch()..start();
+        final languages = WordClockLanguages.all
+            .where((l) => !slowLanguages.contains(l.id))
+            .toList();
 
-          expect(
-            result.grid,
-            isNotNull,
-            reason: 'Should generate a grid for ${language.id}',
+        for (final language in languages) {
+          futures.add(
+            Isolate.run(() => _testLanguageInIsolate(language.id)).timeout(
+              Duration(seconds: 60),
+              onTimeout: () => _LanguageTestResult(
+                languageId: language.id,
+                success: false,
+                error: 'Timed out after 60 seconds',
+              ),
+            ),
           );
-          expect(
-            result.isOptimal,
-            isTrue,
-            reason:
-                'Should place all ${result.totalWords} words (placed ${result.placedWords})',
-          );
+        }
 
-          // Validate the generated grid
-          final grid = WordGrid(width: 11, cells: result.grid!);
-          final issues = GridValidator.validate(grid, language);
-          expect(
-            issues,
-            isEmpty,
-            reason: 'Grid for ${language.id} should have no validation issues',
-          );
-        },
-        skip: true, // Skip all language tests - they take too long
+        final results = await Future.wait(futures);
+        stopwatch.stop();
+
+        // Print summary
+        final succeeded = results.where((r) => r.success).length;
+        // ignore: avoid_print
+        print(
+          'Tested ${results.length} languages in ${stopwatch.elapsed.inSeconds}s '
+          '($succeeded passed)',
+        );
+
+        // Check all results
+        final failures = <String>[];
+        for (final result in results) {
+          if (!result.success) {
+            failures.add('${result.languageId}: ${result.error}');
+          }
+        }
+
+        expect(
+          failures,
+          isEmpty,
+          reason: 'Failed languages:\n${failures.join('\n')}',
+        );
+      },
+      timeout: Timeout(Duration(minutes: 2)),
+    );
+  });
+}
+
+/// Result of testing a single language
+class _LanguageTestResult {
+  final String languageId;
+  final bool success;
+  final String? error;
+
+  _LanguageTestResult({
+    required this.languageId,
+    required this.success,
+    this.error,
+  });
+}
+
+/// Test a single language - runs inside an isolate
+_LanguageTestResult _testLanguageInIsolate(String languageId) {
+  try {
+    final language = WordClockLanguages.all.firstWhere(
+      (l) => l.id == languageId,
+      orElse: () => throw Exception('Language $languageId not found'),
+    );
+
+    final builder = BacktrackingGridBuilder(
+      width: 11,
+      height: 10,
+      language: language,
+      seed: 0,
+      findFirstValid: true,
+    );
+
+    final result = builder.build();
+
+    if (result.grid == null) {
+      return _LanguageTestResult(
+        languageId: languageId,
+        success: false,
+        error: 'Grid is null',
       );
     }
-  });
+
+    if (!result.isOptimal) {
+      return _LanguageTestResult(
+        languageId: languageId,
+        success: false,
+        error: 'Not optimal: placed ${result.placedWords}/${result.totalWords}',
+      );
+    }
+
+    // Validate the generated grid
+    final grid = WordGrid(width: 11, cells: result.grid!);
+    final issues = GridValidator.validate(grid, language);
+
+    if (issues.isNotEmpty) {
+      return _LanguageTestResult(
+        languageId: languageId,
+        success: false,
+        error: 'Validation issues: ${issues.join(', ')}',
+      );
+    }
+
+    return _LanguageTestResult(languageId: languageId, success: true);
+  } catch (e, st) {
+    return _LanguageTestResult(
+      languageId: languageId,
+      success: false,
+      error: '$e\n$st',
+    );
+  }
 }

@@ -5,6 +5,7 @@ import 'package:wordclock/generator/backtracking/graph/graph_builder.dart';
 import 'package:wordclock/generator/backtracking/graph/word_node.dart';
 import 'package:wordclock/generator/backtracking/graph/phrase_trie.dart';
 import 'package:wordclock/generator/backtracking/overlap_matrix.dart';
+import 'package:wordclock/generator/backtracking/indexed_word_list.dart';
 import 'package:wordclock/generator/utils/grid_build_result.dart';
 import 'package:wordclock/generator/utils/grid_validator.dart';
 import 'package:wordclock/languages/language.dart';
@@ -51,98 +52,6 @@ class GridBuildProgress {
 /// Callback for progress updates during grid building.
 /// Return true to continue, false to stop the search.
 typedef ProgressCallback = bool Function(GridBuildProgress progress);
-
-/// Pre-computed graph structure indexed for efficient backtracking.
-///
-/// Groups together the sorted node list and successor indices that are
-/// computed once during setup and used throughout the search.
-///
-/// ## Why this exists
-/// During backtracking, we need to:
-/// 1. Iterate nodes in a specific order (by rank, then length)
-/// 2. Look up successors by index (not by node reference)
-/// 3. Track which nodes have been placed using a bitset
-///
-/// This class pre-computes and caches these structures to avoid
-/// repeated lookups during the hot path.
-class IndexedGraph {
-  /// Nodes sorted by (rank ascending, length descending).
-  /// Lower indices = lower rank (fewer dependencies), longer words.
-  final List<WordNode> nodes;
-
-  /// For each node index, the list of successor indices.
-  /// `successorIndices[i]` contains indices of nodes that depend on node i.
-  final List<List<int>> successorIndices;
-
-  /// Initial in-degree (predecessor count) for each node.
-  /// Used to compute the initial eligible mask.
-  final List<int> initialInDegree;
-
-  /// Nodes with in-degree 0 (can be placed immediately).
-  /// Encoded as a bitmask where bit i set means node i is initially eligible.
-  final int initialEligibleMask;
-
-  IndexedGraph._(
-    this.nodes,
-    this.successorIndices,
-    this.initialInDegree,
-    this.initialEligibleMask,
-  );
-
-  /// Build an IndexedGraph from a dependency graph.
-  ///
-  /// Sorts nodes by (rank, length) and pre-computes successor indices.
-  factory IndexedGraph.build(WordDependencyGraph graph) {
-    final allNodes = graph.nodes.values.expand((i) => i).toList();
-
-    // Compute ranks for sorting
-    final ranks = BacktrackingGridBuilder.computeRanks(graph);
-
-    // Sort all nodes by (rank, length desc) - this way iterating bits in order
-    // processes lower ranks first, and within each rank, longer words first
-    allNodes.sort((a, b) {
-      final rankCmp = ranks[a]!.compareTo(ranks[b]!);
-      if (rankCmp != 0) return rankCmp;
-      return b.cellCodes.length.compareTo(a.cellCodes.length); // longer first
-    });
-
-    // Map node -> index for quick lookup (after sorting!)
-    // Note: node.matrixIndex is set separately by OverlapMatrix.build and
-    // uses unsorted order - this nodeIndex is specific to IndexedGraph's sorted order.
-    final nodeIndex = <WordNode, int>{};
-    for (int i = 0; i < allNodes.length; i++) {
-      nodeIndex[allNodes[i]] = i;
-    }
-
-    // Pre-compute successor indices for each node
-    final successorIndices = <List<int>>[];
-    for (final node in allNodes) {
-      final succs = graph.edges[node] ?? <WordNode>{};
-      successorIndices.add(succs.map((s) => nodeIndex[s]!).toList());
-    }
-
-    // Compute initial in-degree for each node (count of predecessors)
-    final inDegree = List<int>.filled(allNodes.length, 0);
-    for (final entry in graph.edges.entries) {
-      for (final succ in entry.value) {
-        inDegree[nodeIndex[succ]!]++;
-      }
-    }
-
-    // Initial eligible mask: nodes with in-degree 0 (no predecessors)
-    int eligibleMask = 0;
-    for (int i = 0; i < allNodes.length; i++) {
-      if (inDegree[i] == 0) {
-        eligibleMask |= (1 << i);
-      }
-    }
-
-    return IndexedGraph._(allNodes, successorIndices, inDegree, eligibleMask);
-  }
-
-  /// Number of nodes in the graph
-  int get length => nodes.length;
-}
 
 /// A backtracking-based grid builder that finds optimal word placements.
 ///
@@ -343,17 +252,21 @@ class BacktrackingGridBuilder {
       'Use --use-ranks flag for languages with more words.',
     );
 
-    // Build indexed graph (sorts nodes, computes successor indices)
-    final indexedGraph = IndexedGraph.build(graph);
+    // Build indexed word list (sorts words, computes metadata)
+    final wordList = IndexedWordList.build(graph);
 
     // Create mutable copy of in-degree for tracking during search
-    final inDegree = List<int>.of(indexedGraph.initialInDegree);
+    final inDegree = List<int>.of(wordList.initialInDegree);
+
+    // Initial unplaced mask: all words are unplaced
+    final allWordsMask = (1 << wordList.length) - 1;
 
     _solveFrontier(
       state,
-      indexedGraph,
+      wordList,
       inDegree,
-      indexedGraph.initialEligibleMask,
+      wordList.initialEligibleMask,
+      allWordsMask, // initially all words are unplaced
     );
   }
 
@@ -385,13 +298,14 @@ class BacktrackingGridBuilder {
   /// Words become eligible when all their dependencies (predecessors) are placed.
   ///
   /// ## Parameters
-  /// - [indexedGraph]: Pre-computed graph with nodes sorted by (rank, length)
+  /// - [wordList]: Pre-computed word metadata with words sorted by (rank, length)
   ///   and successor indices for O(1) lookup.
-  /// - [eligibleMask]: Bitmask where bit i set means node i is eligible for placement.
+  /// - [eligibleMask]: Bitmask where bit i set means word i is eligible for placement.
   ///   Bits are ordered by (rank, length) so iterating LSB-first processes
   ///   lower-rank, longer words first.
-  /// - [inDegree]: Tracks how many unplaced predecessors each node has.
-  ///   When a node's in-degree reaches 0, it becomes eligible.
+  /// - [unplacedMask]: Bitmask where bit i set means word i has NOT been placed yet.
+  /// - [inDegree]: Tracks how many unplaced predecessors each word has.
+  ///   When a word's in-degree reaches 0, it becomes eligible.
   ///
   /// ## Algorithm
   /// 1. For each eligible word (iterating bits LSB-first):
@@ -401,14 +315,15 @@ class BacktrackingGridBuilder {
   ///    d. Backtrack: remove word, restore in-degrees
   void _solveFrontier(
     GridState state,
-    IndexedGraph indexedGraph,
+    IndexedWordList wordList,
     List<int> inDegree,
     int eligibleMask,
+    int unplacedMask,
   ) {
     _iterationCount++;
     final placedWords = state.placementCount;
-    final allNodes = indexedGraph.nodes;
-    final successorIndices = indexedGraph.successorIndices;
+    final allNodes = wordList.nodes;
+    final successorIndices = wordList.successorIndices;
 
     // Periodically report progress
     if (_iterationCount % 1000 == 0) {
@@ -468,6 +383,7 @@ class BacktrackingGridBuilder {
 
         // Update eligible mask: remove placed node
         int newEligibleMask = eligibleMask & ~lowestBit;
+        int newUnplacedMask = unplacedMask & ~lowestBit;
 
         // Update in-degree for successors and mark newly eligible
         for (final succIdx in successorIndices[nodeIdx]) {
@@ -477,8 +393,16 @@ class BacktrackingGridBuilder {
           }
         }
 
-        // Recurse
-        _solveFrontier(state, indexedGraph, inDegree, newEligibleMask);
+        // Only recurse if remaining space can fit remaining words
+        if (_canFitRemainingWords(state, wordList, newUnplacedMask)) {
+          _solveFrontier(
+            state,
+            wordList,
+            inDegree,
+            newEligibleMask,
+            newUnplacedMask,
+          );
+        }
 
         // Restore in-degrees for successors
         for (final succIdx in successorIndices[nodeIdx]) {
@@ -495,6 +419,43 @@ class BacktrackingGridBuilder {
 
       if (_shouldStop) return;
     }
+  }
+
+  /// Check if remaining words can potentially fit in remaining space.
+  ///
+  /// Uses precomputed minimum contributions:
+  /// - Each word has a maxIncomingOverlap (best-case overlap with any other word)
+  /// - minContribution[i] = wordLength[i] - maxIncomingOverlap[i]
+  /// - Sum of minContributions gives a lower bound on space needed
+  ///
+  /// Returns true if it's still possible to place all remaining words.
+  bool _canFitRemainingWords(
+    GridState state,
+    IndexedWordList wordList,
+    int unplacedMask,
+  ) {
+    if (unplacedMask == 0) return true;
+
+    final minContribution = wordList.minContribution;
+
+    // Remaining space after current position
+    final currentEndOffset = state.maxEndOffset;
+    final remainingSpace = _maxAllowedOffset - currentEndOffset - 1;
+
+    // Compute sum of minimum contributions.
+    // Each word's minContribution = length - maxIncomingOverlap, representing
+    // the minimum cells it must add beyond what it can overlap with predecessors.
+    int totalMinContribution = 0;
+
+    int mask = unplacedMask;
+    while (mask != 0) {
+      final lowestBit = mask & -mask;
+      final nodeIdx = lowestBit.bitLength - 1;
+      totalMinContribution += minContribution[nodeIdx];
+      mask ^= lowestBit;
+    }
+
+    return totalMinContribution <= remainingSpace;
   }
 
   /// Rank-based recursive solve function.
