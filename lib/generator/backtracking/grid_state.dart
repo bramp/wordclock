@@ -15,13 +15,16 @@ class WordPlacement {
   final int startOffset;
 
   /// Grid width (needed to derive row/col)
-  final int _width;
+  final int width;
+
+  /// The word text
+  String get word => node.word;
 
   /// Row where the word starts (0-based)
-  int get row => startOffset ~/ _width;
+  int get row => startOffset ~/ width;
 
   /// Column where the word starts (0-based)
-  int get startCol => startOffset % _width;
+  int get startCol => startOffset % width;
 
   /// Column where the word ends (inclusive, 0-based)
   int get endCol => startCol + node.cellCodes.length - 1;
@@ -35,8 +38,17 @@ class WordPlacement {
   WordPlacement({
     required this.node,
     required this.startOffset,
-    required int width,
-  }) : _width = width;
+    required this.width,
+  });
+
+  /// Create a new placement shifted to a specific row and column.
+  WordPlacement shiftedTo(int row, int col) {
+    return WordPlacement(
+      node: node,
+      startOffset: row * width + col,
+      width: width,
+    );
+  }
 
   /// Check if this placement comes after [other] in reading order
   bool comesAfter(WordPlacement other) {
@@ -250,7 +262,7 @@ class GridState {
   }
 
   /// Convert grid to flat list of cells (decodes integer codes back to strings)
-  List<Cell> toFlatList({String paddingChar = ' '}) {
+  List<Cell?> toFlatList({Cell? paddingChar}) {
     return grid
         .map((code) => code == emptyCell ? paddingChar : codec.decode(code))
         .toList();

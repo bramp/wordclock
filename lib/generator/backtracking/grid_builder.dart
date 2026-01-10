@@ -5,6 +5,7 @@ import 'package:wordclock/generator/backtracking/graph/graph_builder.dart';
 import 'package:wordclock/generator/backtracking/graph/word_node.dart';
 import 'package:wordclock/generator/backtracking/graph/phrase_trie.dart';
 import 'package:wordclock/generator/backtracking/indexed_word_list.dart';
+import 'package:wordclock/generator/backtracking/grid_post_processor.dart';
 import 'package:wordclock/generator/utils/grid_build_result.dart';
 import 'package:wordclock/generator/utils/grid_validator.dart';
 import 'package:wordclock/languages/language.dart';
@@ -22,11 +23,11 @@ class GridBuildProgress {
   /// Grid width
   final int width;
 
-  /// Current grid cells (for colored display)
-  final List<String> cells;
+  /// Current grid cells (for colored display). May contain nulls for empty cells.
+  final List<Cell?> cells;
 
   /// Word placement info (for colored display)
-  final List<PlacedWordInfo> wordPlacements;
+  final List<WordPlacement> wordPlacements;
 
   /// Number of iterations (recursive calls) so far
   final int iterationCount;
@@ -89,9 +90,6 @@ class BacktrackingGridBuilder {
   /// Padding alphabet cells
   final List<Cell> paddingCells;
 
-  /// Padding cell codes (pre-encoded for efficiency)
-  late final List<int> paddingCellCodes;
-
   /// If true, stop after finding the first valid grid (all words placed).
   /// If false (default), continue searching for optimal (minimum height) grid.
   final bool findFirstValid;
@@ -137,10 +135,6 @@ class BacktrackingGridBuilder {
     graph = WordDependencyGraphBuilder.build(language: language);
     codec = graph.codec;
 
-    // Pre-encode padding cells
-    // TODO Consider removing the need to encode padding cells.
-    paddingCellCodes = codec.encodeAll(paddingCells);
-
     // 2. Initialize search state
     final state = GridState(width: width, height: height, codec: codec);
     _minHeightFound = height;
@@ -166,14 +160,23 @@ class BacktrackingGridBuilder {
     // 5. Build Result
     final finalState = _bestState;
     int placedWords = 0;
-    List<String> gridCells;
-    List<PlacedWordInfo> wordPlacements = [];
+    List<Cell> gridCells;
+    List<WordPlacement> wordPlacements = [];
 
     if (finalState != null) {
       placedWords = finalState.placementCount;
-      wordPlacements = _extractPlacements(finalState);
-      _fillPadding(finalState);
-      gridCells = finalState.toFlatList();
+
+      // Apply post-processing (alignment and padding)
+      final processor = GridPostProcessor(
+        width: width,
+        height: height,
+        language: language,
+        random: random,
+        codec: codec,
+      );
+      final postResult = processor.process(finalState.placements);
+      gridCells = postResult.grid;
+      wordPlacements = postResult.placements;
     } else {
       // Fallback: Empty grid if failed
       gridCells = List.filled(width * height, ' ');
@@ -205,7 +208,7 @@ class BacktrackingGridBuilder {
         totalWords: _totalWords,
         width: width,
         cells: state.toFlatList(),
-        wordPlacements: _extractPlacements(state),
+        wordPlacements: state.placements,
         iterationCount: _iterationCount,
         startTime: _startTime,
       ),
@@ -214,18 +217,6 @@ class BacktrackingGridBuilder {
       _stopRequested = true;
       _stopReason = StopReason.userStopped;
     }
-  }
-
-  /// Extracts word placement info from a GridState
-  List<PlacedWordInfo> _extractPlacements(GridState state) {
-    return state.placements.map((placement) {
-      return PlacedWordInfo(
-        word: placement.node.word,
-        row: placement.row,
-        startCol: placement.startCol,
-        endCol: placement.endCol,
-      );
-    }).toList();
   }
 
   /// Returns true if search should stop
@@ -646,17 +637,6 @@ class BacktrackingGridBuilder {
       offset++;
     }
     return -1;
-  }
-
-  /// Fill remaining cells with padding characters
-  void _fillPadding(GridState state) {
-    for (int i = 0; i < state.grid.length; i++) {
-      if (state.grid[i] == emptyCell) {
-        assert(state.usage[i] == 0);
-        state.grid[i] =
-            paddingCellCodes[random.nextInt(paddingCellCodes.length)];
-      }
-    }
   }
 
   /// Compute topological ranks for all word instances

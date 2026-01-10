@@ -1,24 +1,4 @@
-/// Information about a placed word in the grid
-class PlacedWordInfo {
-  /// The word text
-  final String word;
-
-  /// Row where the word is placed (0-based)
-  final int row;
-
-  /// Starting column (0-based)
-  final int startCol;
-
-  /// Ending column (inclusive, 0-based)
-  final int endCol;
-
-  PlacedWordInfo({
-    required this.word,
-    required this.row,
-    required this.startCol,
-    required this.endCol,
-  });
-}
+import 'package:wordclock/generator/backtracking/grid_state.dart';
 
 /// Reason why the grid building stopped
 enum StopReason {
@@ -43,7 +23,7 @@ class GridBuildResult {
   final int placedWords;
 
   /// Information about each placed word (for visualization)
-  final List<PlacedWordInfo> wordPlacements;
+  final List<WordPlacement> wordPlacements;
 
   /// Total iterations performed during the search
   final int iterationCount;

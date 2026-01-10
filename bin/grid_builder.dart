@@ -1,5 +1,6 @@
 import 'package:args/args.dart';
 import 'package:wordclock/generator/backtracking/grid_builder.dart';
+import 'package:wordclock/generator/backtracking/grid_state.dart';
 import 'package:wordclock/generator/greedy/dependency_graph.dart';
 import 'package:wordclock/generator/greedy/dot_exporter.dart';
 import 'package:wordclock/generator/greedy/grid_builder.dart';
@@ -52,7 +53,7 @@ class AnsiColors {
 }
 
 /// Builds a color map from word placements: (row, col) -> color code
-Map<int, Map<int, String>> _buildColorMap(List<PlacedWordInfo> placements) {
+Map<int, Map<int, String>> _buildColorMap(List<WordPlacement> placements) {
   final colorMap = <int, Map<int, String>>{};
   for (int i = 0; i < placements.length; i++) {
     final p = placements[i];
@@ -67,14 +68,15 @@ Map<int, Map<int, String>> _buildColorMap(List<PlacedWordInfo> placements) {
 
 /// Formats a single row with colors applied
 String _formatColoredRow(
-  List<String> cells,
+  List<String?> cells,
   int width,
   int row,
   Map<int, Map<int, String>> colorMap,
 ) {
   final buffer = StringBuffer();
   for (int col = 0; col < width; col++) {
-    final cell = cells[row * width + col];
+    final cell =
+        cells[row * width + col] ?? '·'; // Use dot for empty/null cells
     final color = colorMap[row]?[col];
     if (color != null) {
       buffer.write('$color$cell${AnsiColors.reset}');
@@ -87,9 +89,9 @@ String _formatColoredRow(
 
 /// Prints a grid with each word colored differently
 void printColoredGrid(
-  List<String> cells,
+  List<String?> cells,
   int width,
-  List<PlacedWordInfo> placements, {
+  List<WordPlacement> placements, {
   String? header,
 }) {
   final height = cells.length ~/ width;
