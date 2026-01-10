@@ -8,6 +8,7 @@ import 'package:wordclock/generator/model/grid_build_result.dart';
 import 'package:wordclock/generator/model/word_placement.dart';
 import 'package:wordclock/generator/backtracking/graph/graph_builder.dart';
 import 'package:wordclock/generator/backtracking/dot_exporter.dart';
+import 'package:wordclock/generator/utils/word_clock_utils.dart';
 import 'package:wordclock/languages/language.dart';
 import 'package:wordclock/languages/all.dart';
 import 'package:wordclock/model/word_grid.dart';
@@ -95,9 +96,21 @@ void printColoredGrid(
 }) {
   final colorMap = _buildColorMap(placements);
 
+  // Group colored word labels by row
+  final rowWords = <int, List<String>>{};
+  for (int i = 0; i < placements.length; i++) {
+    final p = placements[i];
+    final color = AnsiColors.getColor(i);
+    rowWords
+        .putIfAbsent(p.row, () => [])
+        .add('$color${p.word}${AnsiColors.reset}');
+  }
+
   if (header != null) print(header);
   for (int row = 0; row < grid.height; row++) {
-    print(_formatColoredRow(grid.cells, grid.width, row, colorMap));
+    final gridRow = _formatColoredRow(grid.cells, grid.width, row, colorMap);
+    final words = (rowWords[row] ?? []).join(' ');
+    print('$gridRow   $words');
   }
 }
 
@@ -111,6 +124,8 @@ class Config {
   final String algorithm;
   final int timeout;
   final bool useRanks;
+  final bool printTimeCheck;
+  final bool printDefault;
 
   Config({
     required this.gridWidth,
@@ -122,6 +137,8 @@ class Config {
     required this.algorithm,
     required this.timeout,
     required this.useRanks,
+    required this.printTimeCheck,
+    required this.printDefault,
   });
 }
 
@@ -172,6 +189,14 @@ void main(List<String> args) {
           'Use rank-based solving instead of frontier-based (default: false).',
     )
     ..addFlag(
+      'print-timecheck',
+      help: 'Print the color-coded timeCheckGrid for the selected language.',
+    )
+    ..addFlag(
+      'print-default',
+      help: 'Print the color-coded defaultGrid for the selected language.',
+    )
+    ..addFlag(
       'help',
       abbr: '?',
       negatable: false,
@@ -213,6 +238,8 @@ void main(List<String> args) {
     algorithm: results['algorithm'] as String,
     timeout: int.parse(results['timeout'] as String),
     useRanks: results['use-ranks'] as bool,
+    printTimeCheck: results['print-timecheck'] as bool,
+    printDefault: results['print-default'] as bool,
   );
 
   if (config.checkAll) {
@@ -222,6 +249,16 @@ void main(List<String> args) {
 
   if (config.outputDot) {
     _exportGraph(config);
+    return;
+  }
+
+  if (config.printTimeCheck) {
+    _printExistingGrid(config, config.language.timeCheckGrid, 'timeCheckGrid');
+    return;
+  }
+
+  if (config.printDefault) {
+    _printExistingGrid(config, config.language.defaultGrid, 'defaultGrid');
     return;
   }
 
@@ -296,6 +333,54 @@ void _exportGraph(Config config) {
     final graph = DependencyGraphBuilder.build(language: config.language);
     print(DotExporter.export(graph));
   }
+}
+
+void _printExistingGrid(Config config, WordGrid? grid, String name) {
+  final lang = config.language;
+  if (grid == null) {
+    print('Error: Language ${lang.id} does not have a $name.');
+    return;
+  }
+
+  final placements = _extractPlacements(grid, lang);
+  printColoredGrid(
+    grid,
+    placements,
+    header: 'Color-coded $name for ${lang.id} (${lang.englishName}):',
+  );
+}
+
+List<WordPlacement> _extractPlacements(
+  WordGrid grid,
+  WordClockLanguage language,
+) {
+  final placements = <WordPlacement>{};
+
+  WordClockUtils.forEachTime(language, (time, phrase) {
+    final words = language.tokenize(phrase);
+    final sequences = grid.getWordSequences(
+      words,
+      requiresPadding: language.requiresPadding,
+    );
+
+    for (int i = 0; i < words.length; i++) {
+      final word = words[i];
+      final indices = sequences[i];
+      if (indices != null && indices.isNotEmpty) {
+        placements.add(
+          WordPlacement(
+            word: word,
+            startOffset: indices.first,
+            width: grid.width,
+            length: indices.length,
+          ),
+        );
+      }
+    }
+  });
+
+  return placements.toList()
+    ..sort((a, b) => a.startOffset.compareTo(b.startOffset));
 }
 
 void _generateAndPrintGrid(Config config) {
