@@ -1,6 +1,6 @@
 // ignore_for_file: avoid_print
 import 'dart:io';
-
+import 'package:args/args.dart';
 import 'package:wordclock/languages/all.dart';
 import 'package:wordclock/languages/language.dart';
 import 'package:wordclock/model/word_grid.dart';
@@ -12,34 +12,71 @@ bool isWide(int charCode) => charCode >= 0x2000;
 bool needsWideMode(List<String> cells) => cells.any((c) => c.runes.any(isWide));
 
 void main(List<String> args) {
+  final parser = ArgParser()
+    ..addOption(
+      'lang',
+      abbr: 'l',
+      defaultsTo: 'EN',
+      help: 'Language ID(s) to use (comma-separated, or "all").',
+    )
+    ..addOption(
+      'grid',
+      abbr: 'g',
+      defaultsTo: 'default',
+      allowed: ['default', 'timecheck'],
+      help: 'Grid type to display.',
+    )
+    ..addFlag(
+      'help',
+      abbr: '?',
+      negatable: false,
+      help: 'Show this help message.',
+    );
+
+  final ArgResults results;
+  try {
+    results = parser.parse(args);
+  } catch (e) {
+    print(e);
+    print('Usage: cli.dart [options] [HH:mm]');
+    print(parser.usage);
+    exit(1);
+  }
+
+  if (results['help'] as bool) {
+    print('Usage: cli.dart [options] [HH:mm]');
+    print(parser.usage);
+    return;
+  }
+
   // Defaults
   List<String> languages = ['EN'];
   DateTime now = DateTime.now();
+  String gridType = results['grid'] as String;
 
   final availableIds = WordClockLanguages.byId.keys.toList();
 
-  // Simple Argument Parsing
-  for (var arg in args) {
-    if (arg.startsWith('--lang=')) {
-      final raw = arg.substring(7);
-      if (raw == 'all') {
-        languages = availableIds;
-      } else {
-        languages = raw.split(',');
+  // Parse language
+  final langArg = results['lang'] as String;
+  if (langArg == 'all') {
+    languages = availableIds;
+  } else {
+    languages = langArg.split(',');
+  }
+
+  // Parse time (positional)
+  if (results.rest.isNotEmpty) {
+    final timeStr = results.rest.first;
+    try {
+      final parts = timeStr.split(':');
+      if (parts.length == 2) {
+        final hour = int.parse(parts[0]);
+        final minute = int.parse(parts[1]);
+        now = DateTime(now.year, now.month, now.day, hour, minute);
       }
-    } else if (!arg.startsWith('--')) {
-      // Assume time in HH:mm
-      try {
-        final parts = arg.split(':');
-        if (parts.length == 2) {
-          final hour = int.parse(parts[0]);
-          final minute = int.parse(parts[1]);
-          now = DateTime(now.year, now.month, now.day, hour, minute);
-        }
-      } catch (e) {
-        print('Error parsing time: $e');
-        exit(1);
-      }
+    } catch (e) {
+      print('Error parsing time "$timeStr": $e');
+      exit(1);
     }
   }
 
@@ -48,12 +85,12 @@ void main(List<String> args) {
   );
 
   for (final lang in languages) {
-    _processLanguage(lang, now);
+    _processLanguage(lang, now, gridType);
   }
 }
 
-void _processLanguage(String lang, DateTime now) {
-  print('\n=== Language: $lang ===');
+void _processLanguage(String lang, DateTime now, String gridType) {
+  print('\n=== Language: $lang (Grid: $gridType) ===');
 
   // Select Language
   final language = WordClockLanguages.all.firstWhere(
@@ -61,7 +98,7 @@ void _processLanguage(String lang, DateTime now) {
     orElse: () => throw ArgumentError('Unsupported language: $lang'),
   );
 
-  final grid = _getGrid(language);
+  final grid = _getGrid(language, gridType);
 
   final phrase = language.timeToWords.convert(now);
   print('Phrase: "$phrase"');
@@ -74,12 +111,19 @@ void _processLanguage(String lang, DateTime now) {
   _printGrid(grid, activeIndices);
 }
 
-WordGrid _getGrid(WordClockLanguage language) {
-  if (language.defaultGrid == null) {
-    throw ArgumentError('Language "${language.id}" has no default grid.');
+WordGrid _getGrid(WordClockLanguage language, String gridType) {
+  final WordGrid? grid;
+  if (gridType == 'timecheck') {
+    grid = language.timeCheckGrid;
+  } else {
+    grid = language.defaultGrid;
   }
 
-  return language.defaultGrid!;
+  if (grid == null) {
+    throw ArgumentError('Language "${language.id}" has no $gridType grid.');
+  }
+
+  return grid;
 }
 
 void _printGrid(WordGrid grid, Set<int> activeIndices) {
