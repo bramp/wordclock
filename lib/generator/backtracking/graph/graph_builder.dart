@@ -1,6 +1,4 @@
-// ignore_for_file: avoid_print
-// TODO Remove the prints
-
+import 'dart:developer' as developer;
 import 'package:wordclock/generator/backtracking/graph/dependency_graph.dart';
 import 'package:wordclock/generator/backtracking/graph/phrase_trie.dart';
 import 'package:wordclock/generator/backtracking/graph/word_node.dart';
@@ -238,17 +236,26 @@ class WordDependencyGraphBuilder {
       (sum, list) => sum + list.length,
     );
     if (actualNodeCount > optimalNodeCount) {
-      print(
-        'WARNING: Graph has $actualNodeCount nodes, '
-        'but optimal is $optimalNodeCount',
+      developer.log(
+        'Graph has $actualNodeCount nodes, but optimal is $optimalNodeCount',
+        name: 'WordDependencyGraphBuilder',
+        level: 900, // Warning level
       );
-      print('  Extra instances created:');
+      developer.log(
+        '  Extra instances created:',
+        name: 'WordDependencyGraphBuilder',
+        level: 900,
+      );
       for (final entry in nodes.entries) {
         final word = entry.key;
         final instances = entry.value;
         final optimal = maxOccurrences[word] ?? 1;
         if (instances.length > optimal) {
-          print('    $word: ${instances.length} nodes (optimal: $optimal)');
+          developer.log(
+            '    $word: ${instances.length} nodes (optimal: $optimal)',
+            name: 'WordDependencyGraphBuilder',
+            level: 900,
+          );
         }
       }
     }
