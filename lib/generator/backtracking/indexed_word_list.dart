@@ -1,6 +1,5 @@
 import 'package:wordclock/generator/backtracking/graph/dependency_graph.dart';
 import 'package:wordclock/generator/backtracking/graph/word_node.dart';
-import 'package:wordclock/generator/backtracking/grid_builder.dart';
 
 /// Pre-computed word metadata indexed for efficient backtracking.
 ///
@@ -55,10 +54,10 @@ class IndexedWordList {
   ///
   /// Sorts words by (rank, length) and pre-computes metadata.
   factory IndexedWordList.build(WordDependencyGraph graph) {
-    final allNodes = graph.nodes.values.expand((i) => i).toList();
+    final allNodes = graph.allNodes;
 
     // Compute ranks for sorting
-    final ranks = BacktrackingGridBuilder.computeRanks(graph);
+    final ranks = graph.computeRanks();
 
     // Sort all nodes by (rank, length desc) - this way iterating bits in order
     // processes lower ranks first, and within each rank, longer words first

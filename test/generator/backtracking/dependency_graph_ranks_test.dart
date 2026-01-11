@@ -2,13 +2,12 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:wordclock/generator/backtracking/graph/dependency_graph.dart';
 import 'package:wordclock/generator/backtracking/graph/word_node.dart';
 import 'package:wordclock/generator/backtracking/graph/cell_codec.dart';
-import 'package:wordclock/generator/backtracking/grid_builder.dart';
 import 'package:wordclock/languages/english.dart';
 
 final _testCodec = CellCodec();
 
 void main() {
-  group('BacktrackingGridBuilder.computeRanks', () {
+  group('WordDependencyGraph.computeRanks', () {
     test('computes ranks for linear dependency A -> B -> C', () {
       final graph = _buildGraph({
         'A': {'B'},
@@ -16,7 +15,7 @@ void main() {
         'C': <String>{},
       });
 
-      final ranks = _simplifyRanks(BacktrackingGridBuilder.computeRanks(graph));
+      final ranks = _simplifyRanks(graph.computeRanks());
 
       expect(ranks['A'], 0);
       expect(ranks['B'], 1);
@@ -30,7 +29,7 @@ void main() {
         'C': <String>{},
       });
 
-      final ranks = _simplifyRanks(BacktrackingGridBuilder.computeRanks(graph));
+      final ranks = _simplifyRanks(graph.computeRanks());
 
       expect(ranks['A'], 0);
       expect(ranks['B'], 1);
@@ -44,7 +43,7 @@ void main() {
         'C': <String>{},
       });
 
-      final ranks = _simplifyRanks(BacktrackingGridBuilder.computeRanks(graph));
+      final ranks = _simplifyRanks(graph.computeRanks());
 
       expect(ranks['A'], 0);
       expect(ranks['B'], 0);
@@ -59,7 +58,7 @@ void main() {
         'D': <String>{},
       });
 
-      final ranks = _simplifyRanks(BacktrackingGridBuilder.computeRanks(graph));
+      final ranks = _simplifyRanks(graph.computeRanks());
 
       expect(ranks['A'], 0);
       expect(ranks['B'], 1);
@@ -74,7 +73,7 @@ void main() {
         'B': {'A'},
       });
 
-      final ranks = _simplifyRanks(BacktrackingGridBuilder.computeRanks(graph));
+      final ranks = _simplifyRanks(graph.computeRanks());
 
       // Cycle nodes get the rank after the last processed rank (which is 0)
       expect(ranks['A'], 0);
@@ -91,7 +90,7 @@ void main() {
         'C': {'B'},
       });
 
-      final ranks = _simplifyRanks(BacktrackingGridBuilder.computeRanks(graph));
+      final ranks = _simplifyRanks(graph.computeRanks());
 
       expect(ranks['A'], 0);
       // B and C are in a cycle, reachable from rank 0
@@ -140,7 +139,7 @@ void main() {
         codec: _testCodec,
       );
 
-      final ranks = _simplifyRanks(BacktrackingGridBuilder.computeRanks(graph));
+      final ranks = _simplifyRanks(graph.computeRanks());
 
       // Expected: A (0) -> B (1) -> A#1 (2)
       // Note: Instance 0 ID is simply "A" (not A#0) in current implementation convention.

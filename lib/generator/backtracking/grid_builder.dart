@@ -161,7 +161,7 @@ class BacktrackingGridBuilder {
     _stopReason = StopReason.completed;
 
     // 3. Get all nodes
-    final allNodes = graph.nodes.values.expand((i) => i).toList();
+    final allNodes = graph.allNodes;
     _totalWords = allNodes.length;
 
     // 4. Solve using selected approach
@@ -263,7 +263,7 @@ class BacktrackingGridBuilder {
   /// Sets up and runs rank-based solving
   void _solveWithRanks(GridState state, List<WordNode> allNodes) {
     // Group nodes by rank (topological level)
-    final ranks = computeRanks(graph);
+    final ranks = graph.computeRanks();
     final maxRank = ranks.values.fold(0, (a, b) => a > b ? a : b);
 
     final rankNodes = List.generate(maxRank + 1, (_) => <WordNode>[]);
@@ -642,50 +642,6 @@ class BacktrackingGridBuilder {
       offset++;
     }
     return -1;
-  }
-
-  /// Compute topological ranks for all word instances
-  static Map<WordNode, int> computeRanks(WordDependencyGraph graph) {
-    final inDegree = <WordNode, int>{};
-    final allNodes = graph.nodes.values.expand((i) => i).toList();
-
-    for (final node in allNodes) {
-      inDegree[node] = 0;
-    }
-
-    for (final entry in graph.edges.entries) {
-      for (final succ in entry.value) {
-        inDegree[succ] = (inDegree[succ] ?? 0) + 1;
-      }
-    }
-
-    final ranks = <WordNode, int>{};
-    var queue = inDegree.entries
-        .where((e) => e.value == 0)
-        .map((e) => e.key)
-        .toList();
-
-    queue.sort((a, b) => a.id.compareTo(b.id));
-
-    int currentRank = 0;
-    while (queue.isNotEmpty) {
-      final nextQueue = <WordNode>[];
-      for (final node in queue) {
-        ranks[node] = currentRank;
-        for (final succ in graph.edges[node] ?? {}) {
-          inDegree[succ] = inDegree[succ]! - 1;
-          if (inDegree[succ] == 0) nextQueue.add(succ);
-        }
-      }
-      queue = nextQueue;
-      queue.sort((a, b) => a.id.compareTo(b.id));
-      currentRank++;
-    }
-
-    for (final node in allNodes) {
-      if (!ranks.containsKey(node)) ranks[node] = currentRank;
-    }
-    return ranks;
   }
 
   /// Debugging tool: Step through a specific sequence of placements and report why it fails.

@@ -36,6 +36,56 @@ class WordDependencyGraph {
     required this.codec,
   });
 
+  /// All word nodes in the graph
+  List<WordNode> get allNodes => nodes.values.expand((i) => i).toList();
+
+  /// Compute topological ranks for all word instances in this graph.
+  /// Ranks represent the longest path from a root node to this node.
+  Map<WordNode, int> computeRanks() {
+    final inDegree = <WordNode, int>{};
+    final nodes = allNodes;
+
+    for (final node in nodes) {
+      inDegree[node] = 0;
+    }
+
+    for (final entry in edges.entries) {
+      for (final succ in entry.value) {
+        inDegree[succ] = (inDegree[succ] ?? 0) + 1;
+      }
+    }
+
+    final ranks = <WordNode, int>{};
+    var queue = inDegree.entries
+        .where((e) => e.value == 0)
+        .map((e) => e.key)
+        .toList();
+
+    // Sort initial queue for deterministic results
+    queue.sort((a, b) => a.id.compareTo(b.id));
+
+    int currentRank = 0;
+    while (queue.isNotEmpty) {
+      final nextQueue = <WordNode>[];
+      for (final node in queue) {
+        ranks[node] = currentRank;
+        for (final succ in edges[node] ?? {}) {
+          inDegree[succ] = inDegree[succ]! - 1;
+          if (inDegree[succ] == 0) nextQueue.add(succ);
+        }
+      }
+      queue = nextQueue;
+      queue.sort((a, b) => a.id.compareTo(b.id));
+      currentRank++;
+    }
+
+    // Nodes in cycles might not be in ranks; assign them a rank
+    for (final node in nodes) {
+      if (!ranks.containsKey(node)) ranks[node] = currentRank;
+    }
+    return ranks;
+  }
+
   @override
   String toString() {
     final buffer = StringBuffer();
