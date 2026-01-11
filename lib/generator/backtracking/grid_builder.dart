@@ -1,5 +1,6 @@
 // ignore_for_file: avoid_print
 import 'dart:math';
+import 'package:meta/meta.dart';
 import 'package:wordclock/generator/backtracking/grid_state.dart';
 import 'package:wordclock/generator/backtracking/graph/dependency_graph.dart';
 import 'package:wordclock/generator/backtracking/graph/graph_builder.dart';
@@ -365,7 +366,7 @@ class BacktrackingGridBuilder {
         int newUnplacedMask = unplacedMask & ~lowestBit;
 
         // Only recurse if remaining space can fit remaining words
-        if (_canFitRemainingWords(state, wordList, newUnplacedMask)) {
+        if (canFitRemainingWords(state, wordList, newUnplacedMask)) {
           // Update trie cache with end offset for successors
           final endOffset = offset + p.length - 1;
           for (final trieNode in node.ownedTrieNodes) {
@@ -417,7 +418,8 @@ class BacktrackingGridBuilder {
   /// - Sum of minContributions gives a lower bound on space needed
   ///
   /// Returns true if it's still possible to place all remaining words.
-  bool _canFitRemainingWords(
+  @visibleForTesting
+  bool canFitRemainingWords(
     GridState state,
     IndexedWordList wordList,
     int unplacedMask,
@@ -813,7 +815,7 @@ class BacktrackingGridBuilder {
       print(state.toGridString());
 
       // Check Optimization
-      if (!_canFitRemainingWords(state, wordList, unplacedMask)) {
+      if (!canFitRemainingWords(state, wordList, unplacedMask)) {
         print(
           '  ❌ FAILURE: Optimization `_canFitRemainingWords` (Space Pruning) triggered.',
         );

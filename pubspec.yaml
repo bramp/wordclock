@@ -43,6 +43,7 @@ dependencies:
   # Google Analytics / Firebase Analytics
   firebase_core: ^4.3.0
   firebase_analytics: ^12.1.0
+  meta: ^1.17.0
 
 dev_dependencies:
   flutter_launcher_icons: ^0.14.4
