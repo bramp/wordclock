@@ -36,23 +36,23 @@ class WordDependencyGraphBuilder {
       (sum, count) => sum + count,
     );
 
-    // 2. Try multiple phrase orderings
+    // 2. Try multiple strategies
     final orderings = <String, List<String>>{
-      'length_asc': List.from(allPhrases)
+      'length_asc': allPhrases.toList()
         ..sort((a, b) => a.length.compareTo(b.length)),
-      'length_desc': List.from(allPhrases)
+      'length_desc': allPhrases.toList()
         ..sort((a, b) => b.length.compareTo(a.length)),
     };
 
     WordDependencyGraph? bestGraph;
-    var bestNodeCount = 999999;
+    int bestNodeCount = 999999;
 
     for (final entry in orderings.entries) {
       final graph = buildByPhrases(
         orderedPhrases: entry.value,
         language: language,
       );
-      final nodeCount = graph.nodes.values.fold(0, (s, l) => s + l.length);
+      final nodeCount = graph.allNodes.length;
 
       if (nodeCount < bestNodeCount) {
         bestNodeCount = nodeCount;
@@ -63,13 +63,10 @@ class WordDependencyGraphBuilder {
       if (nodeCount == optimalNodeCount) break;
     }
 
-    // 3. Try Trie-based construction (BFS)
+    // 3. Try Trie-based construction (BFS) if not already optimal
     if (bestNodeCount > optimalNodeCount) {
       final trieGraph = buildWithTrie(language: language, phrases: allPhrases);
-      final trieNodeCount = trieGraph.nodes.values.fold(
-        0,
-        (s, l) => s + l.length,
-      );
+      final trieNodeCount = trieGraph.allNodes.length;
 
       if (trieNodeCount < bestNodeCount) {
         bestNodeCount = trieNodeCount;
@@ -83,7 +80,6 @@ class WordDependencyGraphBuilder {
     return bestGraph;
   }
 
-  /// Builds a graph by constructing a phrase Trie and then traversing it with BFS.
   static WordDependencyGraph buildWithTrie({
     required WordClockLanguage language,
     List<String>? phrases,
@@ -91,64 +87,27 @@ class WordDependencyGraphBuilder {
     final allPhrases =
         phrases ?? WordClockUtils.getAllPhrases(language).toList();
     final trie = PhraseTrie.fromPhrases(allPhrases, language);
-
-    // BFS to build Graph - Assign graph nodes to trie nodes
-    final Map<String, List<WordNode>> nodes = {};
-    final Map<WordNode, Set<WordNode>> edges = {};
-    final Map<WordNode, Set<WordNode>> inEdges = {};
-    final codec = CellCodec();
+    final state = _GraphState(language);
     final trieToGraph = <PhraseTrieNode, WordNode>{};
 
-    // Queue stores: (TrieNode, Word, ParentGraphNode)
-    final queue =
-        ListQueue<({PhraseTrieNode node, String word, WordNode? parent})>();
+    // BFS to build Graph - Assign graph nodes to trie nodes
+    final queue = ListQueue<_TrieBfsItem>();
 
     for (final entry in trie.roots.entries) {
-      queue.add((node: entry.value, word: entry.key, parent: null));
+      queue.add(_TrieBfsItem(node: entry.value, word: entry.key, parent: null));
     }
 
     while (queue.isNotEmpty) {
       final item = queue.removeFirst();
-      final trieNode = item.node;
-      final word = item.word;
-      final parentGraphNode = item.parent;
+      final graphNode = state.getOrCreateNode(item.word, item.parent);
+      trieToGraph[item.node] = graphNode;
 
-      WordNode? selectedNode;
-      final existingInstances = nodes[word] ??= [];
+      if (item.parent != null) state.addEdge(item.parent!, graphNode);
 
-      // Try reuse
-      for (final candidate in existingInstances) {
-        if (parentGraphNode == null) {
-          selectedNode = candidate;
-          break;
-        } else {
-          if (!_wouldCreateCycle(edges, parentGraphNode, candidate)) {
-            selectedNode = candidate;
-            break;
-          }
-        }
-      }
-
-      if (selectedNode == null) {
-        final cells = WordGrid.splitIntoCells(word);
-        selectedNode = WordNode(
-          word: word,
-          instance: existingInstances.length,
-          cellCodes: codec.encodeAll(cells),
-          phrases: {}, // Populated later
+      for (final entry in item.node.children.entries) {
+        queue.add(
+          _TrieBfsItem(node: entry.value, word: entry.key, parent: graphNode),
         );
-        existingInstances.add(selectedNode);
-      }
-
-      trieToGraph[trieNode] = selectedNode;
-
-      if (parentGraphNode != null) {
-        edges.putIfAbsent(parentGraphNode, () => {}).add(selectedNode);
-        inEdges.putIfAbsent(selectedNode, () => {}).add(parentGraphNode);
-      }
-
-      for (final entry in trieNode.children.entries) {
-        queue.add((node: entry.value, word: entry.key, parent: selectedNode));
       }
     }
 
@@ -159,104 +118,41 @@ class WordDependencyGraphBuilder {
       if (words.isEmpty) continue;
 
       final phraseNodes = <WordNode>[];
-      var current = trie.roots[words[0]]!;
-      var graphNode = trieToGraph[current]!;
-      graphNode.phrases.add(phrase);
-      phraseNodes.add(graphNode);
+      var currentTrieNode = trie.roots[words[0]]!;
 
-      for (int i = 1; i < words.length; i++) {
-        current = current.children[words[i]]!;
-        graphNode = trieToGraph[current]!;
+      for (int i = 0; i < words.length; i++) {
+        if (i > 0) currentTrieNode = currentTrieNode.children[words[i]]!;
+        final graphNode = trieToGraph[currentTrieNode]!;
         graphNode.phrases.add(phrase);
         phraseNodes.add(graphNode);
       }
       phraseMap[phrase] = phraseNodes;
     }
 
-    _buildPredecessorTries(phraseMap, trie: trie);
+    _buildPredecessorTries(phraseMap, language: language, trie: trie);
 
-    return WordDependencyGraph(
-      nodes: nodes,
-      edges: edges,
-      inEdges: inEdges,
-      phrases: phraseMap,
-      language: language,
-      codec: codec,
-    );
+    return state.createGraph(phraseMap);
   }
 
   static WordDependencyGraph buildByPhrases({
     required List<String> orderedPhrases,
     required WordClockLanguage language,
   }) {
-    final Map<String, List<WordNode>> nodes = {};
-    final Map<WordNode, Set<WordNode>> edges = {};
-    final Map<WordNode, Set<WordNode>> inEdges = {};
-    final Map<String, List<WordNode>> phrases = {};
-    final codec = CellCodec();
-
-    // Helper to check if adding edge from->to would create a cycle
-    bool wouldCreateCycle(WordNode fromNode, WordNode toNode) {
-      return _wouldCreateCycle(edges, fromNode, toNode);
-    }
+    final state = _GraphState(language);
+    final phraseMap = <String, List<WordNode>>{};
 
     // Process all phrases in the given order
     for (final phraseText in orderedPhrases) {
       final words = language.tokenize(phraseText);
       if (words.isEmpty) continue;
 
-      final phraseNodes = <WordNode>[];
-
-      for (int i = 0; i < words.length; i++) {
-        final word = words[i];
-        final predNode = i > 0 ? phraseNodes[i - 1] : null;
-
-        WordNode? selectedNode;
-        final instances = nodes[word] ??= [];
-
-        // Try to find an existing instance that doesn't create a cycle
-        for (final node in instances) {
-          if (predNode != null && wouldCreateCycle(predNode, node)) continue;
-
-          selectedNode = node;
-          break;
-        }
-
-        if (selectedNode != null) {
-          selectedNode.phrases.add(phraseText);
-        } else {
-          final cells = WordGrid.splitIntoCells(word);
-          selectedNode = WordNode(
-            word: word,
-            instance: instances.length,
-            cellCodes: codec.encodeAll(cells),
-            phrases: {phraseText},
-          );
-          instances.add(selectedNode);
-        }
-
-        phraseNodes.add(selectedNode);
-
-        if (predNode != null) {
-          edges.putIfAbsent(predNode, () => {}).add(selectedNode);
-          inEdges.putIfAbsent(selectedNode, () => {}).add(predNode);
-        }
-      }
-
-      phrases[phraseText] = phraseNodes;
+      state.addPhraseSequence(phraseText, words, phraseMap);
     }
 
     // Build the phrase trie and link nodes
-    _buildPredecessorTries(phrases);
+    _buildPredecessorTries(phraseMap, language: language);
 
-    return WordDependencyGraph(
-      nodes: nodes,
-      edges: edges,
-      inEdges: inEdges,
-      phrases: phrases,
-      language: language,
-      codec: codec,
-    );
+    return state.createGraph(phraseMap);
   }
 
   /// Checks if adding an edge from [fromNode] to [toNode] would create a cycle.
@@ -266,6 +162,8 @@ class WordDependencyGraphBuilder {
     WordNode toNode,
   ) {
     if (fromNode == toNode) return true;
+
+    // BFS to see if fromNode is reachable from toNode
     final visited = <WordNode>{};
     final queue = ListQueue<WordNode>()..add(toNode);
 
@@ -273,9 +171,10 @@ class WordDependencyGraphBuilder {
       final current = queue.removeFirst();
       if (current == fromNode) return true;
 
-      if (visited.add(current)) {
-        final successors = edges[current];
-        if (successors != null) queue.addAll(successors);
+      for (final successor in edges[current] ?? {}) {
+        if (visited.add(successor)) {
+          queue.add(successor);
+        }
       }
     }
     return false;
@@ -285,10 +184,11 @@ class WordDependencyGraphBuilder {
   /// Also links nodes to their predecessor terminals and owned trie nodes.
   static void _buildPredecessorTries(
     Map<String, List<WordNode>> phrases, {
+    required WordClockLanguage language,
     PhraseTrie? trie,
   }) {
     // Build the global phrase trie (or use existing)
-    final globalTrie = trie ?? PhraseTrie();
+    final globalTrie = trie ?? PhraseTrie.fromPhrases(phrases.keys, language);
 
     // Process each phrase to build trie paths and link to WordNodes
     for (final entry in phrases.entries) {
@@ -304,6 +204,7 @@ class WordDependencyGraphBuilder {
 
         // Build trie path for predecessors [0..targetIdx-1]
         var currentTrieNode = globalTrie.getOrCreateRoot(phraseNodes[0].word);
+
         // First node owns this root trie node
         if (!phraseNodes[0].ownedTrieNodes.contains(currentTrieNode)) {
           phraseNodes[0].ownedTrieNodes.add(currentTrieNode);
@@ -387,4 +288,88 @@ class WordDependencyGraphBuilder {
       }
     }
   }
+}
+
+/// Helper to maintain build state for the word dependency graph.
+class _GraphState {
+  final WordClockLanguage language;
+  final CellCodec codec = CellCodec();
+  final Map<String, List<WordNode>> nodes = {};
+  final Map<WordNode, Set<WordNode>> edges = {};
+  final Map<WordNode, Set<WordNode>> inEdges = {};
+
+  _GraphState(this.language);
+
+  WordNode getOrCreateNode(String word, WordNode? predecessor) {
+    final instances = nodes[word] ??= [];
+
+    // Try to find an existing instance that doesn't create a cycle
+    for (final node in instances) {
+      if (predecessor == null ||
+          !WordDependencyGraphBuilder._wouldCreateCycle(
+            edges,
+            predecessor,
+            node,
+          )) {
+        return node;
+      }
+    }
+
+    // Create new node
+    final cells = WordGrid.splitIntoCells(word);
+    final newNode = WordNode(
+      word: word,
+      instance: instances.length,
+      cellCodes: codec.encodeAll(cells),
+      phrases: {},
+    );
+    instances.add(newNode);
+    return newNode;
+  }
+
+  void addEdge(WordNode from, WordNode to) {
+    edges.putIfAbsent(from, () => {}).add(to);
+    inEdges.putIfAbsent(to, () => {}).add(from);
+  }
+
+  /// Adds a sequence of words as a phrase, reusing or creating nodes.
+  void addPhraseSequence(
+    String phraseText,
+    List<String> words,
+    Map<String, List<WordNode>> phraseMap,
+  ) {
+    final phraseNodes = <WordNode>[];
+    WordNode? predNode;
+
+    for (final word in words) {
+      final node = getOrCreateNode(word, predNode);
+      node.phrases.add(phraseText);
+      phraseNodes.add(node);
+
+      if (predNode != null) addEdge(predNode, node);
+      predNode = node;
+    }
+
+    phraseMap[phraseText] = phraseNodes;
+  }
+
+  WordDependencyGraph createGraph(Map<String, List<WordNode>> phrases) {
+    return WordDependencyGraph(
+      nodes: nodes,
+      edges: edges,
+      inEdges: inEdges,
+      phrases: phrases,
+      language: language,
+      codec: codec,
+    );
+  }
+}
+
+/// A helper class for the BFS traversal in [WordDependencyGraphBuilder.buildWithTrie].
+class _TrieBfsItem {
+  final PhraseTrieNode node;
+  final String word;
+  final WordNode? parent;
+
+  _TrieBfsItem({required this.node, required this.word, this.parent});
 }
