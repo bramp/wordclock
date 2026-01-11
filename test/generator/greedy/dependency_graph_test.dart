@@ -122,49 +122,6 @@ void main() {
     expect(grid, startsWith("PAST"));
   });
 
-  test(
-    'Distributed padding test',
-    () {
-      final converter = SimpleConverter(["FIRST", "MIDDLE WORD", "LAST"]);
-      final lang = createMockLanguage(timeToWords: converter);
-
-      final grid = GridGenerator.generate(
-        language: lang,
-        seed: 42,
-        width: 15,
-        targetHeight: 3,
-      ).cells.join('');
-
-      // Line 1: FIRST (5 chars) + 10 padding at end
-      // Line 2: MIDDLE (6) + gap (1) + WORD (4) = 11 chars. 4 padding distributed.
-      // Line 3: LAST (4) + 11 padding at start
-
-      // Note: The grid length depends on how many lines were generated.
-      // FIRST, MIDDLE WORD, LAST are 3 separate phrases.
-      // MIDDLE WORD has a gap.
-
-      expect(grid, contains("FIRST"));
-      expect(grid, contains("MIDDLE"));
-      expect(grid, contains("WORD"));
-      expect(grid, contains("LAST"));
-
-      // Find the line containing MIDDLE WORD
-      final lines = [];
-      for (int i = 0; i < grid.length; i += 15) {
-        lines.add(grid.substring(i, i + 15));
-      }
-
-      final middleLine = lines.firstWhere((l) => l.contains("MIDDLE"));
-
-      // Check that padding is distributed (not all at start or all at end)
-      // MIDDLE (6) + gap (1) + WORD (4) = 11. 4 padding chars.
-      expect(middleLine, isNot(startsWith("XXXX")));
-      expect(middleLine, isNot(endsWith("XXXX")));
-    },
-    skip:
-        'Old algorithm behavior - constraint-based algorithm has different padding',
-  );
-
   test('English language reuse: FIVE and OCLOCK', () {
     final lang = createMockLanguage(timeToWords: NativeEnglishTimeToWords());
     final graph = DependencyGraphBuilder.build(language: lang);
