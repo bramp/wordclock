@@ -2,11 +2,13 @@ import 'package:wordclock/generator/backtracking/grid_builder.dart';
 import 'package:wordclock/generator/backtracking/grid_state.dart';
 import 'package:wordclock/generator/backtracking/graph/dependency_graph.dart';
 import 'package:wordclock/generator/backtracking/graph/word_node.dart';
+import 'package:wordclock/generator/backtracking/graph/cell_codec.dart';
 import 'package:wordclock/languages/language.dart';
 import 'package:wordclock/logic/time_to_words.dart';
 
 export 'package:wordclock/generator/backtracking/graph/dependency_graph.dart';
 export 'package:wordclock/generator/backtracking/graph/word_node.dart';
+export 'package:wordclock/generator/backtracking/graph/cell_codec.dart';
 export 'package:wordclock/languages/language.dart';
 export 'package:wordclock/logic/time_to_words.dart';
 

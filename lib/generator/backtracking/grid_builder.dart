@@ -6,6 +6,7 @@ import 'package:wordclock/generator/backtracking/graph/dependency_graph.dart';
 import 'package:wordclock/generator/backtracking/graph/graph_builder.dart';
 import 'package:wordclock/generator/backtracking/graph/word_node.dart';
 import 'package:wordclock/generator/backtracking/graph/phrase_trie.dart';
+import 'package:wordclock/generator/backtracking/graph/cell_codec.dart';
 import 'package:wordclock/generator/backtracking/indexed_word_list.dart';
 import 'package:wordclock/generator/backtracking/grid_post_processor.dart';
 import 'package:wordclock/generator/model/grid_build_result.dart';

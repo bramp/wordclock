@@ -1,4 +1,5 @@
 import 'package:wordclock/generator/backtracking/graph/word_node.dart';
+import 'package:wordclock/generator/backtracking/graph/cell_codec.dart';
 import 'package:wordclock/languages/language.dart';
 
 /// A word-level dependency graph for the word clock.

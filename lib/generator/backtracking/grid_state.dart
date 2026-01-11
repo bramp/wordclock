@@ -1,5 +1,6 @@
 import 'dart:typed_data';
 import 'package:wordclock/generator/backtracking/graph/word_node.dart';
+import 'package:wordclock/generator/backtracking/graph/cell_codec.dart';
 import 'package:wordclock/generator/model/word_placement.dart' as public;
 import 'package:wordclock/generator/utils/grid_validator.dart';
 import 'package:wordclock/model/types.dart';
