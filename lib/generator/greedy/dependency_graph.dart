@@ -60,8 +60,7 @@ class DependencyGraphBuilder {
     }
 
     // 1. Pre-collect atoms (either words or characters) from all phrases
-    final Set<String> allAtoms = {};
-    allAtoms.addAll(WordClockUtils.collectAllWords(language));
+    final Set<String> allAtoms = WordClockUtils.getAllWords(language);
 
     // 2. Sort by length descending to maximize sub-string reuse
     final sortedAtoms = allAtoms.toList()

@@ -4,12 +4,22 @@ class WordClockUtils {
   /// Generates the set of all unique words required to display any time
   /// supported by the language. These words typically serve as the "atoms"
   /// for the dependency graph and grid layout.
-  static Set<String> collectAllWords(WordClockLanguage language) {
+  static Set<String> getAllWords(WordClockLanguage language) {
     final words = <String>{};
     forEachTime(language, (time, phrase) {
       words.addAll(language.tokenize(phrase));
     });
     return words;
+  }
+
+  /// Generates the set of all unique phrases required to display any time
+  /// supported by the language.
+  static Set<String> getAllPhrases(WordClockLanguage language) {
+    final phrases = <String>{};
+    forEachTime(language, (time, phrase) {
+      phrases.add(phrase);
+    });
+    return phrases;
   }
 
   /// Iterates over every possible time supported by the language, providing
