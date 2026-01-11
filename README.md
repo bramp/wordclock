@@ -110,20 +110,48 @@ The project includes several CLI tools for development and visualization.
 
 ### Grid Builder (`bin/grid_builder.dart`)
 
-Generates a character grid for a specific language or visualizes the word dependency graph.
+Generates, visualizes, and validates word grids.
 
-**Generate a grid:**
-
-```bash
-dart run bin/grid_builder.dart --lang=en --width=11 --seed=42
-```
-
-**Visualize the dependency graph (Graphviz DOT):**
+**Usage:**
 
 ```bash
-dart run bin/grid_builder.dart --lang=en --dot > graph.dot
-dot -Tpng graph.dot -o graph.png
+dart run bin/grid_builder.dart <command> [arguments]
 ```
+
+**Commands:**
+
+- **Solve**: Generate a new grid layout.
+  ```bash
+  # Generate a 11x10 grid for English using backtracking
+  dart run bin/grid_builder.dart solve --lang=en --width=11 --height=10
+  ```
+
+- **View**: Visualize an existing grid (color-coded).
+  ```bash
+  # View the default grid for Romanian
+  dart run bin/grid_builder.dart view --lang=ro --grid=default
+  ```
+
+- **Graph**: Generate dependency graph in DOT format.
+  ```bash
+  # Generate graph for English and save to PNG
+  dart run bin/grid_builder.dart graph --lang=en > graph.dot
+  dot -Tpng graph.dot -o graph.png
+  ```
+
+- **Check**: Validate grid consistency.
+  ```bash
+  # Check all languages
+  dart run bin/grid_builder.dart check
+
+  # Check specific language
+  dart run bin/grid_builder.dart check --lang=ro
+  ```
+
+- **Debug**: Interactive debugger for backtracking failures.
+  ```bash
+  dart run bin/grid_builder.dart debug --lang=ro
+  ```
 
 ### CLI Clock (`bin/cli.dart`)
 

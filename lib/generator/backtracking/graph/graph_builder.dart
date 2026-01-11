@@ -114,10 +114,10 @@ class WordDependencyGraphBuilder {
 
         // Try to find an existing instance that doesn't create a cycle
         for (final node in instances) {
-          if (predNode == null || !wouldCreateCycle(predNode, node)) {
-            selectedNode = node;
-            break;
-          }
+          if (predNode != null && wouldCreateCycle(predNode, node)) continue;
+
+          selectedNode = node;
+          break;
         }
 
         if (selectedNode != null) {

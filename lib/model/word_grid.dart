@@ -53,6 +53,8 @@ class WordGrid {
     return result;
   }
 
+  // TODO we use the term units here, which seems inconsistent with words and cells elsewhere.
+
   /// Calculates the set of indices to light up for the given [searchUnits].
   ///
   /// If [requiresPadding] is true, this method will attempt to find occurrences

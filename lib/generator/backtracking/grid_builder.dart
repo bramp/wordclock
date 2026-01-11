@@ -1,3 +1,4 @@
+// ignore_for_file: avoid_print
 import 'dart:math';
 import 'package:wordclock/generator/backtracking/grid_state.dart';
 import 'package:wordclock/generator/backtracking/graph/dependency_graph.dart';
@@ -122,6 +123,9 @@ class BacktrackingGridBuilder {
   late DateTime _startTime;
   StopReason _stopReason = StopReason.completed;
 
+  /// Optional prebuilt graph to use (useful for debugging)
+  final WordDependencyGraph? prebuiltGraph;
+
   BacktrackingGridBuilder({
     required this.width,
     required this.height,
@@ -130,6 +134,7 @@ class BacktrackingGridBuilder {
     this.findFirstValid = true,
     this.useFrontier = true,
     this.onProgress,
+    this.prebuiltGraph,
   }) : random = Random(seed),
        paddingCells = WordGrid.splitIntoCells(language.paddingAlphabet),
        _minHeightFound = height,
@@ -138,7 +143,8 @@ class BacktrackingGridBuilder {
   /// Attempts to build a grid that satisfies all constraints.
   GridBuildResult build() {
     // 1. Build word dependency graph (this also creates the CellCodec)
-    graph = WordDependencyGraphBuilder.build(language: language);
+    graph =
+        prebuiltGraph ?? WordDependencyGraphBuilder.build(language: language);
     codec = graph.codec;
 
     // 2. Initialize search state
@@ -682,5 +688,154 @@ class BacktrackingGridBuilder {
       if (!ranks.containsKey(node)) ranks[node] = currentRank;
     }
     return ranks;
+  }
+
+  /// Debugging tool: Step through a specific sequence of placements and report why it fails.
+  void debugValidatePlacements(List<WordNode> targets) {
+    print(
+      '\n--- DEBUG: Stepping through ${targets.length} word placements ---',
+    );
+
+    // 1. Build word dependency graph (this also creates the CellCodec)
+    // We reuse the existing graph if build() was called, otherwise verify graph
+    try {
+      // Check if graph is already initialized
+      // ignore: unnecessary_null_comparison
+      if (graph != null) {
+        // already initialized
+      }
+    } catch (_) {
+      // Not initialized
+      graph =
+          prebuiltGraph ?? WordDependencyGraphBuilder.build(language: language);
+      codec = graph.codec;
+    }
+
+    // 2. Initialize search state
+    final state = GridState(width: width, height: height, codec: codec);
+    _minHeightFound = height;
+    _maxAllowedOffset = height * width;
+
+    // 3. Build indexed word list
+    final wordList = IndexedWordList.build(graph);
+    // Map WordNode to index for mask manipulation
+    final nodeToIndex = <WordNode, int>{};
+    for (int i = 0; i < wordList.nodes.length; i++) {
+      nodeToIndex[wordList.nodes[i]] = i;
+    }
+
+    // Setup initial masks
+    int unplacedMask = (1 << wordList.length) - 1;
+    final inDegree = List<int>.of(wordList.initialInDegree);
+    final placedNodes = <WordNode>{};
+
+    for (int i = 0; i < targets.length; i++) {
+      final node = targets[i];
+      final nodeIdx = nodeToIndex[node];
+
+      if (nodeIdx == null) {
+        print('Error: Node ${node.word} not found in indexed list.');
+        continue;
+      }
+
+      print('\nStep ${i + 1}: Placing "${node.word}" (#${node.instance})');
+
+      // Check if this node has already been placed
+      if (placedNodes.contains(node)) {
+        print('  ❌ FAILURE: Node "${node.id}" has ALREADY been placed!');
+        return;
+      }
+      placedNodes.add(node);
+
+      // Check In-Degree (Eligibility)
+      if (inDegree[nodeIdx] > 0) {
+        print(
+          '  ⚠️ WARNING: Node has ${inDegree[nodeIdx]} unsatisfied dependencies.',
+        );
+      }
+
+      // Find earliest allowed placement (Graph & Trie constraints)
+      final earliest = findEarliestPlacementByPhrase(state, node);
+
+      if (earliest == -1 && !node.hasEmptyPredecessor) {
+        print(
+          '  ❌ FAILURE: findEarliestPlacementByPhrase returned -1. Dependencies broken.',
+        );
+
+        // Analyze predecessors
+        final predecessors = graph.inEdges[node] ?? {};
+        if (predecessors.isNotEmpty) {
+          print('     Graph predecessors (must be placed):');
+          for (final pred in predecessors) {
+            final predIdx = nodeToIndex[pred];
+            final isPlaced = (unplacedMask & (1 << predIdx!)) == 0;
+            print('       - ${pred.id}: ${isPlaced ? "Placed" : "NOT PLACED"}');
+          }
+        }
+        return;
+      }
+
+      // Find actual valid position in Grid
+      final offset = earliest == -1
+          ? findFirstValidPlacement(state, node, 0)
+          : earliest;
+
+      if (offset == -1) {
+        print(
+          '  ❌ FAILURE: No valid grid position found starting from offset $earliest.',
+        );
+        print('     (Grid full or conflicting characters?)');
+        print('\n  Current Grid State:\n${state.toGridString()}');
+        return;
+      }
+
+      // Check if Earliest valid matches Earliest allowed (strictly not necessary but good for debug)
+      print(
+        '  Found placement at offset $offset (row ${offset ~/ width}, col ${offset % width})',
+      );
+
+      // Place it
+      final p = state.placeWordUnchecked(node, offset);
+
+      // Update State
+      final endOffset = offset + p.length - 1;
+      for (final trieNode in node.ownedTrieNodes) {
+        trieNode.endOffset = endOffset;
+      }
+
+      unplacedMask &= ~(1 << nodeIdx);
+
+      for (final succIdx in wordList.successorIndices[nodeIdx]) {
+        inDegree[succIdx]--;
+      }
+
+      print('  ✅ Placed successfully.');
+      print(state.toGridString());
+
+      // Check Optimization
+      if (!_canFitRemainingWords(state, wordList, unplacedMask)) {
+        print(
+          '  ❌ FAILURE: Optimization `_canFitRemainingWords` (Space Pruning) triggered.',
+        );
+        final minContribution = wordList.minContribution;
+        int totalMinContribution = 0;
+        int mask = unplacedMask;
+        while (mask != 0) {
+          final lowestBit = mask & -mask;
+          final idx = lowestBit.bitLength - 1;
+          totalMinContribution += minContribution[idx];
+          mask ^= lowestBit;
+        }
+        final currentEndOffset = state.maxEndOffset;
+        final remainingSpace = _maxAllowedOffset - currentEndOffset - 1;
+
+        print('     - Required minimum cells: $totalMinContribution');
+        print('     - Available cells (approx): $remainingSpace');
+        return;
+      } else {
+        print('  INFO: Optimization check passed.');
+      }
+    }
+    print('\n🎉 SUCCESS: All words placed validly!');
   }
 }
