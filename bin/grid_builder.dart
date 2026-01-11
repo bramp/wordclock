@@ -5,6 +5,7 @@ import 'commands/view_command.dart';
 import 'commands/graph_command.dart';
 import 'commands/check_command.dart';
 import 'commands/debug_command.dart';
+import 'commands/phrases_command.dart';
 
 void main(List<String> args) async {
   final runner =
@@ -16,7 +17,8 @@ void main(List<String> args) async {
         ..addCommand(ViewCommand())
         ..addCommand(GraphCommand())
         ..addCommand(CheckCommand())
-        ..addCommand(DebugCommand());
+        ..addCommand(DebugCommand())
+        ..addCommand(PhrasesCommand());
 
   try {
     await runner.run(args);

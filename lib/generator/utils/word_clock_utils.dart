@@ -1,4 +1,5 @@
 import 'package:wordclock/languages/language.dart';
+import 'package:wordclock/model/word_grid.dart';
 
 class WordClockUtils {
   /// Generates the set of all unique words required to display any time
@@ -49,5 +50,58 @@ class WordClockUtils {
         visitor(time, phrase);
       }
     }
+  }
+
+  /// Calculates the maximum number of times each word appears in any single phrase.
+  /// This determines the minimum number of node instances needed for each word.
+  static Map<String, int> calculateMaxWordOccurrences(
+    Iterable<String> phrases,
+    WordClockLanguage language,
+  ) {
+    final maxOccurrences = <String, int>{};
+    for (final phraseText in phrases) {
+      final words = language.tokenize(phraseText);
+      final counts = <String, int>{};
+      for (final word in words) {
+        counts[word] = (counts[word] ?? 0) + 1;
+      }
+      for (final entry in counts.entries) {
+        final current = maxOccurrences[entry.key] ?? 0;
+        if (entry.value > current) {
+          maxOccurrences[entry.key] = entry.value;
+        }
+      }
+    }
+    return maxOccurrences;
+  }
+
+  /// Heuristic to estimate minimum cells by allowing substrings to overlap.
+  /// For example, "HEURE" is a substring of "HEURES", so we only count "HEURES"
+  /// if they occur sufficiently often.
+  static int estimateMinimumCells(Map<String, int> occurrences) {
+    final sortedWords = occurrences.keys.toList()
+      ..sort((a, b) => b.length.compareTo(a.length));
+    final available = Map<String, int>.from(occurrences);
+    int total = 0;
+
+    for (final word in sortedWords) {
+      int count = available[word]!;
+      if (count <= 0) continue;
+
+      total += WordGrid.splitIntoCells(word).length * count;
+
+      // See if this word can satisfy other shorter words
+      for (final other in sortedWords) {
+        if (word == other || other.length >= word.length) continue;
+        // Only overlap if it's a complete substring (to be safe)
+        if (word.contains(other)) {
+          // We can satisfy at most 'count' instances of 'other' using this 'word'
+          int covered = available[other]!;
+          if (covered > count) covered = count;
+          available[other] = available[other]! - covered;
+        }
+      }
+    }
+    return total;
   }
 }
