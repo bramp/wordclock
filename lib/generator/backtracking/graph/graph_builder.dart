@@ -27,13 +27,7 @@ class WordDependencyGraphBuilder {
   /// and returns the graph with the fewest nodes.
   static WordDependencyGraph buildBest({required WordClockLanguage language}) {
     // 1. Collect all unique phrases first
-    final processedPhrases = <String>{};
-    WordClockUtils.forEachTime(language, (time, phraseText) {
-      if (!processedPhrases.contains(phraseText)) {
-        processedPhrases.add(phraseText);
-      }
-    });
-    final allPhrases = processedPhrases.toList();
+    final allPhrases = WordClockUtils.getAllPhrases(language).toList();
 
     // Calculate the optimal (minimum) number of nodes needed for these phrases
     final maxOccurrences = _calculateMaxWordOccurrences(allPhrases, language);
