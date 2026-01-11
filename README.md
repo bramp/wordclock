@@ -172,3 +172,13 @@ Imports language definitions from the TimeCheck project.
 ```bash
 dart run bin/import_timecheck.dart
 ```
+
+## Related
+
+* https://www.qlocktwo.com/
+* https://www.kickstarter.com/projects/1629174995/word-clock-a-living-canvas
+  * Has lots of "clever" features.
+* Shaper Image Word Clock
+  * Review https://www.youtube.com/watch?v=e04TjcN8k2Y&t=309s
+* https://www.kickstarter.com/projects/edcs/the-wordclock
+* https://www.kickstarter.com/projects/420233999/the-tempus-fugit-wordclock

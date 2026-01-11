@@ -34,3 +34,4 @@
 - [ ] Add Google Analytics
   - [ ] For GDPR compliance, you may need to add a consent banner
   - [ ] Add tracking of how long the user keeps the app open for.
+- [ ] Allow for wordclock.me/$lang/ routing
