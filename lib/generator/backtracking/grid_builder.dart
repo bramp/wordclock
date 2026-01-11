@@ -312,38 +312,29 @@ class BacktrackingGridBuilder {
   ) {
     _iterationCount++;
 
-    final allNodes = wordList.nodes;
-    final successorIndices = wordList.successorIndices;
-
     // Periodically report progress
     if (_iterationCount % 1024 == 0) {
-      final now = DateTime.now();
-      _reportProgress(now, state);
+      _reportProgress(DateTime.now(), state);
       if (_shouldStop) return;
     }
 
     // Update best found so far
-    if (state.placementCount > _maxWordsPlaced) {
-      _maxWordsPlaced = state.placementCount;
-      _bestState = state.clone();
-    }
+    _updateBestState(state);
 
     // Pruning: if we've reached or exceeded the best height, backtrack
     if (state.maxEndOffset >= _maxAllowedOffset) return;
 
     // All words placed?
     if (unplacedMask == 0) {
-      final currentHeight = state.maxEndOffset ~/ width + 1;
-      if (currentHeight <= _minHeightFound) {
-        _minHeightFound = currentHeight;
-        _maxAllowedOffset = currentHeight * width;
-        _bestState = state.clone();
-      }
+      _recordCompletedState(state);
       return;
     }
 
     // No eligible words but not all placed - dead end
     if (eligibleMask == 0) return;
+
+    final allNodes = wordList.nodes;
+    final successorIndices = wordList.successorIndices;
 
     // Try each eligible word (iterate over set bits in order)
     // Due to sorting by (rank, length), lower bits = lower rank, longer words
@@ -363,16 +354,10 @@ class BacktrackingGridBuilder {
         // Place word (skip validation since findEarliestPlacementByPhrase already checked)
         final p = state.placeWordUnchecked(node, offset);
 
-        // Update bitmask
-        int newUnplacedMask = unplacedMask & ~lowestBit;
-
         // Only recurse if remaining space can fit remaining words
+        final newUnplacedMask = unplacedMask & ~lowestBit;
         if (canFitRemainingWords(state, wordList, newUnplacedMask)) {
-          // Update trie cache with end offset for successors
-          final endOffset = offset + p.length - 1;
-          for (final trieNode in node.ownedTrieNodes) {
-            trieNode.endOffset = endOffset;
-          }
+          _updateTrieCache(node, p.endOffset);
 
           int newEligibleMask = eligibleMask & ~lowestBit;
 
@@ -397,10 +382,7 @@ class BacktrackingGridBuilder {
             inDegree[succIdx]++;
           }
 
-          // Clear trie cache
-          for (final trieNode in node.ownedTrieNodes) {
-            trieNode.endOffset = -1;
-          }
+          _clearTrieCache(node);
         }
 
         // Remove placement
@@ -460,32 +442,22 @@ class BacktrackingGridBuilder {
     int remainingMask,
   ) {
     _iterationCount++;
-    final placedWords = state.placementCount;
 
-    // Periodically report progress (check every 1000 iterations to avoid DateTime overhead)
-    if (_iterationCount % 1000 == 0) {
-      final now = DateTime.now();
-      _reportProgress(now, state);
+    // Periodically report progress
+    if (_iterationCount % 1024 == 0) {
+      _reportProgress(DateTime.now(), state);
       if (_shouldStop) return;
     }
 
     // Update best found so far (even if partial)
-    if (placedWords > _maxWordsPlaced) {
-      _maxWordsPlaced = placedWords;
-      _bestState = state.clone();
-    }
+    _updateBestState(state);
 
     // Pruning: if we've reached or exceeded the best height, backtrack
     if (state.maxEndOffset >= _maxAllowedOffset) return;
 
     // Finished all ranks?
     if (rankIndex >= rankNodes.length) {
-      final currentHeight = state.maxEndOffset ~/ width + 1;
-      if (currentHeight <= _minHeightFound) {
-        _minHeightFound = currentHeight;
-        _maxAllowedOffset = currentHeight * width;
-        _bestState = state.clone();
-      }
+      _recordCompletedState(state);
       return;
     }
 
@@ -503,38 +475,61 @@ class BacktrackingGridBuilder {
     final rankList = rankNodes[rankIndex];
     int mask = remainingMask;
     while (mask != 0) {
-      // Get index of lowest set bit: (mask & -mask) isolates it,
-      // then bitLength - 1 gives the 0-based index
       final lowestBit = mask & -mask;
       final i = lowestBit.bitLength - 1;
-      mask &= mask - 1; // Clear the lowest set bit for next iteration
+      mask &= mask - 1; // Clear lowest bit for next iteration
 
       final node = rankList[i];
 
-      // Find EARLIEST valid placement for this word (returns 1D offset, -1 if not found)
+      // Find EARLIEST valid placement for this word
       final offset = findEarliestPlacementByPhrase(state, node);
 
       if (offset != -1) {
         final p = state.placeWord(node, offset);
         if (p != null) {
-          // Update trie cache with end offset
-          final endOffset = offset + p.length - 1;
-          for (final trieNode in node.ownedTrieNodes) {
-            trieNode.endOffset = endOffset;
-          }
+          _updateTrieCache(node, p.endOffset);
 
-          // Recurse with this word removed from mask (no allocation needed!)
+          // Recurse with this word removed from mask
           _solve(state, rankNodes, rankIndex, remainingMask & ~lowestBit);
 
-          // Clear trie cache before removal
-          for (final trieNode in node.ownedTrieNodes) {
-            trieNode.endOffset = -1;
-          }
+          _clearTrieCache(node);
           state.removePlacement(p);
         }
       }
 
       if (_shouldStop) return;
+    }
+  }
+
+  /// Updates the best found state if the current state has more words.
+  void _updateBestState(GridState state) {
+    if (state.placementCount > _maxWordsPlaced) {
+      _maxWordsPlaced = state.placementCount;
+      _bestState = state.clone();
+    }
+  }
+
+  /// Records a completed (all words placed) state and updates height constraints.
+  void _recordCompletedState(GridState state) {
+    final currentHeight = state.maxEndOffset ~/ width + 1;
+    if (currentHeight <= _minHeightFound) {
+      _minHeightFound = currentHeight;
+      _maxAllowedOffset = currentHeight * width;
+      _bestState = state.clone();
+    }
+  }
+
+  /// Updates the trie cache with the end offset of a placed word.
+  void _updateTrieCache(WordNode node, int endOffset) {
+    for (final trieNode in node.ownedTrieNodes) {
+      trieNode.endOffset = endOffset;
+    }
+  }
+
+  /// Clears the end offset from the trie cache for a removed word.
+  void _clearTrieCache(WordNode node) {
+    for (final trieNode in node.ownedTrieNodes) {
+      trieNode.endOffset = -1;
     }
   }
 
