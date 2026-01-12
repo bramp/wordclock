@@ -107,7 +107,7 @@ class TrieGridBuilder {
     final frontier = _createInitialFrontier(trie);
 
     // 4. Run the solver
-    _solveTrie(grid, trie, frontier, wordCells, trieData.wordRank);
+    _solveTrie(grid, trie, frontier, wordCells);
 
     // 6. Build result
     final finalState = _bestState;
@@ -189,6 +189,9 @@ class TrieGridBuilder {
       wordRank[word] = min(wordRank[word] ?? rank, rank);
     }
 
+    // Assign ranks to all trie nodes for fast sorting
+    _assignRanksToTrie(trie, wordRank);
+
     return _TrieData(
       trie: trie,
       uniqueWords: uniqueWords.toList(),
@@ -218,7 +221,6 @@ class TrieGridBuilder {
     _PhraseTrie trie,
     Map<String, List<_TrieNode>> frontier,
     Map<String, List<int>> wordCells,
-    Map<String, int> wordRank,
   ) {
     _iterationCount++;
 
@@ -241,29 +243,34 @@ class TrieGridBuilder {
       return;
     }
 
-    // Sort frontier entries by topological rank from dependency graph.
-    // Lower rank = fewer dependencies = should be placed earlier.
-    final frontierEntries = frontier.entries.toList();
-    frontierEntries.sort((a, b) {
-      final rankA = wordRank[a.key] ?? 0;
-      final rankB = wordRank[b.key] ?? 0;
-      return rankA.compareTo(rankB);
-    });
-
-    for (final entry in frontierEntries) {
+    // Build sorted candidate list using pre-computed node ranks.
+    // This avoids map lookups in the sort comparator.
+    // We copy the nodes list to avoid concurrent modification issues during backtracking.
+    final candidates = <_FrontierCandidate>[];
+    for (final entry in frontier.entries) {
       final word = entry.key;
       final nodes = entry.value;
-      final cellCodes = wordCells[word]!;
-
-      // Find the MAXIMUM parentEndOffset among nodes needing this word.
-      // A placement must be >= this to satisfy ALL nodes waiting for this word.
-      int maxParentEndOffset = nodes.first.parentEndOffset;
-      for (final node in nodes) {
-        if (node.parentEndOffset > maxParentEndOffset) {
-          maxParentEndOffset = node.parentEndOffset;
-        }
+      // Use the first node's rank (all nodes for same word have same rank)
+      final rank = nodes.first.rank;
+      // Compute max parent offset while iterating
+      int maxParentEnd = nodes.first.parentEndOffset;
+      for (int i = 1; i < nodes.length; i++) {
+        final pEnd = nodes[i].parentEndOffset;
+        if (pEnd > maxParentEnd) maxParentEnd = pEnd;
       }
-      final minOffset = _computeMinOffsetAfter(maxParentEndOffset);
+      // Copy the nodes list to avoid issues when frontier is modified during recursion
+      candidates.add(
+        _FrontierCandidate(word, List<_TrieNode>.of(nodes), rank, maxParentEnd),
+      );
+    }
+    // Sort by pre-computed rank
+    candidates.sort((a, b) => a.rank.compareTo(b.rank));
+
+    for (final candidate in candidates) {
+      final word = candidate.word;
+      final nodes = candidate.nodes;
+      final cellCodes = wordCells[word]!;
+      final minOffset = _computeMinOffsetAfter(candidate.maxParentEndOffset);
 
       // Find valid grid placement for this word, starting from minOffset
       final offset = _findValidPlacement(grid, cellCodes, minOffset);
@@ -277,15 +284,14 @@ class TrieGridBuilder {
         cellCodes: cellCodes,
       );
 
+      // Save maxEndOffset for fast restore during backtrack
+      final savedMaxEndOffset = grid.maxEndOffset;
+
       // Add to grid
       _placeWord(grid, placement);
 
-      // Save frontier state for backtracking
-      final savedFrontier = _copyFrontier(frontier);
-      final savedOffsets = _saveNodeOffsets(nodes);
-
-      // Advance the frontier: remove matched nodes, add their children
-      _advanceFrontier(frontier, nodes, placement);
+      // Advance frontier and capture undo info (avoids full copy)
+      final undoInfo = _advanceFrontierWithUndo(frontier, nodes, placement);
 
       // Debug: show frontier state after advancing
       if (_iterationCount < 20) {
@@ -308,73 +314,100 @@ class TrieGridBuilder {
       }
 
       // Recurse with updated frontier
-      _solveTrie(grid, trie, frontier, wordCells, wordRank);
+      _solveTrie(grid, trie, frontier, wordCells);
 
-      // Backtrack: restore frontier and node offsets
-      _restoreFrontier(frontier, savedFrontier);
-      _restoreNodeOffsets(savedOffsets);
-      _removeWord(grid, placement);
+      // Backtrack: undo frontier changes and node offsets
+      _undoFrontierAdvance(frontier, undoInfo);
+      _removeWord(grid, placement, savedMaxEndOffset);
 
       if (_shouldStop) return;
     }
   }
 
-  /// Advance frontier nodes that can use this placement.
-  /// When a node's word is placed, it advances to its children.
-  /// Mutates the frontier map and node offsets.
-  void _advanceFrontier(
+  /// Assign ranks from wordRank map to all trie nodes for fast sorting.
+  void _assignRanksToTrie(_PhraseTrie trie, Map<String, int> wordRank) {
+    void assignRecursive(_TrieNode node) {
+      assert(wordRank.containsKey(node.word));
+      node.rank = wordRank[node.word] ?? 0;
+      for (final child in node.children.values) {
+        assignRecursive(child);
+      }
+    }
+
+    for (final root in trie.roots.values) {
+      assignRecursive(root);
+    }
+  }
+
+  /// Advance frontier and return undo information.
+  /// This avoids copying the entire frontier for backtracking.
+  _FrontierUndoInfo _advanceFrontierWithUndo(
     Map<String, List<_TrieNode>> frontier,
     List<_TrieNode> nodes,
     _WordPlacement placement,
   ) {
-    // Remove all nodes for this word from frontier upfront
-    frontier.remove(placement.word);
+    // Save the nodes being removed (for restore)
+    final removedNodes = List<_TrieNode>.of(nodes);
+
+    // Save node offsets and track children added
+    final savedOffsets = <(_TrieNode, int, int)>[];
+    final addedChildren = <(_TrieNode, String)>[]; // (child, wordKey)
 
     for (final node in nodes) {
+      savedOffsets.add((node, node.parentEndOffset, node.endOffset));
       node.endOffset = placement.endOffset;
 
-      // Add all children to frontier
       for (final child in node.children.values) {
+        savedOffsets.add((child, child.parentEndOffset, child.endOffset));
         child.parentEndOffset = placement.endOffset;
-        frontier.putIfAbsent(child.word, () => []).add(child);
+
+        // Track if we're adding to existing list or creating new entry
+        final existingList = frontier[child.word];
+        if (existingList != null) {
+          existingList.add(child);
+        } else {
+          frontier[child.word] = [child];
+        }
+        addedChildren.add((child, child.word));
       }
     }
+
+    // Remove the placed word's nodes from frontier
+    frontier.remove(placement.word);
+
+    return _FrontierUndoInfo(
+      removedWord: placement.word,
+      removedNodes: removedNodes,
+      savedOffsets: savedOffsets,
+      addedChildren: addedChildren,
+    );
   }
 
-  /// Make a copy of the frontier for backtracking.
-  Map<String, List<_TrieNode>> _copyFrontier(
+  /// Undo frontier advance using saved undo info.
+  void _undoFrontierAdvance(
     Map<String, List<_TrieNode>> frontier,
+    _FrontierUndoInfo undoInfo,
   ) {
-    return {for (final e in frontier.entries) e.key: List.of(e.value)};
-  }
-
-  /// Restore frontier from a saved copy.
-  void _restoreFrontier(
-    Map<String, List<_TrieNode>> frontier,
-    Map<String, List<_TrieNode>> saved,
-  ) {
-    frontier.clear();
-    frontier.addAll(saved);
-  }
-
-  /// Save node offsets for backtracking.
-  List<(_TrieNode, int, int)> _saveNodeOffsets(List<_TrieNode> nodes) {
-    final saved = <(_TrieNode, int, int)>[];
-    for (final node in nodes) {
-      saved.add((node, node.parentEndOffset, node.endOffset));
-      for (final child in node.children.values) {
-        saved.add((child, child.parentEndOffset, child.endOffset));
-      }
-    }
-    return saved;
-  }
-
-  /// Restore node offsets from saved state.
-  void _restoreNodeOffsets(List<(_TrieNode, int, int)> saved) {
-    for (final (node, parentEnd, end) in saved) {
+    // Restore node offsets
+    for (final (node, parentEnd, end) in undoInfo.savedOffsets) {
       node.parentEndOffset = parentEnd;
       node.endOffset = end;
     }
+
+    // Remove added children (in reverse order)
+    for (int i = undoInfo.addedChildren.length - 1; i >= 0; i--) {
+      final (child, wordKey) = undoInfo.addedChildren[i];
+      final list = frontier[wordKey];
+      if (list != null) {
+        list.remove(child);
+        if (list.isEmpty) {
+          frontier.remove(wordKey);
+        }
+      }
+    }
+
+    // Restore removed word's nodes
+    frontier[undoInfo.removedWord] = undoInfo.removedNodes;
   }
 
   /// Compute minimum offset after a given end offset.
@@ -446,7 +479,12 @@ class TrieGridBuilder {
   }
 
   /// Remove a word from the grid.
-  void _removeWord(_SimpleGrid grid, _WordPlacement placement) {
+  /// Pass savedMaxEndOffset to avoid recomputing it.
+  void _removeWord(
+    _SimpleGrid grid,
+    _WordPlacement placement,
+    int savedMaxEndOffset,
+  ) {
     for (int i = 0; i < placement.cellCodes.length; i++) {
       final idx = placement.startOffset + i;
       grid.usage[idx]--;
@@ -455,13 +493,8 @@ class TrieGridBuilder {
       }
     }
     grid.placements.removeLast();
-    // Recalculate maxEndOffset
-    grid.maxEndOffset = -1;
-    for (final p in grid.placements) {
-      if (p.endOffset > grid.maxEndOffset) {
-        grid.maxEndOffset = p.endOffset;
-      }
-    }
+    // Restore maxEndOffset directly instead of recalculating
+    grid.maxEndOffset = savedMaxEndOffset;
   }
 
   void _reportProgressFromFrontier(
@@ -628,6 +661,10 @@ class _TrieNode {
   /// Depth in trie (1 for first word, etc.)
   final int depth;
 
+  /// Pre-computed topological rank for sorting (lower = place earlier).
+  /// Cached here to avoid map lookups in the hot path.
+  int rank = 0;
+
   /// Children: word -> child node
   final Map<String, _TrieNode> children = {};
 
@@ -706,4 +743,30 @@ class _SimpleGrid {
       maxEndOffset: maxEndOffset,
     );
   }
+}
+
+/// Candidate for frontier iteration - avoids map lookups in hot path.
+class _FrontierCandidate {
+  final String word;
+  final List<_TrieNode> nodes;
+  final int rank;
+  final int maxParentEndOffset;
+
+  _FrontierCandidate(this.word, this.nodes, this.rank, this.maxParentEndOffset);
+}
+
+/// Undo information for frontier advancement.
+/// Allows restoring frontier state without copying the entire map.
+class _FrontierUndoInfo {
+  final String removedWord;
+  final List<_TrieNode> removedNodes;
+  final List<(_TrieNode, int, int)> savedOffsets;
+  final List<(_TrieNode, String)> addedChildren;
+
+  _FrontierUndoInfo({
+    required this.removedWord,
+    required this.removedNodes,
+    required this.savedOffsets,
+    required this.addedChildren,
+  });
 }
