@@ -10,39 +10,18 @@ final polishLanguage = WordClockLanguage(
   timeToWords: PolishTimeToWords(),
   paddingAlphabet: 'ABCDEFGHIJKLMNOPQRSTUWXYZÓĄĆĘŃŚŻ',
   minuteIncrement: 5,
-  // TODO: Fix language/grammar to make this fit in a smaller grid.
   defaultGrid: WordGrid.fromLetters(
     width: 11,
     letters:
-        "JESTPWPÓŁZA"
-        "DWADZIEŚCIA"
-        "KWADRANSBDO"
-        "ĘTŚDZIESIĘĆ"
-        "PIĘĆHSIÓDMA"
-        "JEDENASTAPO"
-        "ŚJDZIESIĄTA"
-        "ÓJDZIEWIĄTA"
-        "YCIPIERWSZA"
-        "ZTŚDWUNASTA"
-        "TRZECIAÓSMA"
-        "BNAŃCZWARTA"
-        "SZÓSTAPIĄTA"
-        "DRUGAPIĄTEJ"
-        "ĆDZIESIĄTEJ"
-        "PJEDENASTEJ"
-        "ŚDZIEWIĄTEJ"
-        "ŃEDWUNASTEJ"
-        "KJPIERWSZEJ"
-        "QĘKTRZECIEJ"
-        "ŚŚQCZWARTEJ"
-        "OZUISIÓDMEJ"
-        "QMŃZSZÓSTEJ"
-        "KIŚĘDRUGIEJ"
-        "BSKGUSÓSMEJ"
-        "ĆUHLWHŻÓŚBŃ"
-        "EBĆBYFURNIZ"
-        "HLHLÓAĆGĆRT"
-        "GŚFJMBGQIDK"
-        "WUJLĆIŻTIZI",
+        "PIERWSZÓSTP"
+        "BCZWARTRZEC"
+        "DZIESIJEDEN"
+        "DZIEWIÓSMĄT"
+        "DWUNDRUGAST"
+        "AĘCZTERTRZY"
+        "TDWADZIEŚCI"
+        "PIĘTANAŚŚCI"
+        "PIĘĆEDZIESI"
+        "HĄTŚĘĆJPIĘĆ",
   ),
 );
