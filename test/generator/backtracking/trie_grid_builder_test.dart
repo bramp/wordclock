@@ -26,7 +26,7 @@ void main() {
       expect(result.stopReason, StopReason.completed);
       expect(result.wordPlacements, isNotEmpty);
       expect(result.wordPlacements.first.word, 'HELLO');
-      
+
       final issues = GridValidator.validate(result.grid, language);
       expect(issues, isEmpty);
     });
@@ -50,10 +50,10 @@ void main() {
 
       expect(result.stopReason, StopReason.completed);
       expect(result.wordPlacements.length, 2);
-      
+
       final words = result.wordPlacements.map((p) => p.word).toSet();
       expect(words, containsAll(['HELLO', 'WORLD']));
-      
+
       final issues = GridValidator.validate(result.grid, language);
       expect(issues, isEmpty);
     });
@@ -76,7 +76,7 @@ void main() {
       final result = builder.build();
 
       expect(result.stopReason, StopReason.completed);
-      
+
       final issues = GridValidator.validate(result.grid, language);
       expect(issues, isEmpty);
     });
@@ -99,7 +99,7 @@ void main() {
       final result = builder.build();
 
       expect(result.stopReason, StopReason.completed);
-      
+
       final issues = GridValidator.validate(result.grid, language);
       expect(issues, isEmpty);
     });
@@ -125,7 +125,7 @@ void main() {
       final result = builder.build();
 
       expect(result.stopReason, StopReason.completed);
-      
+
       final issues = GridValidator.validate(result.grid, language);
       expect(issues, isEmpty);
     });
@@ -147,7 +147,7 @@ void main() {
       final result = builder.build();
 
       expect(result.stopReason, StopReason.completed);
-      
+
       final issues = GridValidator.validate(result.grid, language);
       expect(issues, isEmpty);
     });
@@ -170,13 +170,13 @@ void main() {
       final result = builder.build();
 
       expect(result.stopReason, StopReason.completed);
-      
+
       final hello = result.wordPlacements.firstWhere((p) => p.word == 'HELLO');
       final world = result.wordPlacements.firstWhere((p) => p.word == 'WORLD');
-      
+
       // HELLO must appear before WORLD
       expect(hello.startOffset, lessThan(world.startOffset));
-      
+
       final issues = GridValidator.validate(result.grid, language);
       expect(issues, isEmpty);
     });
@@ -219,7 +219,7 @@ void main() {
       final result = builder.build();
 
       expect(result.stopReason, StopReason.completed);
-      
+
       final issues = GridValidator.validate(result.grid, language);
       expect(issues, isEmpty);
     });
@@ -242,7 +242,7 @@ void main() {
       final result = builder.build();
 
       expect(result.stopReason, StopReason.completed);
-      
+
       final issues = GridValidator.validate(result.grid, language);
       expect(issues, isEmpty);
     });

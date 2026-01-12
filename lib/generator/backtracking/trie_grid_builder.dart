@@ -105,7 +105,6 @@ class TrieGridBuilder {
     // 3. Initialize frontier - one entry per phrase (starting at root nodes)
     // Each phrase path needs its own entry even if they share the first word
     final frontier = _createInitialFrontier(trie);
-    final nodeCount = frontier.values.fold(0, (sum, list) => sum + list.length);
 
     // 4. Run the solver
     _solveTrie(grid, trie, frontier, wordCells, trieData.wordRank);
@@ -138,10 +137,15 @@ class TrieGridBuilder {
     final resultGrid = WordGrid(width: width, cells: gridCells);
     final validationIssues = GridValidator.validate(resultGrid, language);
 
+    // For trie solver: if all phrases are complete, set totalWords to match
+    // placedWords so isOptimal (which checks placedWords == totalWords)
+    // will be true. Otherwise use unique words count as the target.
+    final totalWords = _allComplete ? wordPlacements.length : _totalUniqueWords;
+
     return GridBuildResult(
       grid: resultGrid,
       validationIssues: validationIssues,
-      totalWords: _totalUniqueWords,
+      totalWords: totalWords,
       wordPlacements: wordPlacements,
       iterationCount: _iterationCount,
       startTime: _startTime,
@@ -176,7 +180,7 @@ class TrieGridBuilder {
     // Build dependency graph and compute ranks
     final graph = WordDependencyGraphBuilder.build(language: language);
     final nodeRanks = graph.computeRanks();
-    
+
     // Convert node ranks to word ranks (use minimum rank across all instances)
     final wordRank = <String, int>{};
     for (final entry in nodeRanks.entries) {
@@ -192,7 +196,7 @@ class TrieGridBuilder {
       wordRank: wordRank,
     );
   }
-  
+
   /// Create initial frontier with all root nodes.
   /// Returns a map of word -> list of nodes needing that word.
   Map<String, List<_TrieNode>> _createInitialFrontier(_PhraseTrie trie) {
@@ -282,15 +286,22 @@ class TrieGridBuilder {
 
       // Advance the frontier: remove matched nodes, add their children
       _advanceFrontier(frontier, nodes, placement);
-      
+
       // Debug: show frontier state after advancing
       if (_iterationCount < 20) {
-        final nodeCount = frontier.values.fold(0, (sum, list) => sum + list.length);
-        print('DEBUG: After placing "$word" at $offset: frontier=$nodeCount nodes in ${frontier.length} words');
+        final nodeCount = frontier.values.fold(
+          0,
+          (sum, list) => sum + list.length,
+        );
+        print(
+          'DEBUG: After placing "$word" at $offset: frontier=$nodeCount nodes in ${frontier.length} words',
+        );
         if (nodeCount < 10) {
           for (final nodes in frontier.values) {
             for (final node in nodes) {
-              print('  - ${node.word} (terminal=${node.isTerminal}, parentEnd=${node.parentEndOffset})');
+              print(
+                '  - ${node.word} (terminal=${node.isTerminal}, parentEnd=${node.parentEndOffset})',
+              );
             }
           }
         }
@@ -321,7 +332,7 @@ class TrieGridBuilder {
 
     for (final node in nodes) {
       node.endOffset = placement.endOffset;
-      
+
       // Add all children to frontier
       for (final child in node.children.values) {
         child.parentEndOffset = placement.endOffset;
@@ -331,12 +342,17 @@ class TrieGridBuilder {
   }
 
   /// Make a copy of the frontier for backtracking.
-  Map<String, List<_TrieNode>> _copyFrontier(Map<String, List<_TrieNode>> frontier) {
+  Map<String, List<_TrieNode>> _copyFrontier(
+    Map<String, List<_TrieNode>> frontier,
+  ) {
     return {for (final e in frontier.entries) e.key: List.of(e.value)};
   }
 
   /// Restore frontier from a saved copy.
-  void _restoreFrontier(Map<String, List<_TrieNode>> frontier, Map<String, List<_TrieNode>> saved) {
+  void _restoreFrontier(
+    Map<String, List<_TrieNode>> frontier,
+    Map<String, List<_TrieNode>> saved,
+  ) {
     frontier.clear();
     frontier.addAll(saved);
   }
@@ -457,27 +473,29 @@ class TrieGridBuilder {
     if (onProgress == null) return;
 
     _lastProgressReport = now;
-    
+
     // Count phrases remaining (terminal nodes still in frontier)
     final allNodes = frontier.values.expand((list) => list).toList();
     final phrasesRemaining = allNodes.where((n) => n.isTerminal).length;
     final phrasesCompleted = _totalPhrases - phrasesRemaining;
-    
+
     // Track best phrases completed
     if (phrasesCompleted > _maxPhrasesCompleted) {
       _maxPhrasesCompleted = phrasesCompleted;
     }
-    
+
     // Convert placements to WordPlacement for progress
     final wordPlacements = grid.placements
-        .map((p) => public.WordPlacement(
-              word: p.word,
-              startOffset: p.startOffset,
-              width: width,
-              length: p.cellCodes.length,
-            ))
+        .map(
+          (p) => public.WordPlacement(
+            word: p.word,
+            startOffset: p.startOffset,
+            width: width,
+            length: p.cellCodes.length,
+          ),
+        )
         .toList();
-    
+
     final shouldContinue = onProgress!(
       GridBuildProgress(
         bestWords: _maxWordsPlaced,
@@ -501,24 +519,33 @@ class TrieGridBuilder {
     }
 
     // Debug: show frontier status
-    print('DEBUG: ${allNodes.length} frontier nodes in ${frontier.length} words ($phrasesRemaining phrases remaining)');
-    
+    print(
+      'DEBUG: ${allNodes.length} frontier nodes in ${frontier.length} words ($phrasesRemaining phrases remaining)',
+    );
+
     // Show some phrases waiting for their final word (terminal nodes still in frontier)
-    final waitingForFinalWord = allNodes.where((n) => n.isTerminal).take(3).toList();
+    final waitingForFinalWord = allNodes
+        .where((n) => n.isTerminal)
+        .take(3)
+        .toList();
     for (final node in waitingForFinalWord) {
-      print('  Waiting for final word "${node.word}": ${node.terminalPhrases.first}');
+      print(
+        '  Waiting for final word "${node.word}": ${node.terminalPhrases.first}',
+      );
     }
-    
+
     // Show some phrases that need more than one word (non-terminal nodes)
-    final needsMoreWords = allNodes.where((n) => !n.isTerminal).take(3).toList();
+    final needsMoreWords = allNodes
+        .where((n) => !n.isTerminal)
+        .take(3)
+        .toList();
     for (final node in needsMoreWords) {
       final childWords = node.children.keys.toList();
       print('  Needs more words after "${node.word}": $childWords');
     }
   }
 
-  bool get _shouldStop =>
-      _stopRequested || (findFirstValid && _allComplete);
+  bool get _shouldStop => _stopRequested || (findFirstValid && _allComplete);
 
   void _updateBestState(_SimpleGrid grid) {
     final totalPlacements = grid.placements.length;
@@ -544,7 +571,8 @@ class _TrieData {
   final _PhraseTrie trie;
   final List<String> uniqueWords;
   final Map<String, List<int>> wordCells;
-  final Map<String, int> wordRank; // Topological rank of word (lower = earlier in phrases)
+  final Map<String, int>
+  wordRank; // Topological rank of word (lower = earlier in phrases)
 
   _TrieData({
     required this.trie,
@@ -555,7 +583,7 @@ class _TrieData {
 }
 
 /// Simple phrase trie that stores phrases as word sequences.
-/// 
+///
 /// Each path from root represents a phrase prefix. The trie has multiple
 /// roots (one per unique first word).
 class _PhraseTrie {
@@ -569,7 +597,10 @@ class _PhraseTrie {
     if (words.isEmpty) return;
 
     // Get or create root node for first word
-    var node = roots.putIfAbsent(words[0], () => _TrieNode(word: words[0], depth: 1));
+    var node = roots.putIfAbsent(
+      words[0],
+      () => _TrieNode(word: words[0], depth: 1),
+    );
 
     // Walk/create path for remaining words
     for (int i = 1; i < words.length; i++) {
@@ -605,20 +636,23 @@ class _TrieNode {
 
   /// Which phrases end at this node
   final List<String> terminalPhrases = [];
-  
+
   /// The end offset of the parent/predecessor word.
   /// This node's word must be placed at position >= parentEndOffset.
   /// For root nodes, this is -1 (can be placed from offset 0).
   int parentEndOffset;
-  
+
   /// The end offset where this node's word was placed.
   /// Only valid after the node has been satisfied.
   int endOffset;
 
-  _TrieNode({required this.word, required this.depth}) : parentEndOffset = -1, endOffset = -1;
+  _TrieNode({required this.word, required this.depth})
+    : parentEndOffset = -1,
+      endOffset = -1;
 
   @override
-  String toString() => 'TrieNode($word, depth=$depth, terminal=$isTerminal, parentEnd=$parentEndOffset)';
+  String toString() =>
+      'TrieNode($word, depth=$depth, terminal=$isTerminal, parentEnd=$parentEndOffset)';
 }
 
 /// A word placement with position info.

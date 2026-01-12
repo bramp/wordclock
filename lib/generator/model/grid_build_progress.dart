@@ -37,7 +37,8 @@ class GridBuildProgress {
   int get currentWords => wordPlacements.length;
 
   /// Unique words placed in current search path
-  int get uniqueCurrentWords => wordPlacements.map((p) => p.word).toSet().length;
+  int get uniqueCurrentWords =>
+      wordPlacements.map((p) => p.word).toSet().length;
 
   GridBuildProgress({
     required this.bestWords,
