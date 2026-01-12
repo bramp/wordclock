@@ -46,5 +46,8 @@ class GridBuildResult {
 
   int get placedWords => wordPlacements.length;
 
-  bool get isOptimal => validationIssues.isEmpty && placedWords == totalWords;
+  /// Number of unique words placed in the grid
+  int get uniquePlacedWords => wordPlacements.map((p) => p.word).toSet().length;
+
+  bool get isOptimal => validationIssues.isEmpty && uniquePlacedWords == totalWords;
 }

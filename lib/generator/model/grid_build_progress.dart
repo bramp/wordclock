@@ -9,6 +9,15 @@ class GridBuildProgress {
   /// Total words to place
   final int totalWords;
 
+  /// Number of phrases completed in current search path
+  final int phrasesCompleted;
+
+  /// Best number of phrases completed so far
+  final int bestPhrases;
+
+  /// Total phrases to complete
+  final int totalPhrases;
+
   /// Grid width
   final int width;
 
@@ -24,12 +33,18 @@ class GridBuildProgress {
   /// When the search started
   final DateTime startTime;
 
-  /// Words placed in current search path
+  /// Total word placements in current search path (may include duplicates)
   int get currentWords => wordPlacements.length;
+
+  /// Unique words placed in current search path
+  int get uniqueCurrentWords => wordPlacements.map((p) => p.word).toSet().length;
 
   GridBuildProgress({
     required this.bestWords,
     required this.totalWords,
+    required this.phrasesCompleted,
+    required this.bestPhrases,
+    required this.totalPhrases,
     required this.width,
     required this.cells,
     required this.wordPlacements,

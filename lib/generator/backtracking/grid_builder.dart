@@ -216,6 +216,9 @@ class BacktrackingGridBuilder {
       GridBuildProgress(
         bestWords: _maxWordsPlaced,
         totalWords: _totalWords,
+        phrasesCompleted: 0, // Not tracked in backtracking solver
+        bestPhrases: 0, // Not tracked in backtracking solver
+        totalPhrases: 0, // Not tracked in backtracking solver
         width: width,
         cells: state.toFlatList(),
         wordPlacements: [for (final p in state.placements) p.toPublic()],

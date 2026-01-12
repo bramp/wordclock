@@ -2,6 +2,7 @@
 import 'package:args/command_runner.dart';
 import 'package:wordclock/generator/greedy/grid_builder.dart';
 import 'package:wordclock/generator/backtracking/grid_builder.dart';
+import 'package:wordclock/generator/backtracking/trie_grid_builder.dart';
 import 'package:wordclock/model/word_grid.dart';
 import 'package:wordclock/generator/model/grid_build_result.dart';
 import '../utils/config.dart';
@@ -43,7 +44,7 @@ class SolveCommand extends Command<void> {
         'algorithm',
         abbr: 'a',
         defaultsTo: 'backtracking',
-        allowed: ['greedy', 'backtracking'],
+        allowed: ['greedy', 'backtracking', 'trie'],
         help: 'Generation algorithm.',
       )
       ..addOption(
@@ -87,6 +88,11 @@ class SolveCommand extends Command<void> {
 
       if (config.algorithm == 'backtracking') {
         _generateWithBacktracking(config);
+        return;
+      }
+
+      if (config.algorithm == 'trie') {
+        _generateWithTrie(config);
         return;
       }
 
@@ -177,6 +183,108 @@ class SolveCommand extends Command<void> {
     }
   }
 
+  void _generateWithTrie(Config config) {
+    final int finalSeed = config.seed ?? 0;
+    final int targetHeight = config.targetHeight > 0 ? config.targetHeight : 10;
+    final int maxSearchTimeSeconds = config.timeout;
+
+    print('Trie-based Grid Builder (experimental)');
+    print('Timeout: ${maxSearchTimeSeconds}s');
+    print('');
+
+    final deadline = DateTime.now().add(
+      Duration(seconds: maxSearchTimeSeconds),
+    );
+
+    final builder = TrieGridBuilder(
+      width: config.gridWidth,
+      height: targetHeight,
+      language: config.language,
+      seed: finalSeed,
+      onProgress: (progress) {
+        final elapsed = DateTime.now().difference(progress.startTime);
+        final elapsedSecs = elapsed.inMilliseconds / 1000.0;
+        final rate = elapsedSecs > 0
+            ? progress.iterationCount / elapsedSecs
+            : 0;
+        final rateStr = rate.toStringAsFixed(0);
+        final phraseStr = progress.totalPhrases > 0
+            ? '${progress.phrasesCompleted}/${progress.totalPhrases} phrases (Best: ${progress.bestPhrases})'
+            : '${progress.uniqueCurrentWords}/${progress.totalWords} words';
+        printColoredGrid(
+          WordGrid(
+            width: progress.width,
+            cells: progress.cells.map((c) => c ?? '·').toList(),
+          ),
+          progress.wordPlacements,
+          header:
+              '\n--- Search: $phraseStr | ${progress.iterationCount} iterations ($rateStr/s) ---',
+        );
+
+        return DateTime.now().isBefore(deadline);
+      },
+    );
+
+    final result = builder.build();
+
+    // Print search statistics
+    final duration = result.startTime != null
+        ? DateTime.now().difference(result.startTime!)
+        : Duration.zero;
+    final durationSecs = duration.inMilliseconds / 1000.0;
+    final rate = durationSecs > 0 ? result.iterationCount / durationSecs : 0;
+    print('\n--- Search completed ---');
+    print('Duration: ${durationSecs.toStringAsFixed(2)}s');
+    print(
+      'Iterations: ${result.iterationCount} (${rate.toStringAsFixed(0)}/s)',
+    );
+    print('Stop reason: ${_stopReasonToString(result.stopReason)}');
+
+    if (result.placedWords == 0) {
+      print('\nFailed to generate grid with trie algorithm.');
+      return;
+    }
+
+    // Print warnings if not optimal
+    if (!result.isOptimal) {
+      print('\n⚠️⚠️⚠️ WARNING: Grid is not optimal ⚠️⚠️⚠️');
+      if (result.placedWords < result.totalWords) {
+        print(
+          '  - Only placed ${result.placedWords}/${result.totalWords} words',
+        );
+      }
+      print('⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️\n');
+    } else {
+      print('\n✓✓✓ Grid is optimal! ✓✓✓\n');
+    }
+
+    // Print colored grid
+    if (result.wordPlacements.isNotEmpty) {
+      printColoredGrid(
+        result.grid,
+        result.wordPlacements,
+        header: '\nColored grid (words highlighted):',
+      );
+    }
+
+    // Output the grid
+    print('\n/// AUTOMATICALLY GENERATED (Trie Algorithm)');
+    print('/// Seed: $finalSeed');
+    print('  defaultGrid: WordGrid.fromLetters(');
+    print('    width: ${config.gridWidth},');
+    print('    letters:');
+
+    final grid = result.grid;
+    for (int i = 0; i < grid.height; i++) {
+      final line = grid.cells
+          .sublist(i * grid.width, (i + 1) * grid.width)
+          .join('');
+      final escapedLine = line.replaceAll('"', r'\"');
+      print('        "$escapedLine"');
+    }
+    print('  ),');
+  }
+
   void _generateWithBacktracking(Config config) {
     final int finalSeed = config.seed ?? 0;
     final int targetHeight = config.targetHeight > 0 ? config.targetHeight : 10;
@@ -202,6 +310,9 @@ class SolveCommand extends Command<void> {
             ? progress.iterationCount / elapsedSecs
             : 0;
         final rateStr = rate.toStringAsFixed(0);
+        final phraseStr = progress.totalPhrases > 0
+            ? '${progress.phrasesCompleted}/${progress.totalPhrases} phrases (Best: ${progress.bestPhrases})'
+            : '${progress.uniqueCurrentWords}/${progress.totalWords} words';
         printColoredGrid(
           WordGrid(
             width: progress.width,
@@ -209,7 +320,7 @@ class SolveCommand extends Command<void> {
           ),
           progress.wordPlacements,
           header:
-              '\n--- Search: ${progress.currentWords}/${progress.totalWords} words (Best: ${progress.bestWords}) | ${progress.iterationCount} iterations ($rateStr/s) ---',
+              '\n--- Search: $phraseStr | ${progress.iterationCount} iterations ($rateStr/s) ---',
         );
 
         // Return false to stop if deadline passed
