@@ -8,6 +8,7 @@ class Config {
   final String algorithm;
   final int timeout;
   final bool useRanks;
+  final bool update;
 
   Config({
     required this.gridWidth,
@@ -17,5 +18,6 @@ class Config {
     required this.algorithm,
     required this.timeout,
     required this.useRanks,
+    this.update = false,
   });
 }
