@@ -55,7 +55,7 @@ WordClockLanguage getLanguage(ArgResults results) {
 void printColoredGrid(
   WordGrid grid,
   List<WordPlacement> placements, {
-  String? header,
+  String? header, // TODO Do we need this, the caller should just print.
 }) {
   final colorMap = _buildColorMap(placements);
 
@@ -75,6 +75,18 @@ void printColoredGrid(
     final words = (rowWords[row] ?? []).join(' ');
     print('$gridRow   $words');
   }
+}
+
+/// Returns a string representation of the grid in black and white
+String formatGrid(WordGrid grid) {
+  final buffer = StringBuffer();
+  for (int row = 0; row < grid.height; row++) {
+    for (int col = 0; col < grid.width; col++) {
+      buffer.write(grid.cells[row * grid.width + col]);
+    }
+    buffer.writeln();
+  }
+  return buffer.toString();
 }
 
 Map<int, Map<int, String>> _buildColorMap(List<WordPlacement> placements) {
