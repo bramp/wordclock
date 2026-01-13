@@ -41,6 +41,7 @@ class GraphCommand extends Command<void> {
   @override
   void run() {
     final lang = getLanguage(argResults!);
+    print('// Language: ${lang.englishName} (${lang.id})');
     final algorithm = argResults!['algorithm'];
     final gridSource = argResults!['grid'];
 
