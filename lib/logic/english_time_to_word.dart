@@ -2,7 +2,12 @@ import 'package:wordclock/logic/time_to_words.dart';
 
 /// Base implementation for English language variants (EN, E2).
 abstract class _BaseEnglishTimeToWords implements TimeToWords {
-  const _BaseEnglishTimeToWords();
+  final bool useSpaceInTwentyFive;
+
+  const _BaseEnglishTimeToWords({
+    /// The original algorithm used 'TWENTYFIVE' instead of 'TWENTY FIVE'.
+    this.useSpaceInTwentyFive = false,
+  });
 
   String get intro => 'IT IS';
   int get hourDisplayLimit;
@@ -106,7 +111,7 @@ class NativeEnglishTimeToWords implements TimeToWords {
 
 /// Standard English (EN).
 class EnglishTimeToWords extends _BaseEnglishTimeToWords {
-  const EnglishTimeToWords();
+  const EnglishTimeToWords({super.useSpaceInTwentyFive});
 
   @override
   int get hourDisplayLimit => 35;
@@ -118,9 +123,9 @@ class EnglishTimeToWords extends _BaseEnglishTimeToWords {
     10 => " TEN PAST",
     15 => " QUARTER PAST",
     20 => " TWENTY PAST",
-    25 => " TWENTYFIVE PAST",
+    25 => " ${useSpaceInTwentyFive ? 'TWENTY FIVE' : 'TWENTYFIVE'} PAST",
     30 => " HALF PAST",
-    35 => " TWENTYFIVE TO",
+    35 => " ${useSpaceInTwentyFive ? 'TWENTY FIVE' : 'TWENTYFIVE'} TO",
     40 => " TWENTY TO",
     45 => " QUARTER TO",
     50 => " TEN TO",
@@ -132,7 +137,7 @@ class EnglishTimeToWords extends _BaseEnglishTimeToWords {
 /// English Alternative (E2).
 /// Uses "A QUARTER" instead of "QUARTER".
 class EnglishAlternativeTimeToWords extends _BaseEnglishTimeToWords {
-  const EnglishAlternativeTimeToWords();
+  const EnglishAlternativeTimeToWords({super.useSpaceInTwentyFive});
 
   @override
   int get hourDisplayLimit => 35;
@@ -144,9 +149,9 @@ class EnglishAlternativeTimeToWords extends _BaseEnglishTimeToWords {
     10 => " TEN PAST",
     15 => " A QUARTER PAST",
     20 => " TWENTY PAST",
-    25 => " TWENTYFIVE PAST",
+    25 => " ${useSpaceInTwentyFive ? 'TWENTY FIVE' : 'TWENTYFIVE'} PAST",
     30 => " HALF PAST",
-    35 => " TWENTYFIVE TO",
+    35 => " ${useSpaceInTwentyFive ? 'TWENTY FIVE' : 'TWENTYFIVE'} TO",
     40 => " TWENTY TO",
     45 => " A QUARTER TO",
     50 => " TEN TO",

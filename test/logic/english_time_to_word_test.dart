@@ -69,4 +69,32 @@ void main() {
       );
     });
   });
+
+  group('EnglishTimeToWords', () {
+    test('standard behavior (TWENTYFIVE)', () {
+      const converter = EnglishTimeToWords(useSpaceInTwentyFive: false);
+      final time = DateTime(2024, 1, 1, 12, 25);
+      expect(converter.convert(time), equals('IT IS TWENTYFIVE PAST TWELVE'));
+    });
+
+    test('new behavior (TWENTY FIVE)', () {
+      const converter = EnglishTimeToWords(useSpaceInTwentyFive: true);
+      final time = DateTime(2024, 1, 1, 12, 25);
+      expect(converter.convert(time), equals('IT IS TWENTY FIVE PAST TWELVE'));
+    });
+
+    test('twenty five to (new behavior)', () {
+      const converter = EnglishTimeToWords(useSpaceInTwentyFive: true);
+      final time = DateTime(2024, 1, 1, 12, 35);
+      expect(converter.convert(time), equals('IT IS TWENTY FIVE TO ONE'));
+    });
+  });
+
+  group('EnglishAlternativeTimeToWords', () {
+    test('new behavior (TWENTY FIVE)', () {
+      const converter = EnglishAlternativeTimeToWords(useSpaceInTwentyFive: true);
+      final time = DateTime(2024, 1, 1, 12, 25);
+      expect(converter.convert(time), equals('IT IS TWENTY FIVE PAST TWELVE'));
+    });
+  });
 }
