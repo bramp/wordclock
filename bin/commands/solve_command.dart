@@ -340,6 +340,7 @@ class SolveCommand extends Command<void> {
         config.language.id,
         result.grid,
         metadata,
+        result.wordPlacements,
       );
       if (success) {
         print('✓ Language file updated successfully.');
@@ -349,7 +350,14 @@ class SolveCommand extends Command<void> {
     } else {
       // Just print the grid code
       print('\n// Copy the following to your language file:');
-      print(generateGridCode(config.language, result.grid, metadata));
+      print(
+        generateGridCode(
+          config.language,
+          result.grid,
+          metadata,
+          wordPlacements: result.wordPlacements,
+        ),
+      );
     }
   }
 

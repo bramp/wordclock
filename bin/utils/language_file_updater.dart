@@ -4,6 +4,7 @@ import 'dart:io';
 import 'package:wordclock/languages/all.dart';
 import 'package:wordclock/languages/language.dart';
 import 'package:wordclock/model/word_grid.dart';
+import 'package:wordclock/generator/model/word_placement.dart';
 
 /// Metadata for a generated grid
 class GridGenerationMetadata {
@@ -48,6 +49,7 @@ String generateGridCode(
   WordClockLanguage lang,
   WordGrid grid,
   GridGenerationMetadata metadata, {
+  List<WordPlacement> wordPlacements = const [],
   String indent = '    ',
 }) {
   final buffer = StringBuffer();
@@ -89,15 +91,29 @@ String generateGridCode(
   buffer.writeln('$indent    width: ${grid.width},');
   buffer.writeln('$indent    letters:');
 
+  // Group words by row for comments
+  final rowWords = <int, List<String>>{};
+  final sortedPlacements = List<WordPlacement>.from(wordPlacements)
+    ..sort((a, b) => a.startOffset.compareTo(b.startOffset));
+
+  for (final p in sortedPlacements) {
+    // Strip instance suffix if present (e.g. "FIVE (#0)" -> "FIVE")
+    final word = p.word.split(' (')[0];
+    rowWords.putIfAbsent(p.row, () => []).add(word);
+  }
+
   for (int row = 0; row < grid.height; row++) {
     final line = grid.cells
         .sublist(row * grid.width, (row + 1) * grid.width)
         .join('');
     // Escape special characters
     final escapedLine = line.replaceAll(r'\', r'\\').replaceAll("'", r"\'");
-    buffer.writeln("$indent      '$escapedLine'");
+    final comment = rowWords[row]?.join(' ') ?? '';
+    final commentStr = comment.isNotEmpty ? ' // $comment' : '';
+    buffer.writeln("$indent      '$escapedLine'$commentStr");
   }
 
+  buffer.writeln('$indent    ,');
   buffer.writeln('$indent  ),');
   buffer.writeln('$indent),');
   buffer.write('$indent// @generated end');
@@ -111,6 +127,7 @@ bool updateLanguageFile(
   String languageId,
   WordGrid grid,
   GridGenerationMetadata metadata,
+  List<WordPlacement> wordPlacements,
 ) {
   final filePath = findLanguageFilePath(languageId);
   if (filePath == null) {
@@ -134,6 +151,7 @@ bool updateLanguageFile(
     lang,
     grid,
     metadata,
+    wordPlacements: wordPlacements,
   );
 
   if (updatedContent == null) {
@@ -153,8 +171,9 @@ String? updateLanguageFileContent(
   String content,
   WordClockLanguage language,
   WordGrid grid,
-  GridGenerationMetadata metadata,
-) {
+  GridGenerationMetadata metadata, {
+  List<WordPlacement> wordPlacements = const [],
+}) {
   final languageId = language.id;
   // Find the position of this language's id declaration
   final idPattern = RegExp(r"id:\s*'" + RegExp.escape(languageId) + r"'");
@@ -233,69 +252,119 @@ String? updateLanguageFileContent(
     }
 
     final updatedLangBlock =
-        '${langBlock.substring(0, generatedMatch.start)}\n${generateGridCode(language, grid, metadata, indent: indent)},\n$indent${langBlock.substring(afterGenerated)}';
+        '${langBlock.substring(0, generatedMatch.start)}\n${generateGridCode(language, grid, metadata, wordPlacements: wordPlacements, indent: indent)},\n$indent${langBlock.substring(afterGenerated)}';
     return content.substring(0, langStart) +
         updatedLangBlock +
         content.substring(langEnd);
   }
 
-  // Find plain defaultGrid pattern - need to handle nested parentheses
+  // 2. Find by plain defaultGrid pattern
   final defaultGridStart = langBlock.indexOf('defaultGrid:');
-  if (defaultGridStart == -1) {
-    return null;
+  if (defaultGridStart != -1) {
+    return _replaceGridBlock(
+      content,
+      langStart,
+      langEnd,
+      langBlock,
+      defaultGridStart,
+      'defaultGrid:',
+      language,
+      grid,
+      metadata,
+      wordPlacements,
+    );
   }
 
-  // Find the matching closing paren for WordGrid.fromLetters(...)
-  final fromLettersStart = langBlock.indexOf(
-    'WordGrid.fromLetters(',
-    defaultGridStart,
-  );
-  if (fromLettersStart == -1) {
-    return null;
+  // 3. Find by isDefault: true within a WordClockGrid
+  final isDefaultStart = langBlock.indexOf(RegExp(r'isDefault:\s*true'));
+  if (isDefaultStart != -1) {
+    // Look backwards for WordClockGrid(
+    int gridStart = isDefaultStart;
+    while (gridStart > 0) {
+      if (langBlock.substring(gridStart).startsWith('WordClockGrid(')) {
+        break;
+      }
+      gridStart--;
+    }
+
+    if (gridStart > 0) {
+      return _replaceGridBlock(
+        content,
+        langStart,
+        langEnd,
+        langBlock,
+        gridStart,
+        '', // No field name prefix to skip
+        language,
+        grid,
+        metadata,
+        wordPlacements,
+      );
+    }
   }
+
+  return null;
+}
+
+/// Helper to replace a grid block once its start has been found.
+String? _replaceGridBlock(
+  String content,
+  int langStart,
+  int langEnd,
+  String langBlock,
+  int blockStart,
+  String fieldPrefix,
+  WordClockLanguage language,
+  WordGrid grid,
+  GridGenerationMetadata metadata,
+  List<WordPlacement> wordPlacements,
+) {
+  // Find where the actual object initialization starts
+  final openParenStart = langBlock.indexOf('(', blockStart);
+  if (openParenStart == -1) return null;
 
   // Find the matching closing paren
   int parenCount = 0;
-  int defaultGridEnd = fromLettersStart;
+  int blockEnd = openParenStart;
   bool foundOpenParen = false;
-  while (defaultGridEnd < langBlock.length) {
-    final char = langBlock[defaultGridEnd];
+  while (blockEnd < langBlock.length) {
+    final char = langBlock[blockEnd];
     if (char == '(') {
       parenCount++;
       foundOpenParen = true;
     } else if (char == ')') {
       parenCount--;
       if (foundOpenParen && parenCount == 0) {
-        defaultGridEnd++; // Include the closing paren
+        blockEnd++; // Include the closing paren
         break;
       }
     }
-    defaultGridEnd++;
+    blockEnd++;
   }
 
   // Include any trailing comma
-  if (defaultGridEnd < langBlock.length && langBlock[defaultGridEnd] == ',') {
-    defaultGridEnd++;
+  if (blockEnd < langBlock.length && langBlock[blockEnd] == ',') {
+    blockEnd++;
   }
 
-  // Get the indentation from the start of the defaultGrid line
-  int indentStart = defaultGridStart;
+  // Get the indentation from the start of the line
+  int indentStart = blockStart;
   while (indentStart > 0 && langBlock[indentStart - 1] != '\n') {
     indentStart--;
   }
-  final indent = langBlock.substring(indentStart, defaultGridStart);
+  final indent = langBlock.substring(indentStart, blockStart);
 
   // Skip any whitespace after the trailing comma to find what comes next
-  int afterDefaultGrid = defaultGridEnd;
-  while (afterDefaultGrid < langBlock.length &&
-      (langBlock[afterDefaultGrid] == ' ' ||
-          langBlock[afterDefaultGrid] == '\t' ||
-          langBlock[afterDefaultGrid] == '\n')) {
-    afterDefaultGrid++;
+  int afterBlock = blockEnd;
+  while (afterBlock < langBlock.length &&
+      (langBlock[afterBlock] == ' ' ||
+          langBlock[afterBlock] == '\t' ||
+          langBlock[afterBlock] == '\n')) {
+    afterBlock++;
   }
 
   final updatedLangBlock =
-      '${langBlock.substring(0, indentStart)}${generateGridCode(language, grid, metadata, indent: indent)},\n$indent${langBlock.substring(afterDefaultGrid)}';
+      '${langBlock.substring(0, indentStart)}${generateGridCode(language, grid, metadata, wordPlacements: wordPlacements, indent: indent)},\n$indent${langBlock.substring(afterBlock)}';
 
   return content.substring(0, langStart) +
       updatedLangBlock +

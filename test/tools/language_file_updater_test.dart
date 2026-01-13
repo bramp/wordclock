@@ -115,6 +115,85 @@ final testLanguage = WordClockLanguage(
       expect(result, contains('minuteIncrement: 5'));
     });
 
+    test('replaces WordClockGrid with isDefault: true in grids list', () {
+      const originalContent = '''
+final testLanguage = WordClockLanguage(
+  id: 'TE',
+  languageCode: 'te-ST',
+  displayName: 'Test',
+  grids: [
+    WordClockGrid(
+      isDefault: true,
+      timeToWords: TestTimeToWords(),
+      paddingAlphabet: 'X',
+      grid: WordGrid.fromLetters(
+        width: 3,
+        letters: "OLD",
+      ),
+    ),
+    WordClockGrid(
+      isTimeCheck: true,
+      timeToWords: TestTimeToWords(),
+      paddingAlphabet: 'X',
+      grid: WordGrid.fromLetters(
+        width: 3,
+        letters: "CHK",
+      ),
+    ),
+  ],
+  minuteIncrement: 5,
+);
+''';
+
+      final result = updateLanguageFileContent(
+        originalContent,
+        createMockLanguage(id: 'TE'),
+        testGrid,
+        testMetadata,
+      );
+
+      expect(result, isNotNull);
+      expect(result, contains('// @generated begin'));
+      expect(result, contains('isDefault: true'));
+      expect(result, contains("'NEWGD'"));
+      expect(result, contains("'RIDAG'"));
+      expect(result, isNot(contains('"OLD"')));
+      // The time check grid should still be there
+      expect(result, contains('"CHK"'));
+      expect(result, contains('isTimeCheck: true'));
+    });
+
+    test('replaces WordClockGrid in a complex list structure', () {
+      const originalContent = '''
+final lang = WordClockLanguage(
+  id: 'EN',
+  grids: [
+    WordClockGrid(
+      isDefault: true,
+      grid: WordGrid.fromLetters(width: 3, letters: "OLD"),
+    ),
+    WordClockGrid(
+      isTimeCheck: true,
+      grid: WordGrid.fromLetters(width: 3, letters: "CHK"),
+    ),
+  ],
+);
+''';
+      final result = updateLanguageFileContent(
+        originalContent,
+        createMockLanguage(id: 'EN'),
+        testGrid,
+        testMetadata,
+      );
+
+      expect(result, isNotNull);
+      expect(result, contains('// @generated begin'));
+      expect(result, contains("'NEWGD'"));
+      // Check that the second grid is preserved and properly separated
+      expect(result, contains('// @generated end,'));
+      expect(result, contains('WordClockGrid(\n      isTimeCheck: true'));
+    });
+
     test('replaces existing @generated block', () {
       const originalContent = '''
 final testLanguage = WordClockLanguage(
