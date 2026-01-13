@@ -2,6 +2,7 @@
 import 'dart:io';
 
 import 'package:wordclock/languages/all.dart';
+import 'package:wordclock/languages/language.dart';
 import 'package:wordclock/model/word_grid.dart';
 
 /// Metadata for a generated grid
@@ -42,21 +43,51 @@ String? findLanguageFilePath(String languageId) {
   return null;
 }
 
-/// Generates the defaultGrid code block with @generated marker.
-String generateDefaultGridCode(WordGrid grid, GridGenerationMetadata metadata) {
+/// Generates the WordClockGrid code block with @generated marker.
+String generateGridCode(
+  WordClockLanguage lang,
+  WordGrid grid,
+  GridGenerationMetadata metadata, {
+  String indent = '    ',
+}) {
   final buffer = StringBuffer();
 
   // Add @generated marker with metadata
-  buffer.writeln('  // @generated begin - do not edit manually');
-  buffer.writeln('  // Generated: ${metadata.timestamp.toIso8601String()}');
-  buffer.writeln('  // Algorithm: ${metadata.algorithm}');
-  buffer.writeln('  // Seed: ${metadata.seed}');
+  buffer.writeln('$indent// @generated begin - do not edit manually');
   buffer.writeln(
-    '  // Iterations: ${metadata.iterationCount}, Duration: ${metadata.duration.inMilliseconds}ms',
+    '$indent// Generated: ${metadata.timestamp.toIso8601String()}',
   );
-  buffer.writeln('  defaultGrid: WordGrid.fromLetters(');
-  buffer.writeln('    width: ${grid.width},');
-  buffer.writeln('    letters:');
+  buffer.writeln('$indent// Algorithm: ${metadata.algorithm}');
+  buffer.writeln('$indent// Seed: ${metadata.seed}');
+  buffer.writeln(
+    '$indent// Iterations: ${metadata.iterationCount}, Duration: ${metadata.duration.inMilliseconds}ms',
+  );
+  buffer.writeln('$indent\WordClockGrid(');
+  buffer.writeln('$indent  isDefault: true,');
+
+  // Try to preserve the existing strategy if possible, but for now we'll use the default one
+  // from the language object.
+  final strategy = lang.defaultGridRef!.timeToWords;
+  // TODO: Export the constructor call string from TimeToWords itself?
+  // For now, we hack it by getting the class name.
+  final strategyName = strategy.runtimeType.toString();
+
+  // Handle English space flag
+  String strategyParams = '';
+  if (strategyName.contains('English')) {
+    // We assume we want useSpaceInTwentyFive: true for default grids now
+    strategyParams = '(useSpaceInTwentyFive: true)';
+  } else {
+    strategyParams = '()';
+  }
+
+  buffer.writeln('$indent  timeToWords: $strategyName$strategyParams,');
+  buffer.writeln(
+    '$indent  paddingAlphabet: \'${lang.defaultGridRef!.paddingAlphabet}\',',
+  );
+  buffer.writeln('$indent  grid: WordGrid.fromLetters(');
+  buffer.writeln('$indent    width: ${grid.width},');
+  buffer.writeln('$indent    letters:');
 
   for (int row = 0; row < grid.height; row++) {
     final line = grid.cells
@@ -64,11 +95,12 @@ String generateDefaultGridCode(WordGrid grid, GridGenerationMetadata metadata) {
         .join('');
     // Escape special characters
     final escapedLine = line.replaceAll(r'\', r'\\').replaceAll("'", r"\'");
-    buffer.writeln("        '$escapedLine'");
+    buffer.writeln("$indent      '$escapedLine'");
   }
 
-  buffer.writeln('  ),');
-  buffer.write('  // @generated end');
+  buffer.writeln('$indent  ),');
+  buffer.writeln('$indent),');
+  buffer.write('$indent// @generated end');
 
   return buffer.toString();
 }
@@ -91,9 +123,15 @@ bool updateLanguageFile(
 
   // Find the language block that contains this ID
   // We need to find the defaultGrid that belongs to this specific language ID
+  final lang = WordClockLanguages.byId[languageId];
+  if (lang == null) {
+    print('Error: Unknown language ID: $languageId');
+    return false;
+  }
+
   final updatedContent = updateLanguageFileContent(
     content,
-    languageId,
+    lang,
     grid,
     metadata,
   );
@@ -113,10 +151,11 @@ bool updateLanguageFile(
 /// This is the main logic function, exposed for testing.
 String? updateLanguageFileContent(
   String content,
-  String languageId,
+  WordClockLanguage language,
   WordGrid grid,
   GridGenerationMetadata metadata,
 ) {
+  final languageId = language.id;
   // Find the position of this language's id declaration
   final idPattern = RegExp(r"id:\s*'" + RegExp.escape(languageId) + r"'");
   final idMatch = idPattern.firstMatch(content);
@@ -194,7 +233,7 @@ String? updateLanguageFileContent(
     }
 
     final updatedLangBlock =
-        '${langBlock.substring(0, generatedMatch.start)}\n$indent${generateDefaultGridCode(grid, metadata).trimLeft()},\n$indent${langBlock.substring(afterGenerated)}';
+        '${langBlock.substring(0, generatedMatch.start)}\n${generateGridCode(language, grid, metadata, indent: indent)},\n$indent${langBlock.substring(afterGenerated)}';
     return content.substring(0, langStart) +
         updatedLangBlock +
         content.substring(langEnd);
@@ -255,9 +294,8 @@ String? updateLanguageFileContent(
     afterDefaultGrid++;
   }
 
-  // Replace the defaultGrid section, preserving proper indentation
   final updatedLangBlock =
-      '${langBlock.substring(0, indentStart)}${generateDefaultGridCode(grid, metadata)},\n$indent${langBlock.substring(afterDefaultGrid)}';
+      '${langBlock.substring(0, indentStart)}${generateGridCode(language, grid, metadata, indent: indent)},\n$indent${langBlock.substring(afterDefaultGrid)}';
 
   return content.substring(0, langStart) +
       updatedLangBlock +

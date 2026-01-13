@@ -8,35 +8,45 @@ final italianLanguage = WordClockLanguage(
   displayName: 'Italiano',
   englishName: 'Italian',
   description: null,
-  timeToWords: ItalianTimeToWords(),
-  paddingAlphabet: 'ABCEKLORSZ',
-  defaultGrid: WordGrid.fromLetters(
-    width: 11,
-    letters:
-        "SONOLÈZL’UNA"
-        "KLEZQUATTRO"
-        "ODODICINQUE"
-        "UNDICISETTE"
-        "BDIECIKNOVE"
-        "OTTOSEIDUEB"
-        "TREBMENOZUN"
-        "VENTICINQUE"
-        "DIECIZMEZZA"
-        "SCCBKQUARTO",
-  ),
-  timeCheckGrid: WordGrid.fromLetters(
-    width: 11,
-    letters:
-        'SONORLEBORE'
-        'ÈRL’UNASDUEZ'
-        'TREOTTONOVE'
-        'DIECIUNDICI'
-        'DODICISETTE'
-        'QUATTROCSEI'
-        'CINQUEAMENO'
-        'EKUNLQUARTO'
-        'VENTICINQUE'
-        'DIECILMEZZA',
-  ),
+  grids: [
+    WordClockGrid(
+      isDefault: true,
+      timeToWords: ItalianTimeToWords(),
+      paddingAlphabet: 'ABCEKLORSZ',
+      grid: WordGrid.fromLetters(
+        width: 11,
+        letters:
+            "SONOLÈZL’UNA"
+            "KLEZQUATTRO"
+            "ODODICINQUE"
+            "UNDICISETTE"
+            "BDIECIKNOVE"
+            "OTTOSEIDUEB"
+            "TREBMENOZUN"
+            "VENTICINQUE"
+            "DIECIZMEZZA"
+            "SCCBKQUARTO",
+      ),
+    ),
+    WordClockGrid(
+      isTimeCheck: true,
+      timeToWords: ItalianTimeToWords(),
+      paddingAlphabet: 'ABCEKLORSZ',
+      grid: WordGrid.fromLetters(
+        width: 11,
+        letters:
+            'SONORLEBORE'
+            'ÈRL’UNASDUEZ'
+            'TREOTTONOVE'
+            'DIECIUNDICI'
+            'DODICISETTE'
+            'QUATTROCSEI'
+            'CINQUEAMENO'
+            'EKUNLQUARTO'
+            'VENTICINQUE'
+            'DIECILMEZZA',
+      ),
+    ),
+  ],
   minuteIncrement: 5,
 );

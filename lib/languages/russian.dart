@@ -8,37 +8,46 @@ final russianLanguage = WordClockLanguage(
   displayName: 'Русский',
   englishName: 'Russian',
   description: null,
-  timeToWords: RussianTimeToWords(),
-  paddingAlphabet: 'АДМРЯ',
-  // TODO: Fix to fit in an 11x10 grid.
-  defaultGrid: WordGrid.fromLetters(
-    width: 11,
-    letters:
-        "ШЕСТЬОДИНЧЕ"
-        "ДВАТРИДВЕВО"
-        "НАДЦАТЬСЕМЬ"
-        "ТЫЧАСРЕПЯТЬ"
-        "ЧАСАДЕАВЯТЬ"
-        "ЯСЯТЬЯЧАСОВ"
-        "ПЯТНАДСОРОК"
-        "ЯДВАДАТРИДЕ"
-        "ЯТРИДРМЦАТЬ"
-        "ПЯТЬМДЕСЯТЬ"
-        "ДПЯТЬЯМИНУТ",
-  ),
-  timeCheckGrid: WordGrid.fromLetters(
-    width: 11,
-    letters:
-        'ОДИНПЯТЬДВА'
-        'ДЕШЕСТЬВЯТЬ'
-        'ВОЧЕСЕМЬТРИ'
-        'ТЫДВЕРЕСЯТЬ'
-        'НАДЦАТЬЧАСА'
-        'ЧАСОВДСОРОК'
-        'ТРИДВАДПЯТЬ'
-        'ПЯТНАДЕЦАТЬ'
-        'АМДЕСЯТСЯТЬ'
-        'ПЯТЬЯРМИНУТ',
-  ),
+  grids: [
+    WordClockGrid(
+      isDefault: true,
+      timeToWords: RussianTimeToWords(),
+      paddingAlphabet: 'АДМРЯ',
+      grid: WordGrid.fromLetters(
+        width: 11,
+        letters:
+            "ШЕСТЬОДИНЧЕ"
+            "ДВАТРИДВЕВО"
+            "НАДЦАТЬСЕМЬ"
+            "ТЫЧАСРЕПЯТЬ"
+            "ЧАСАДЕАВЯТЬ"
+            "ЯСЯТЬЯЧАСОВ"
+            "ПЯТНАДСОРОК"
+            "ЯДВАДАТРИДЕ"
+            "ЯТРИДРМЦАТЬ"
+            "ПЯТЬМДЕСЯТЬ"
+            "ДПЯТЬЯМИНУТ",
+      ),
+    ),
+    WordClockGrid(
+      isTimeCheck: true,
+      timeToWords: RussianTimeToWords(),
+      paddingAlphabet: 'АДМРЯ',
+      grid: WordGrid.fromLetters(
+        width: 11,
+        letters:
+            'ОДИНПЯТЬДВА'
+            'ДЕШЕСТЬВЯТЬ'
+            'ВОЧЕСЕМЬТРИ'
+            'ТЫДВЕРЕСЯТЬ'
+            'НАДЦАТЬЧАСА'
+            'ЧАСОВДСОРОК'
+            'ТРИДВАДПЯТЬ'
+            'ПЯТНАДЕЦАТЬ'
+            'АМДЕСЯТСЯТЬ'
+            'ПЯТЬЯРМИНУТ',
+      ),
+    ),
+  ],
   minuteIncrement: 5,
 );

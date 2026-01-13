@@ -8,36 +8,45 @@ final spanishLanguage = WordClockLanguage(
   displayName: 'Español',
   englishName: 'Spanish',
   description: null,
-  timeToWords: SpanishTimeToWords(),
-  paddingAlphabet: 'AEILMNOPS',
-  // Seed: 0
-  defaultGrid: WordGrid.fromLetters(
-    width: 11,
-    letters:
-        "SONESLASLAL"
-        "CUATROCINCO"
-        "NUEVENSIETE"
-        "DOCEONCEDOS"
-        "DIEZOCHOUNA"
-        "ETRESEISPOY"
-        "MENOSOCINCO"
-        "VEINTICINCO"
-        "VEINTEMEDIA"
-        "CUARTONDIEZ",
-  ),
-  timeCheckGrid: WordGrid.fromLetters(
-    width: 11,
-    letters:
-        'ESONELASUNA'
-        'DOSITRESOAM'
-        'CUATROCINCO'
-        'SEISASIETEN'
-        'OCHONUEVEPM'
-        'LADIEZSONCE'
-        'DOCELYMENOS'
-        'OVEINTEDIEZ'
-        'VEINTICINCO'
-        'MEDIACUARTO',
-  ),
+  grids: [
+    WordClockGrid(
+      isDefault: true,
+      timeToWords: SpanishTimeToWords(),
+      paddingAlphabet: 'AEILMNOPS',
+      grid: WordGrid.fromLetters(
+        width: 11,
+        letters:
+            "SONESLASLAL"
+            "CUATROCINCO"
+            "NUEVENSIETE"
+            "DOCEONCEDOS"
+            "DIEZOCHOUNA"
+            "ETRESEISPOY"
+            "MENOSOCINCO"
+            "VEINTICINCO"
+            "VEINTEMEDIA"
+            "CUARTONDIEZ",
+      ),
+    ),
+    WordClockGrid(
+      isTimeCheck: true,
+      timeToWords: SpanishTimeToWords(),
+      paddingAlphabet: 'AEILMNOPS',
+      grid: WordGrid.fromLetters(
+        width: 11,
+        letters:
+            'ESONELASUNA'
+            'DOSITRESOAM'
+            'CUATROCINCO'
+            'SEISASIETEN'
+            'OCHONUEVEPM'
+            'LADIEZSONCE'
+            'DOCELYMENOS'
+            'OVEINTEDIEZ'
+            'VEINTICINCO'
+            'MEDIACUARTO',
+      ),
+    ),
+  ],
   minuteIncrement: 5,
 );

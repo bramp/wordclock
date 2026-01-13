@@ -1,8 +1,8 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:wordclock/model/word_grid.dart';
 
-// Import the updater - we need to make some functions testable
 import '../../bin/utils/language_file_updater.dart';
+import '../generator/test_helpers.dart';
 
 void main() {
   group('GridGenerationMetadata', () {
@@ -33,15 +33,18 @@ void main() {
         iterationCount: 100,
         duration: Duration(milliseconds: 50),
       );
+      final lang = createMockLanguage(paddingAlphabet: 'X');
 
-      final code = generateDefaultGridCode(grid, metadata);
+      final code = generateGridCode(lang, grid, metadata);
 
       expect(code, contains('// @generated begin - do not edit manually'));
       expect(code, contains('// @generated end'));
       expect(code, contains('// Algorithm: Trie'));
       expect(code, contains('// Seed: 0'));
       expect(code, contains('// Iterations: 100, Duration: 50ms'));
-      expect(code, contains("defaultGrid: WordGrid.fromLetters("));
+      expect(code, contains("WordClockGrid("));
+      expect(code, contains("isDefault: true,"));
+      expect(code, contains("paddingAlphabet: 'X'"));
       expect(code, contains("width: 5,"));
       expect(code, contains("'HELLO'"));
       expect(code, contains("'WORLD'"));
@@ -57,8 +60,8 @@ void main() {
         iterationCount: 1,
         duration: Duration.zero,
       );
-
-      final code = generateDefaultGridCode(grid, metadata);
+      final lang = createMockLanguage();
+      final code = generateGridCode(lang, grid, metadata);
 
       // The grid escapes apostrophes in output
       expect(code, contains(r"O\'CLOCK"));
@@ -95,7 +98,7 @@ final testLanguage = WordClockLanguage(
 
       final result = updateLanguageFileContent(
         originalContent,
-        'TE',
+        createMockLanguage(id: 'TE'),
         testGrid,
         testMetadata,
       );
@@ -135,7 +138,7 @@ final testLanguage = WordClockLanguage(
 
       final result = updateLanguageFileContent(
         originalContent,
-        'TE',
+        createMockLanguage(id: 'TE'),
         testGrid,
         testMetadata,
       );
@@ -170,7 +173,7 @@ final langTwo = WordClockLanguage(
       // Update only L2
       final result = updateLanguageFileContent(
         originalContent,
-        'L2',
+        createMockLanguage(id: 'L2'),
         testGrid,
         testMetadata,
       );
@@ -195,7 +198,9 @@ final testLanguage = WordClockLanguage(
 
       final result = updateLanguageFileContent(
         originalContent,
-        'XX', // Non-existent ID
+        createMockLanguage(
+          id: 'XX',
+        ), // Non-existent ID info for matcher (though our function uses language.id)
         testGrid,
         testMetadata,
       );
@@ -213,7 +218,7 @@ final testLanguage = WordClockLanguage(
 
       final result = updateLanguageFileContent(
         originalContent,
-        'TE',
+        createMockLanguage(id: 'TE'),
         testGrid,
         testMetadata,
       );
@@ -240,7 +245,7 @@ void someFunction() {}
 
       final result = updateLanguageFileContent(
         originalContent,
-        'TE',
+        createMockLanguage(id: 'TE'),
         testGrid,
         testMetadata,
       );
@@ -271,7 +276,7 @@ final testLanguage = WordClockLanguage(
 
       final result = updateLanguageFileContent(
         originalContent,
-        'TE',
+        createMockLanguage(id: 'TE'),
         gridWithSpecial,
         testMetadata,
       );
@@ -295,7 +300,7 @@ final testLanguage = WordClockLanguage(
 
       final result = updateLanguageFileContent(
         originalContent,
-        'TE',
+        createMockLanguage(id: 'TE'),
         testGrid,
         testMetadata,
       );
@@ -329,7 +334,7 @@ final testLanguage = WordClockLanguage(
 
         final result = updateLanguageFileContent(
           originalContent,
-          'TE',
+          createMockLanguage(id: 'TE'),
           testGrid,
           testMetadata,
         );
@@ -354,7 +359,7 @@ final testLanguage = WordClockLanguage(
 
       final result = updateLanguageFileContent(
         originalContent,
-        'TE',
+        createMockLanguage(id: 'TE'),
         testGrid,
         testMetadata,
       );

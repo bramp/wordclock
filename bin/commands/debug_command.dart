@@ -43,7 +43,7 @@ class DebugCommand extends Command<void> {
 
   void _debugBacktrackingFailure(Config config) {
     final lang = config.language;
-    final grid = lang.timeCheckGrid;
+    final grid = lang.timeCheckGridRef?.grid;
 
     if (grid == null) {
       print('Error: No timeCheckGrid available for ${lang.id}');

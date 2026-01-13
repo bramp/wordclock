@@ -8,38 +8,48 @@ final hebrewLanguage = WordClockLanguage(
   displayName: 'עברית',
   englishName: 'Hebrew',
   description: null,
-  timeToWords: HebrewTimeToWords(),
-  paddingAlphabet: 'mאבוחיםמעצרשתحروब',
-  defaultGrid: WordGrid.fromLetters(
-    width: 11,
-    letters:
-        "רשעתחאबהעשה"
-        "םהנ׀משהרשעm"
-        "םײתשעבראעבש"
-        "ש׀לשבשמחששر"
-        "השימח׀बעשתm"
-        "מהרשעויצחור"
-        "יםםיעבראबחם"
-        "יתםיעבראורو"
-        "םירשעםירשעו"
-        "עותबצםישימח"
-        "תיתצםישימחו"
-        "םישןלשרשמחו"
-        "בmबאबובעברו",
-  ),
-  timeCheckGrid: WordGrid.fromLetters(
-    width: 11,
-    letters:
-        'רשעתחארהעשה'
-        'הרשערםײתשרא'
-        'מארעבראש׀לש'
-        'הנ׀משעבששמח'
-        'השימח׀רעשתש'
-        'שארמםירשעוא'
-        'הרשעוםישןלש'
-        'עברוםיעבראו'
-        'יצחוםישימחו'
-        'אשמחורשותבא',
-  ),
+  grids: [
+    WordClockGrid(
+      isDefault: true,
+      timeToWords: HebrewTimeToWords(),
+      paddingAlphabet: 'mאבוחיםמעצרשתحروब',
+      grid: WordGrid.fromLetters(
+        width: 11,
+        letters:
+            "רשעתחאबהעשה"
+            "םהנ׀משהרשעm"
+            "םײתשעבראעבש"
+            "ש׀לשבשמחששر"
+            "השימח׀बעשתm"
+            "מהרשעויצחור"
+            "יםםיעבראबחם"
+            "יתםיעבראורو"
+            "םירשעםירשעו"
+            "עותबצםישימח"
+            "תיתצםישימחו"
+            "םישןלשרשמחו"
+            "בmबאबובעברו",
+      ),
+    ),
+    WordClockGrid(
+      isTimeCheck: true,
+      timeToWords: HebrewTimeToWords(),
+      paddingAlphabet: 'mאבוחיםמעצרשתحروब',
+      grid: WordGrid.fromLetters(
+        width: 11,
+        letters:
+            'רשעתחארהעשה'
+            'הרשערםײתשרא'
+            'מארעבראש׀לש'
+            'הנ׀משעבששמח'
+            'השימח׀רעשתש'
+            'שארמםירשעוא'
+            'הרשעוםישןלש'
+            'עברוםיעבראו'
+            'יצחוםישימחו'
+            'אשמחורשותבא',
+      ),
+    ),
+  ],
   minuteIncrement: 5,
 );

@@ -8,35 +8,45 @@ final danishLanguage = WordClockLanguage(
   displayName: 'Dansk',
   englishName: 'Danish',
   description: null,
-  timeToWords: DanishTimeToWords(),
-  paddingAlphabet: 'AEIJKLMNOPRSTV',
-  defaultGrid: WordGrid.fromLetters(
-    width: 11,
-    letters:
-        "KLOKKENPERL"
-        "KVARTHALVIM"
-        "TYVEOVERSTI"
-        "IJIPEJPRFEM"
-        "MMINUTTERII"
-        "NOVERONHALV"
-        "ELLEVESSEKS"
-        "OTTETOLVSYV"
-        "FIREFEMTREI"
-        "ESLMSTTIINI",
-  ),
-  timeCheckGrid: WordGrid.fromLetters(
-    width: 11,
-    letters:
-        'KLOKKENVERO'
-        'FEMTYVESKAM'
-        'OJEKVARTVAT'
-        'TIAMINUTTER'
-        'VEMOVERILPM'
-        'MONALISHALV'
-        'ETTOTREFIRE'
-        'FEMSEKSRSYV'
-        'OTTERNIMETI'
-        'ELLEVEATOLV',
-  ),
+  grids: [
+    WordClockGrid(
+      isDefault: true,
+      timeToWords: DanishTimeToWords(),
+      paddingAlphabet: 'AEIJKLMNOPRSTV',
+      grid: WordGrid.fromLetters(
+        width: 11,
+        letters:
+            "KLOKKENPERL"
+            "KVARTHALVIM"
+            "TYVEOVERSTI"
+            "IJIPEJPRFEM"
+            "MMINUTTERII"
+            "NOVERONHALV"
+            "ELLEVESSEKS"
+            "OTTETOLVSYV"
+            "FIREFEMTREI"
+            "ESLMSTTIINI",
+      ),
+    ),
+    WordClockGrid(
+      isTimeCheck: true,
+      timeToWords: DanishTimeToWords(),
+      paddingAlphabet: 'AEIJKLMNOPRSTV',
+      grid: WordGrid.fromLetters(
+        width: 11,
+        letters:
+            'KLOKKENVERO'
+            'FEMTYVESKAM'
+            'OJEKVARTVAT'
+            'TIAMINUTTER'
+            'VEMOVERILPM'
+            'MONALISHALV'
+            'ETTOTREFIRE'
+            'FEMSEKSRSYV'
+            'OTTERNIMETI'
+            'ELLEVEATOLV',
+      ),
+    ),
+  ],
   minuteIncrement: 5,
 );

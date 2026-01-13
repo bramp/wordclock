@@ -8,37 +8,46 @@ final portugueseLanguage = WordClockLanguage(
   displayName: 'Português',
   englishName: 'Portuguese',
   description: null,
-  timeToWords: PortugueseTimeToWords(),
-  paddingAlphabet: 'ACEHLMOPVYZ',
-  // TODO: Fix to fit in an 11x10 grid.
-  defaultGrid: WordGrid.fromLetters(
-    width: 11,
-    letters:
-        "SÃOÉQUATROE"
-        "MEIONOVEUMA"
-        "SEISDUASETE"
-        "OITOTRÊSDIA"
-        "EONZELMENOS"
-        "CINCOPDEZOE"
-        "ZHORASYMEIA"
-        "NOITEHORAEM"
-        "MENOSHVINTE"
-        "MEIAADEZHUM"
-        "QUARTOCINCO",
-  ),
-  timeCheckGrid: WordGrid.fromLetters(
-    width: 11,
-    letters:
-        'ÉSÃOUMATRÊS'
-        'MEIOLDIADEZ'
-        'DUASEISETEY'
-        'QUATROHNOVE'
-        'CINCOITONZE'
-        'ZMEIALNOITE'
-        'HORASYMENOS'
-        'VINTECAMEIA'
-        'UMVQUARTOPM'
-        'DEZOEYCINCO',
-  ),
+  grids: [
+    WordClockGrid(
+      isDefault: true,
+      timeToWords: PortugueseTimeToWords(),
+      paddingAlphabet: 'ACEHLMOPVYZ',
+      grid: WordGrid.fromLetters(
+        width: 11,
+        letters:
+            "SÃOÉQUATROE"
+            "MEIONOVEUMA"
+            "SEISDUASETE"
+            "OITOTRÊSDIA"
+            "EONZELMENOS"
+            "CINCOPDEZOE"
+            "ZHORASYMEIA"
+            "NOITEHORAEM"
+            "MENOSHVINTE"
+            "MEIAADEZHUM"
+            "QUARTOCINCO",
+      ),
+    ),
+    WordClockGrid(
+      isTimeCheck: true,
+      timeToWords: PortugueseTimeToWords(),
+      paddingAlphabet: 'ACEHLMOPVYZ',
+      grid: WordGrid.fromLetters(
+        width: 11,
+        letters:
+            'ÉSÃOUMATRÊS'
+            'MEIOLDIADEZ'
+            'DUASEISETEY'
+            'QUATROHNOVE'
+            'CINCOITONZE'
+            'ZMEIALNOITE'
+            'HORASYMENOS'
+            'VINTECAMEIA'
+            'UMVQUARTOPM'
+            'DEZOEYCINCO',
+      ),
+    ),
+  ],
   minuteIncrement: 5,
 );

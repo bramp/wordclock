@@ -8,35 +8,45 @@ final swedishLanguage = WordClockLanguage(
   displayName: 'Svenska',
   englishName: 'Swedish',
   description: null,
-  timeToWords: SwedishTimeToWords(),
-  paddingAlphabet: 'AEFIKLMNOPQRSTUVXYZ',
-  defaultGrid: WordGrid.fromLetters(
-    width: 11,
-    letters:
-        "KLOCKANIÄRY"
-        "UUKVARTJUGO"
-        "EVHALVYOTIO"
-        "KÖVERZFEMZI"
-        "VÖVERVPHALV"
-        "TOLVELVATIO"
-        "ÄTTAFYRAETT"
-        "NIOVTVÅQSJU"
-        "SEXUTREPFEM"
-        "ANKLYMMKLAS",
-  ),
-  timeCheckGrid: WordGrid.fromLetters(
-    width: 11,
-    letters:
-        'KLOCKANTÄRK'
-        'FEMYISTIONI'
-        'KVARTQIENZO'
-        'TJUGOLIVIPM'
-        'ÖVERKAMHALV'
-        'ETTUSVLXTVÅ'
-        'TREMYKYFYRA'
-        'FEMSFLORSEX'
-        'SJUÄTTAINIO'
-        'TIOELVATOLV',
-  ),
+  grids: [
+    WordClockGrid(
+      isDefault: true,
+      timeToWords: SwedishTimeToWords(),
+      paddingAlphabet: 'AEFIKLMNOPQRSTUVXYZ',
+      grid: WordGrid.fromLetters(
+        width: 11,
+        letters:
+            "KLOCKANIÄRY"
+            "UUKVARTJUGO"
+            "EVHALVYOTIO"
+            "KÖVERZFEMZI"
+            "VÖVERVPHALV"
+            "TOLVELVATIO"
+            "ÄTTAFYRAETT"
+            "NIOVTVÅQSJU"
+            "SEXUTREPFEM"
+            "ANKLYMMKLAS",
+      ),
+    ),
+    WordClockGrid(
+      isTimeCheck: true,
+      timeToWords: SwedishTimeToWords(),
+      paddingAlphabet: 'AEFIKLMNOPQRSTUVXYZ',
+      grid: WordGrid.fromLetters(
+        width: 11,
+        letters:
+            'KLOCKANTÄRK'
+            'FEMYISTIONI'
+            'KVARTQIENZO'
+            'TJUGOLIVIPM'
+            'ÖVERKAMHALV'
+            'ETTUSVLXTVÅ'
+            'TREMYKYFYRA'
+            'FEMSFLORSEX'
+            'SJUÄTTAINIO'
+            'TIOELVATOLV',
+      ),
+    ),
+  ],
   minuteIncrement: 5,
 );

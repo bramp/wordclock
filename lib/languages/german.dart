@@ -8,37 +8,46 @@ final berneseGermanLanguage = WordClockLanguage(
   displayName: 'Bärndütsch',
   englishName: 'Bernese German',
   description: 'Bernese German',
-  timeToWords: BerneseGermanTimeToWords(),
-  paddingAlphabet: 'ABEFHIKLMOPQRSTU',
-  // Seed: 0
-  defaultGrid: WordGrid.fromLetters(
-    width: 11,
-    letters:
-        "ESUISCHBFÜF"
-        "RVIERTUFZÄÄ"
-        "TZWÄNZGLVOR"
-        "TOABOOHAUBI"
-        "SÄCHSIVIERI"
-        "ZWÖUFIACHTI"
-        "LSIBNIEFÜFI"
-        "EUFIZÄNIDRÜ"
-        "ZWÖINÜNIEIS"
-        "MMFTBSASQUT",
-  ),
-  timeCheckGrid: WordGrid.fromLetters(
-    width: 11,
-    letters:
-        'ESKISCHAFÜF'
-        'VIERTUBFZÄÄ'
-        'ZWÄNZGSIVOR'
-        'ABOHAUBIEPM'
-        'EISZWÖISDRÜ'
-        'VIERIFÜFIQT'
-        'SÄCHSISIBNI'
-        'ACHTINÜNIEL'
-        'ZÄNIERBEUFI'
-        'ZWÖUFIAMUHR',
-  ),
+  grids: [
+    WordClockGrid(
+      isDefault: true,
+      timeToWords: BerneseGermanTimeToWords(),
+      paddingAlphabet: 'ABEFHIKLMOPQRSTU',
+      grid: WordGrid.fromLetters(
+        width: 11,
+        letters:
+            "ESUISCHBFÜF"
+            "RVIERTUFZÄÄ"
+            "TZWÄNZGLVOR"
+            "TOABOOHAUBI"
+            "SÄCHSIVIERI"
+            "ZWÖUFIACHTI"
+            "LSIBNIEFÜFI"
+            "EUFIZÄNIDRÜ"
+            "ZWÖINÜNIEIS"
+            "MMFTBSASQUT",
+      ),
+    ),
+    WordClockGrid(
+      isTimeCheck: true,
+      timeToWords: BerneseGermanTimeToWords(),
+      paddingAlphabet: 'ABEFHIKLMOPQRSTU',
+      grid: WordGrid.fromLetters(
+        width: 11,
+        letters:
+            'ESKISCHAFÜF'
+            'VIERTUBFZÄÄ'
+            'ZWÄNZGSIVOR'
+            'ABOHAUBIEPM'
+            'EISZWÖISDRÜ'
+            'VIERIFÜFIQT'
+            'SÄCHSISIBNI'
+            'ACHTINÜNIEL'
+            'ZÄNIERBEUFI'
+            'ZWÖUFIAMUHR',
+      ),
+    ),
+  ],
   minuteIncrement: 5,
 );
 
@@ -48,37 +57,46 @@ final germanAlternativeLanguage = WordClockLanguage(
   displayName: 'Deutsch',
   englishName: 'German',
   description: 'Alternative',
-  timeToWords: GermanAlternativeTimeToWords(),
-  paddingAlphabet: 'AFGIJKLMNPUWXZ',
-  // Seed: 0
-  defaultGrid: WordGrid.fromLetters(
-    width: 11,
-    letters:
-        "ESPISTKEINL"
-        "DREIVIERTEL"
-        "WZEHNGIFÜNF"
-        "GPNACHFIVOR"
-        "HALBPSIEBEN"
-        "ZWÖLFUSECHS"
-        "ZEHNFÜNFELF"
-        "ACHTLDREINS"
-        "GZWEIMNNEUN"
-        "MWGVIERFUHR",
-  ),
-  timeCheckGrid: WordGrid.fromLetters(
-    width: 11,
-    letters:
-        'ESKISTAFÜNF'
-        'ZEHNZWANZIG'
-        'DREIVIERTEL'
-        'VORFUNKNACH'
-        'HALBAELFÜNF'
-        'EINSXAMZWEI'
-        'DREIPMJVIER'
-        'SECHSNLACHT'
-        'SIEBENZWÖLF'
-        'ZEHNEUNKUHR',
-  ),
+  grids: [
+    WordClockGrid(
+      isDefault: true,
+      timeToWords: GermanAlternativeTimeToWords(),
+      paddingAlphabet: 'AFGIJKLMNPUWXZ',
+      grid: WordGrid.fromLetters(
+        width: 11,
+        letters:
+            "ESPISTKEINL"
+            "DREIVIERTEL"
+            "WZEHNGIFÜNF"
+            "GPNACHFIVOR"
+            "HALBPSIEBEN"
+            "ZWÖLFUSECHS"
+            "ZEHNFÜNFELF"
+            "ACHTLDREINS"
+            "GZWEIMNNEUN"
+            "MWGVIERFUHR",
+      ),
+    ),
+    WordClockGrid(
+      isTimeCheck: true,
+      timeToWords: GermanAlternativeTimeToWords(),
+      paddingAlphabet: 'AFGIJKLMNPUWXZ',
+      grid: WordGrid.fromLetters(
+        width: 11,
+        letters:
+            'ESKISTAFÜNF'
+            'ZEHNZWANZIG'
+            'DREIVIERTEL'
+            'VORFUNKNACH'
+            'HALBAELFÜNF'
+            'EINSXAMZWEI'
+            'DREIPMJVIER'
+            'SECHSNLACHT'
+            'SIEBENZWÖLF'
+            'ZEHNEUNKUHR',
+      ),
+    ),
+  ],
   minuteIncrement: 5,
 );
 
@@ -88,37 +106,46 @@ final swabianGermanLanguage = WordClockLanguage(
   displayName: 'Deutsch',
   englishName: 'German',
   description: 'Alternative 2',
-  timeToWords: SwabianGermanTimeToWords(),
-  paddingAlphabet: 'ABDEFGHIKLNRTUVXÜ',
-  // Seed: 0
-  defaultGrid: WordGrid.fromLetters(
-    width: 11,
-    letters:
-        "ESÜISCHAAHV"
-        "UDREIVIERTL"
-        "DFÜNFÜAZEHN"
-        "AVNACHINVOR"
-        "HALBEZWÖLFE"
-        "SIEBNEDREIE"
-        "SECHSEVIERE"
-        "ZEHNEUNELFE"
-        "ZWOIEEFÜNFE"
-        "XOISEGACHTE",
-  ),
-  timeCheckGrid: WordGrid.fromLetters(
-    width: 11,
-    letters:
-        'ESKISCHFUNK'
-        'DREIVIERTLA'
-        'ZEHNBIEFÜNF'
-        'NACHGERTVOR'
-        'HALBXFÜNFEI'
-        'OISECHSELFE'
-        'ZWOIEACHTED'
-        'DREIEZWÖLFE'
-        'ZEHNEUNEUHL'
-        'SIEBNEVIERE',
-  ),
+  grids: [
+    WordClockGrid(
+      isDefault: true,
+      timeToWords: SwabianGermanTimeToWords(),
+      paddingAlphabet: 'ABDEFGHIKLNRTUVXÜ',
+      grid: WordGrid.fromLetters(
+        width: 11,
+        letters:
+            "ESÜISCHAAHV"
+            "UDREIVIERTL"
+            "DFÜNFÜAZEHN"
+            "AVNACHINVOR"
+            "HALBEZWÖLFE"
+            "SIEBNEDREIE"
+            "SECHSEVIERE"
+            "ZEHNEUNELFE"
+            "ZWOIEEFÜNFE"
+            "XOISEGACHTE",
+      ),
+    ),
+    WordClockGrid(
+      isTimeCheck: true,
+      timeToWords: SwabianGermanTimeToWords(),
+      paddingAlphabet: 'ABDEFGHIKLNRTUVXÜ',
+      grid: WordGrid.fromLetters(
+        width: 11,
+        letters:
+            'ESKISCHFUNK'
+            'DREIVIERTLA'
+            'ZEHNBIEFÜNF'
+            'NACHGERTVOR'
+            'HALBXFÜNFEI'
+            'OISECHSELFE'
+            'ZWOIEACHTED'
+            'DREIEZWÖLFE'
+            'ZEHNEUNEUHL'
+            'SIEBNEVIERE',
+      ),
+    ),
+  ],
   minuteIncrement: 5,
 );
 
@@ -128,37 +155,46 @@ final eastGermanLanguage = WordClockLanguage(
   displayName: 'Deutsch',
   englishName: 'German',
   description: 'Alternative 3',
-  timeToWords: EastGermanTimeToWords(),
-  paddingAlphabet: 'AFGIJKLMNPUWXZ',
-  // Seed: 0
-  defaultGrid: WordGrid.fromLetters(
-    width: 11,
-    letters:
-        "ESPISTKEINL"
-        "DREIVIERTEL"
-        "WZEHNGIFÜNF"
-        "GPNACHFIVOR"
-        "HALBPSIEBEN"
-        "ZWÖLFUSECHS"
-        "ZEHNFÜNFELF"
-        "NEUNLZWEINS"
-        "GACHTMNDREI"
-        "MWGVIERFUHR",
-  ),
-  timeCheckGrid: WordGrid.fromLetters(
-    width: 11,
-    letters:
-        'ESKISTAFÜNF'
-        'ZEHNZWANZIG'
-        'DREIVIERTEL'
-        'VORFUNKNACH'
-        'HALBAELFÜNF'
-        'EINSXAMZWEI'
-        'DREIPMJVIER'
-        'SECHSNLACHT'
-        'SIEBENZWÖLF'
-        'ZEHNEUNKUHR',
-  ),
+  grids: [
+    WordClockGrid(
+      isDefault: true,
+      timeToWords: EastGermanTimeToWords(),
+      paddingAlphabet: 'AFGIJKLMNPUWXZ',
+      grid: WordGrid.fromLetters(
+        width: 11,
+        letters:
+            "ESPISTKEINL"
+            "DREIVIERTEL"
+            "WZEHNGIFÜNF"
+            "GPNACHFIVOR"
+            "HALBPSIEBEN"
+            "ZWÖLFUSECHS"
+            "ZEHNFÜNFELF"
+            "NEUNLZWEINS"
+            "GACHTMNDREI"
+            "MWGVIERFUHR",
+      ),
+    ),
+    WordClockGrid(
+      isTimeCheck: true,
+      timeToWords: EastGermanTimeToWords(),
+      paddingAlphabet: 'AFGIJKLMNPUWXZ',
+      grid: WordGrid.fromLetters(
+        width: 11,
+        letters:
+            'ESKISTAFÜNF'
+            'ZEHNZWANZIG'
+            'DREIVIERTEL'
+            'VORFUNKNACH'
+            'HALBAELFÜNF'
+            'EINSXAMZWEI'
+            'DREIPMJVIER'
+            'SECHSNLACHT'
+            'SIEBENZWÖLF'
+            'ZEHNEUNKUHR',
+      ),
+    ),
+  ],
   minuteIncrement: 5,
 );
 
@@ -168,36 +204,45 @@ final germanLanguage = WordClockLanguage(
   displayName: 'Deutsch',
   englishName: 'German',
   description: null,
-  timeToWords: GermanTimeToWords(),
-  paddingAlphabet: 'AFJKLMNPUX',
-  // Seed: 0
-  defaultGrid: WordGrid.fromLetters(
-    width: 11,
-    letters:
-        "ESMISTXHALB"
-        "VIERTELLEIN"
-        "ZWANZIGZEHN"
-        "XFÜNFNFNACH"
-        "LFVORFXHALB"
-        "SIEBENSECHS"
-        "XZWÖLFUZEHN"
-        "NEUNACHTELF"
-        "ZWEIJDREINS"
-        "VIERFÜNFUHR",
-  ),
-  timeCheckGrid: WordGrid.fromLetters(
-    width: 11,
-    letters:
-        'ESKISTAFÜNF'
-        'ZEHNZWANZIG'
-        'DREIVIERTEL'
-        'VORFUNKNACH'
-        'HALBAELFÜNF'
-        'EINSXAMZWEI'
-        'DREIPMJVIER'
-        'SECHSNLACHT'
-        'SIEBENZWÖLF'
-        'ZEHNEUNKUHR',
-  ),
+  grids: [
+    WordClockGrid(
+      isDefault: true,
+      timeToWords: GermanTimeToWords(),
+      paddingAlphabet: 'AFJKLMNPUX',
+      grid: WordGrid.fromLetters(
+        width: 11,
+        letters:
+            "ESMISTXHALB"
+            "VIERTELLEIN"
+            "ZWANZIGZEHN"
+            "XFÜNFNFNACH"
+            "LFVORFXHALB"
+            "SIEBENSECHS"
+            "XZWÖLFUZEHN"
+            "NEUNACHTELF"
+            "ZWEIJDREINS"
+            "VIERFÜNFUHR",
+      ),
+    ),
+    WordClockGrid(
+      isTimeCheck: true,
+      timeToWords: GermanTimeToWords(),
+      paddingAlphabet: 'AFJKLMNPUX',
+      grid: WordGrid.fromLetters(
+        width: 11,
+        letters:
+            'ESKISTAFÜNF'
+            'ZEHNZWANZIG'
+            'DREIVIERTEL'
+            'VORFUNKNACH'
+            'HALBAELFÜNF'
+            'EINSXAMZWEI'
+            'DREIPMJVIER'
+            'SECHSNLACHT'
+            'SIEBENZWÖLF'
+            'ZEHNEUNKUHR',
+      ),
+    ),
+  ],
   minuteIncrement: 5,
 );

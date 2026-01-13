@@ -10,6 +10,7 @@ class GridPostProcessor {
   final int width;
   final int height;
   final WordClockLanguage language;
+  final String paddingAlphabet;
   final Random random;
   final List<Cell> paddingCells;
   final CellCodec codec;
@@ -18,9 +19,10 @@ class GridPostProcessor {
     required this.width,
     required this.height,
     required this.language,
+    required this.paddingAlphabet,
     required this.random,
     required this.codec,
-  }) : paddingCells = WordGrid.splitIntoCells(language.paddingAlphabet);
+  }) : paddingCells = WordGrid.splitIntoCells(paddingAlphabet);
 
   /// Processes the placements and returns the final grid cells.
   GridPostProcessResult process(List<Placement> placements) {

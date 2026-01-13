@@ -39,7 +39,7 @@ class GridGenerator {
   }) {
     final Random random = seed != null ? Random(seed) : Random(0);
     final lang = language ?? WordClockLanguages.byId['en']!;
-    final padding = lang.paddingAlphabet;
+    final padding = lang.defaultGridRef!.paddingAlphabet;
 
     // 1. Build Dependency Graph
     final graph = DependencyGraphBuilder.build(language: lang);

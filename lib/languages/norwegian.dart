@@ -8,36 +8,45 @@ final norwegianLanguage = WordClockLanguage(
   displayName: 'Norsk',
   englishName: 'Norwegian',
   description: null,
-  timeToWords: NorwegianTimeToWords(),
-  paddingAlphabet: 'ABDEFGHILMNOPSUVXZl',
-  // Seed: 0
-  defaultGrid: WordGrid.fromLetters(
-    width: 11,
-    letters:
-        "KLOKKENEERZ"
-        "KVARTFEMTlU"
-        "OVERPÅUHALV"
-        "ELLEVEBTOLV"
-        "FlRESEKSFEM"
-        "ÅTTETTRESYV"
-        "VZLFllTlVNI"
-        "VMVNUMAIFGZ"
-        "HHFGAPNFIGS"
-        "lNBLMAEOAMN",
-  ),
-  timeCheckGrid: WordGrid.fromLetters(
-    width: 11,
-    letters:
-        'KLOKKENVERM'
-        'FEMHPÅSUFIS'
-        'TlLPÅSIDOSN'
-        'KVARTNPÅSTO'
-        'OVERXAMBPMZ'
-        'HALVBlEGENZ'
-        'ETTNTOATREX'
-        'FlREFEMSEKS'
-        'SYVÅTTENITl'
-        'ELLEVESTOLV',
-  ),
+  grids: [
+    WordClockGrid(
+      isDefault: true,
+      timeToWords: NorwegianTimeToWords(),
+      paddingAlphabet: 'ABDEFGHILMNOPSUVXZl',
+      grid: WordGrid.fromLetters(
+        width: 11,
+        letters:
+            "KLOKKENEERZ"
+            "KVARTFEMTlU"
+            "OVERPÅUHALV"
+            "ELLEVEBTOLV"
+            "FlRESEKSFEM"
+            "ÅTTETTRESYV"
+            "VZLFllTlVNI"
+            "VMVNUMAIFGZ"
+            "HHFGAPNFIGS"
+            "lNBLMAEOAMN",
+      ),
+    ),
+    WordClockGrid(
+      isTimeCheck: true,
+      timeToWords: NorwegianTimeToWords(),
+      paddingAlphabet: 'ABDEFGHILMNOPSUVXZ',
+      grid: WordGrid.fromLetters(
+        width: 11,
+        letters:
+            'KLOKKENVERM'
+            'FEMHPÅSUFIS'
+            'TlLPÅSIDOSN'
+            'KVARTNPÅSTO'
+            'OVERXAMBPMZ'
+            'HALVBlEGENZ'
+            'ETTNTOATREX'
+            'FlREFEMSEKS'
+            'SYVÅTTENITl'
+            'ELLEVESTOLV',
+      ),
+    ),
+  ],
   minuteIncrement: 5,
 );

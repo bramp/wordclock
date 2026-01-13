@@ -70,9 +70,9 @@ class GraphCommand extends Command<void> {
     // Handle extracting graph from existing grids
     WordGrid? sourceGrid;
     if (gridSource == 'timecheck') {
-      sourceGrid = lang.timeCheckGrid;
+      sourceGrid = lang.timeCheckGridRef?.grid;
     } else if (gridSource == 'default') {
-      sourceGrid = lang.defaultGrid;
+      sourceGrid = lang.defaultGridRef?.grid;
     }
 
     if (sourceGrid == null) {

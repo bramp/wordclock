@@ -8,36 +8,45 @@ final greekLanguage = WordClockLanguage(
   displayName: 'Ελληνικά',
   englishName: 'Greek',
   description: null,
-  timeToWords: GreekTimeToWords(),
-  paddingAlphabet: 'AEHKPTXΔΧ',
-
-  defaultGrid: WordGrid.fromLetters(
-    width: 11,
-    letters:
-        "HKΩPATEINAI"
-        "TEΣΣEPIΣMIA"
-        "ENTEKAENNIA"
-        "ΔΩΔEKATPEIΣ"
-        "OΧTΩEΦTAΔYO"
-        "EΞIEΠAPAKAI"
-        "ΔΠENTEXΔEKA"
-        "KAIΠAPAMIΣH"
-        "EIKOΣIXΔEKA"
-        "TΠENTETAPTO",
-  ),
-  timeCheckGrid: WordGrid.fromLetters(
-    width: 11,
-    letters:
-        'HΧΩPATEINAI'
-        'MIAΔYOTPEIΣ'
-        'TEΣΣEPIΣEΞI'
-        'ΠENTEPOΧTΩH'
-        'EΦTAEENTEKA'
-        'ΔΩΔEKAENNIA'
-        'ΔEKAXΠAPAEP'
-        'KAIETETAPTO'
-        'EIKOΣIHΔEKA'
-        'MIΣHEΠENTEP',
-  ),
+  grids: [
+    WordClockGrid(
+      isDefault: true,
+      timeToWords: GreekTimeToWords(),
+      paddingAlphabet: 'AEHKPTXΔΧ',
+      grid: WordGrid.fromLetters(
+        width: 11,
+        letters:
+            "HKΩPATEINAI"
+            "TEΣΣEPIΣMIA"
+            "ENTEKAENNIA"
+            "ΔΩΔEKATPEIΣ"
+            "OΧTΩEΦTAΔYO"
+            "EΞIEΠAPAKAI"
+            "ΔΠENTEXΔEKA"
+            "KAIΠAPAMIΣH"
+            "EIKOΣIXΔEKA"
+            "TΠENTETAPTO",
+      ),
+    ),
+    WordClockGrid(
+      isTimeCheck: true,
+      timeToWords: GreekTimeToWords(),
+      paddingAlphabet: 'AEHKPTXΔΧ',
+      grid: WordGrid.fromLetters(
+        width: 11,
+        letters:
+            'HΧΩPATEINAI'
+            'MIAΔYOTPEIΣ'
+            'TEΣΣEPIΣEΞI'
+            'ΠENTEPOΧTΩH'
+            'EΦTAEENTEKA'
+            'ΔΩΔEKAENNIA'
+            'ΔEKAXΠAPAEP'
+            'KAIETETAPTO'
+            'EIKOΣIHΔEKA'
+            'MIΣHEΠENTEP',
+      ),
+    ),
+  ],
   minuteIncrement: 5,
 );

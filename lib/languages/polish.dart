@@ -7,21 +7,25 @@ final polishLanguage = WordClockLanguage(
   languageCode: 'pl-PL',
   displayName: 'Polski',
   englishName: 'Polish',
-  timeToWords: PolishTimeToWords(),
-  paddingAlphabet: 'ABCDEFGHIJKLMNOPQRSTUWXYZÓĄĆĘŃŚŻ',
-  minuteIncrement: 5,
-  defaultGrid: WordGrid.fromLetters(
-    width: 11,
-    letters:
-        "PIERWSZÓSTP"
-        "BCZWARTRZEC"
-        "DZIESIJEDEN"
-        "DZIEWIÓSMĄT"
-        "DWUNDRUGAST"
-        "AĘCZTERTRZY"
-        "TDWADZIEŚCI"
-        "PIĘTANAŚŚCI"
-        "PIĘĆEDZIESI"
-        "HĄTŚĘĆJPIĘĆ",
-  ),
+  grids: [
+    WordClockGrid(
+      isDefault: true,
+      timeToWords: PolishTimeToWords(),
+      paddingAlphabet: 'ABCDEFGHIJKLMNOPQRSTUWXYZÓĄĆĘŃŚŻ',
+      grid: WordGrid.fromLetters(
+        width: 11,
+        letters:
+            "PIERWSZÓSTP"
+            "BCZWARTRZEC"
+            "DZIESIJEDEN"
+            "DZIEWIÓSMĄT"
+            "DWUNDRUGAST"
+            "AĘCZTERTRZY"
+            "TDWADZIEŚCI"
+            "PIĘTANAŚŚCI"
+            "PIĘĆEDZIESI"
+            "HĄTŚĘĆJPIĘĆ",
+      ),
+    ),
+  ],
 );

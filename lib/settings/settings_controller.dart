@@ -5,7 +5,6 @@ import 'package:wordclock/generator/utils/word_clock_utils.dart';
 import 'package:wordclock/services/analytics_service.dart';
 import 'package:wordclock/settings/theme_settings.dart';
 import 'package:wordclock/generator/backtracking/grid_builder.dart';
-import 'package:wordclock/model/word_grid.dart';
 import 'package:wordclock/languages/language.dart';
 import 'package:wordclock/languages/all.dart';
 
@@ -31,7 +30,7 @@ class SettingsController extends ChangeNotifier {
   // The default language is English ('en').
   // Note: supportedLanguages is sorted by ID, so we look it up.
   WordClockLanguage _currentLanguage = WordClockLanguages.byId['EN']!;
-  late WordGrid _currentGrid;
+  late WordClockGrid _currentGrid;
 
   bool _highlightAll = false;
   Set<int>? _allActiveIndices;
@@ -52,7 +51,7 @@ class SettingsController extends ChangeNotifier {
 
   int? get gridSeed => _gridSeed;
   WordClockLanguage get currentLanguage => _currentLanguage;
-  WordGrid get currentGrid => _currentGrid;
+  WordClockGrid get currentGrid => _currentGrid;
   bool get highlightAll => _highlightAll;
 
   Set<int> get allActiveIndices {
@@ -102,9 +101,9 @@ class SettingsController extends ChangeNotifier {
   }
 
   void _regenerateGrid() {
-    final defGrid = _currentLanguage.defaultGrid;
-    if (_gridSeed == null && defGrid != null) {
-      _currentGrid = defGrid;
+    final defGridRef = _currentLanguage.defaultGridRef;
+    if (_gridSeed == null && defGridRef != null) {
+      _currentGrid = defGridRef;
     } else {
       final builder = BacktrackingGridBuilder(
         width: 11,
@@ -113,7 +112,10 @@ class SettingsController extends ChangeNotifier {
         seed: _gridSeed ?? 0,
       );
       final result = builder.build();
-      _currentGrid = result.grid;
+      _currentGrid = WordClockGrid(
+        grid: result.grid,
+        timeToWords: defGridRef!.timeToWords,
+      );
     }
   }
 
@@ -155,7 +157,7 @@ class SettingsController extends ChangeNotifier {
     final Set<int> all = {};
     WordClockUtils.forEachTime(_currentLanguage, (_, phrase) {
       final units = _currentLanguage.tokenize(phrase);
-      all.addAll(_currentGrid.getIndices(units));
+      all.addAll(_currentGrid.grid.getIndices(units));
     });
     return all;
   }

@@ -8,36 +8,45 @@ final catalanLanguage = WordClockLanguage(
   displayName: 'Català',
   englishName: 'Catalan',
   description: null,
-  timeToWords: CatalanTimeToWords(),
-  paddingAlphabet: 'ADEMNOPRUZ',
-
-  defaultGrid: WordGrid.fromLetters(
-    width: 11,
-    letters:
-        "SÓNÉSDOSLES"
-        "UNOLAZQUART"
-        "TRESNQUARTS"
-        "MENYSIZCINC"
-        "DED'QUATRESP"
-        "DDOTZENVUIT"
-        "DUESONZENOU"
-        "UNADSETDSIS"
-        "DEUZMENYSZI"
-        "UEEDNROCINC",
-  ),
-  timeCheckGrid: WordGrid.fromLetters(
-    width: 11,
-    letters:
-        'ÉSÓNRLAMUNA'
-        'DOSLESNTRES'
-        'CINCQUARTSU'
-        'MENYSIECINC'
-        'DED\'RUNAONZE'
-        'DUESTRESETD'
-        'QUATREDOTZE'
-        'VUITNOUONZE'
-        'SISAMDEUNPM'
-        'MENYSIACINC',
-  ),
+  grids: [
+    WordClockGrid(
+      isDefault: true,
+      timeToWords: CatalanTimeToWords(),
+      paddingAlphabet: 'ADEMNOPRUZ',
+      grid: WordGrid.fromLetters(
+        width: 11,
+        letters:
+            "SÓNÉSDOSLES"
+            "UNOLAZQUART"
+            "TRESNQUARTS"
+            "MENYSIZCINC"
+            "DED'QUATRESP"
+            "DDOTZENVUIT"
+            "DUESONZENOU"
+            "UNADSETDSIS"
+            "DEUZMENYSZI"
+            "UEEDNROCINC",
+      ),
+    ),
+    WordClockGrid(
+      isTimeCheck: true,
+      timeToWords: CatalanTimeToWords(),
+      paddingAlphabet: 'ADEMNOPRUZ',
+      grid: WordGrid.fromLetters(
+        width: 11,
+        letters:
+            'ÉSÓNRLAMUNA'
+            'DOSLESNTRES'
+            'CINCQUARTSU'
+            'MENYSIECINC'
+            'DED\'RUNAONZE'
+            'DUESTRESETD'
+            'QUATREDOTZE'
+            'VUITNOUONZE'
+            'SISAMDEUNPM'
+            'MENYSIACINC',
+      ),
+    ),
+  ],
   minuteIncrement: 5,
 );

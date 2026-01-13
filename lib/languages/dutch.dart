@@ -8,35 +8,45 @@ final dutchLanguage = WordClockLanguage(
   displayName: 'Nederlands',
   englishName: 'Dutch',
   description: null,
-  timeToWords: DutchTimeToWords(),
-  paddingAlphabet: 'ACEGHKMOPSTZ',
-  defaultGrid: WordGrid.fromLetters(
-    width: 11,
-    letters:
-        "HETGISKTIEN"
-        "HKWARTOVIJF"
-        "MOVERGEVOOR"
-        "HALFCTWAALF"
-        "CKZEVENEGEN"
-        "TIENVIJFELF"
-        "VIERACHTWEE"
-        "DRIEÉÉNZESG"
-        "TPAGECKPUUR"
-        "CZOMSAECHHM",
-  ),
-  timeCheckGrid: WordGrid.fromLetters(
-    width: 11,
-    letters:
-        'HETKISAVIJF'
-        'TIENATZVOOR'
-        'OVERMEKWART'
-        'HALFSPMOVER'
-        'VOORTHGÉÉNS'
-        'TWEEAMCDRIE'
-        'VIERVIJFZES'
-        'ZEVENONEGEN'
-        'ACHTTIENELF'
-        'TWAALFPMUUR',
-  ),
+  grids: [
+    WordClockGrid(
+      isDefault: true,
+      timeToWords: DutchTimeToWords(),
+      paddingAlphabet: 'ACEGHKMOPSTZ',
+      grid: WordGrid.fromLetters(
+        width: 11,
+        letters:
+            "HETGISKTIEN"
+            "HKWARTOVIJF"
+            "MOVERGEVOOR"
+            "HALFCTWAALF"
+            "CKZEVENEGEN"
+            "TIENVIJFELF"
+            "VIERACHTWEE"
+            "DRIEÉÉNZESG"
+            "TPAGECKPUUR"
+            "CZOMSAECHHM",
+      ),
+    ),
+    WordClockGrid(
+      isTimeCheck: true,
+      timeToWords: DutchTimeToWords(),
+      paddingAlphabet: 'ACEGHKMOPSTZ',
+      grid: WordGrid.fromLetters(
+        width: 11,
+        letters:
+            'HETKISAVIJF'
+            'TIENATZVOOR'
+            'OVERMEKWART'
+            'HALFSPMOVER'
+            'VOORTHGÉÉNS'
+            'TWEEAMCDRIE'
+            'VIERVIJFZES'
+            'ZEVENONEGEN'
+            'ACHTTIENELF'
+            'TWAALFPMUUR',
+      ),
+    ),
+  ],
   minuteIncrement: 5,
 );

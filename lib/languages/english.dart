@@ -8,36 +8,46 @@ final englishAlternativeLanguage = WordClockLanguage(
   displayName: 'English',
   englishName: 'English',
   description: 'Alternative',
-  timeToWords: EnglishAlternativeTimeToWords(),
-  paddingAlphabet: 'ACDEFLMPRSUX',
-  defaultGrid: WordGrid.fromLetters(
-    width: 11,
-    letters:
-        "ITEISLFIVEA"
-        "FTWENTYFIVE"
-        "PMHALFEDTEN"
-        "CQUARTERCTO"
-        "PASTLTWELVE"
-        "ELEVENEIGHT"
-        "SEVENETHREE"
-        "FIVENINETEN"
-        "UFOURRTWONE"
-        "ASIXEO'CLOCK",
-  ),
-  timeCheckGrid: WordGrid.fromLetters(
-    width: 11,
-    letters:
-        'ITLISASAMPM'
-        'ACQUARTERDC'
-        'TWENTYFIVEX'
-        'HALFSTENFTO'
-        'PASTERUNINE'
-        'ONESIXTHREE'
-        'FOURFIVETWO'
-        'EIGHTELEVEN'
-        'SEVENTWELVE'
-        'TENSEO\'CLOCK',
-  ),
+  grids: [
+    WordClockGrid(
+      isDefault: true,
+      timeToWords: EnglishAlternativeTimeToWords(),
+      paddingAlphabet: 'ACDEFLMPRSUX',
+      grid: WordGrid.fromLetters(
+        width: 11,
+        letters:
+            "ITEISLFIVEA"
+            "FTWENTYFIVE"
+            "PMHALFEDTEN"
+            "CQUARTERCTO"
+            "PASTLTWELVE"
+            "ELEVENEIGHT"
+            "SEVENETHREE"
+            "FIVENINETEN"
+            "UFOURRTWONE"
+            "ASIXEO'CLOCK",
+      ),
+    ),
+    WordClockGrid(
+      isTimeCheck: true,
+      timeToWords: EnglishAlternativeTimeToWords(),
+      paddingAlphabet: 'ACDEFLMPRSUX',
+      grid: WordGrid.fromLetters(
+        width: 11,
+        letters:
+            'ITLISASAMPM'
+            'ACQUARTERDC'
+            'TWENTYFIVEX'
+            'HALFSTENFTO'
+            'PASTERUNINE'
+            'ONESIXTHREE'
+            'FOURFIVETWO'
+            'EIGHTELEVEN'
+            'SEVENTWELVE'
+            'TENSEO\'CLOCK',
+      ),
+    ),
+  ],
   minuteIncrement: 5,
 );
 
@@ -47,35 +57,45 @@ final englishLanguage = WordClockLanguage(
   displayName: 'English',
   englishName: 'English',
   description: null,
-  timeToWords: EnglishTimeToWords(),
-  paddingAlphabet: 'ACDEFLMPRSUX',
-  defaultGrid: WordGrid.fromLetters(
-    width: 11,
-    letters:
-        "ITEISLFIVEF"
-        "PTWENTYFIVE"
-        "QUARTERHALF"
-        "MTENEDPASTO"
-        "TWELVELEVEN"
-        "EIGHTCSEVEN"
-        "CTHREELFIVE"
-        "NINEFOURTEN"
-        "ETWONEURSIX"
-        "AEDCLO'CLOCK",
-  ),
-  timeCheckGrid: WordGrid.fromLetters(
-    width: 11,
-    letters:
-        'ITLISASAMPM'
-        'ACQUARTERDC'
-        'TWENTYFIVEX'
-        'HALFSTENFTO'
-        'PASTERUNINE'
-        'ONESIXTHREE'
-        'FOURFIVETWO'
-        'EIGHTELEVEN'
-        'SEVENTWELVE'
-        'TENSEO\'CLOCK',
-  ),
+  grids: [
+    WordClockGrid(
+      isDefault: true,
+      timeToWords: EnglishTimeToWords(),
+      paddingAlphabet: 'ACDEFLMPRSUX',
+      grid: WordGrid.fromLetters(
+        width: 11,
+        letters:
+            "ITEISLFIVEF"
+            "PTWENTYFIVE"
+            "QUARTERHALF"
+            "MTENEDPASTO"
+            "TWELVELEVEN"
+            "EIGHTCSEVEN"
+            "CTHREELFIVE"
+            "NINEFOURTEN"
+            "ETWONEURSIX"
+            "AEDCLO'CLOCK",
+      ),
+    ),
+    WordClockGrid(
+      isTimeCheck: true,
+      timeToWords: EnglishTimeToWords(),
+      paddingAlphabet: 'ACDEFLMPRSUX',
+      grid: WordGrid.fromLetters(
+        width: 11,
+        letters:
+            'ITLISASAMPM'
+            'ACQUARTERDC'
+            'TWENTYFIVEX'
+            'HALFSTENFTO'
+            'PASTERUNINE'
+            'ONESIXTHREE'
+            'FOURFIVETWO'
+            'EIGHTELEVEN'
+            'SEVENTWELVE'
+            'TENSEO\'CLOCK',
+      ),
+    ),
+  ],
   minuteIncrement: 5,
 );

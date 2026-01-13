@@ -96,6 +96,9 @@ class BacktrackingGridBuilder {
   /// Cell codec for encoding/decoding cells to integers
   late final CellCodec codec;
 
+  /// The alphabet used for random padding
+  final String paddingAlphabet;
+
   /// Padding alphabet cells
   final List<Cell> paddingCells;
 
@@ -133,12 +136,17 @@ class BacktrackingGridBuilder {
     required this.height,
     required this.language,
     required int seed,
+    String? paddingAlphabet,
     this.findFirstValid = true,
     this.useFrontier = true,
     this.onProgress,
     this.prebuiltGraph,
   }) : random = Random(seed),
-       paddingCells = WordGrid.splitIntoCells(language.paddingAlphabet),
+       paddingAlphabet =
+           paddingAlphabet ?? language.defaultGridRef!.paddingAlphabet,
+       paddingCells = WordGrid.splitIntoCells(
+         paddingAlphabet ?? language.defaultGridRef!.paddingAlphabet,
+       ),
        _minHeightFound = height,
        _maxAllowedOffset = height * width;
 
@@ -182,6 +190,7 @@ class BacktrackingGridBuilder {
         width: width,
         height: height,
         language: language,
+        paddingAlphabet: paddingAlphabet,
         random: random,
         codec: codec,
       );

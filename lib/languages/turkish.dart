@@ -8,36 +8,45 @@ final turkishLanguage = WordClockLanguage(
   displayName: 'Türkçe',
   englishName: 'Turkish',
   description: null,
-  timeToWords: TurkishTimeToWords(),
-  paddingAlphabet: 'ADIKMPRSY',
-  // Seed: 0
-  defaultGrid: WordGrid.fromLetters(
-    width: 11,
-    letters:
-        "SAATKALTIYI"
-        "DOKUZUDÖRDÜ"
-        "SEKIZİPBEŞİ"
-        "DYEDİYİSÜÇÜ"
-        "ONURONRBİRİ"
-        "İKİYİPYİRMİ"
-        "ÇEYREKMOTUZ"
-        "KIRKELLİONM"
-        "BEŞYGEÇİYOR"
-        "RDÖRTMBUÇUK",
-  ),
-  timeCheckGrid: WordGrid.fromLetters(
-    width: 11,
-    letters:
-        'SAATRONUÜÇÜ'
-        'BİRİALTIYID'
-        'İKİYİDOKUZU'
-        'DÖRDÜYEDİYİ'
-        'SEKIZİYARIM'
-        'DÖRTAMSBEŞİ'
-        'KPMOTUZKIRK'
-        'ELLİONYİRMİ'
-        'BUÇUKÇEYREK'
-        'BEŞMGEÇİYOR',
-  ),
+  grids: [
+    WordClockGrid(
+      isDefault: true,
+      timeToWords: TurkishTimeToWords(),
+      paddingAlphabet: 'ADIKMPRSY',
+      grid: WordGrid.fromLetters(
+        width: 11,
+        letters:
+            "SAATKALTIYI"
+            "DOKUZUDÖRDÜ"
+            "SEKIZİPBEŞİ"
+            "DYEDİYİSÜÇÜ"
+            "ONURONRBİRİ"
+            "İKİYİPYİRMİ"
+            "ÇEYREKMOTUZ"
+            "KIRKELLİONM"
+            "BEŞYGEÇİYOR"
+            "RDÖRTMBUÇUK",
+      ),
+    ),
+    WordClockGrid(
+      isTimeCheck: true,
+      timeToWords: TurkishTimeToWords(),
+      paddingAlphabet: 'ADIKMPRSY',
+      grid: WordGrid.fromLetters(
+        width: 11,
+        letters:
+            'SAATRONUÜÇÜ'
+            'BİRİALTIYID'
+            'İKİYİDOKUZU'
+            'DÖRDÜYEDİYİ'
+            'SEKIZİYARIM'
+            'DÖRTAMSBEŞİ'
+            'KPMOTUZKIRK'
+            'ELLİONYİRMİ'
+            'BUÇUKÇEYREK'
+            'BEŞMGEÇİYOR',
+      ),
+    ),
+  ],
   minuteIncrement: 5,
 );

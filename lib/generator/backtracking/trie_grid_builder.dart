@@ -1,6 +1,9 @@
 // ignore_for_file: avoid_print
 import 'dart:math';
 import 'dart:typed_data';
+import 'package:wordclock/generator/backtracking/grid_post_processor.dart';
+import 'package:wordclock/generator/backtracking/graph/word_node.dart';
+import 'package:wordclock/generator/backtracking/grid_state.dart';
 import 'package:wordclock/generator/backtracking/graph/cell_codec.dart';
 import 'package:wordclock/generator/backtracking/graph/graph_builder.dart';
 import 'package:wordclock/generator/model/grid_build_result.dart';
@@ -41,6 +44,9 @@ class TrieGridBuilder {
   /// Cell codec for encoding/decoding cells to integers
   late final CellCodec codec;
 
+  /// The alphabet used for random padding
+  final String paddingAlphabet;
+
   /// Padding alphabet cells
   final List<Cell> paddingCells;
 
@@ -70,10 +76,15 @@ class TrieGridBuilder {
     required this.height,
     required this.language,
     required int seed,
+    String? paddingAlphabet,
     this.findFirstValid = true,
     this.onProgress,
   }) : random = Random(seed),
-       paddingCells = WordGrid.splitIntoCells(language.paddingAlphabet),
+       paddingAlphabet =
+           paddingAlphabet ?? language.defaultGridRef!.paddingAlphabet,
+       paddingCells = WordGrid.splitIntoCells(
+         paddingAlphabet ?? language.defaultGridRef!.paddingAlphabet,
+       ),
        _minHeightFound = height,
        _maxAllowedOffset = height * width;
 
@@ -84,8 +95,9 @@ class TrieGridBuilder {
     // 1. Build the phrase trie and collect unique words
     final trieData = _buildPhraseTrie();
     final trie = trieData.trie;
-    final uniqueWords = trieData.uniqueWords;
-    final wordCells = trieData.wordCells;
+    final uniqueWords = trieData.uniqueWords; // List of unique words
+    final wordCells =
+        trieData.wordCells; // Maping of Word -> List of Cell codes
 
     _totalUniqueWords = uniqueWords.length;
     _totalPhrases = trie.phraseCount;
@@ -115,20 +127,35 @@ class TrieGridBuilder {
     late final List<public.WordPlacement> wordPlacements;
 
     if (finalState != null) {
-      // Convert grid codes back to cells
-      gridCells = List.generate(width * height, (i) {
-        final code = finalState.cells[i];
-        return code == _SimpleGrid.emptyCell ? ' ' : codec.decode(code);
-      });
-      // Build word placements
-      wordPlacements = finalState.placements.map((p) {
-        return public.WordPlacement(
-          word: p.word,
+      // Use GridPostProcessor for alignment and padding
+      final processor = GridPostProcessor(
+        width: width,
+        height: height,
+        language: language,
+        paddingAlphabet: paddingAlphabet,
+        random: random,
+        codec: codec,
+      );
+
+      // Convert _SimpleGrid placements to GridPostProcessor placements
+      final processorPlacements = finalState.placements.map((p) {
+        return Placement(
+          node: WordNode(
+            word: p.word,
+            instance: 0,
+            cellCodes: p.cellCodes,
+            phrases: {},
+          ),
           startOffset: p.startOffset,
           width: width,
-          length: p.cellCodes.length,
         );
       }).toList();
+
+      final postResult = processor.process(processorPlacements);
+      gridCells = postResult.grid;
+
+      // Extract final word placements
+      wordPlacements = [for (final p in postResult.placements) p.toPublic()];
     } else {
       gridCells = List.filled(width * height, ' ');
       wordPlacements = [];
@@ -219,9 +246,14 @@ class TrieGridBuilder {
   void _solveTrie(
     _SimpleGrid grid,
     _PhraseTrie trie,
+
+    // Set of words needing to be placed, and the TrieNodes that they would advance
     Map<String, List<_TrieNode>> frontier,
+
+    // Mapping of word -> list of cell codes
     Map<String, List<int>> wordCells,
   ) {
+    // TODO Shouldn't this be global?
     _iterationCount++;
 
     // Progress reporting
@@ -263,6 +295,8 @@ class TrieGridBuilder {
         _FrontierCandidate(word, List<_TrieNode>.of(nodes), rank, maxParentEnd),
       );
     }
+    // TODO I wonder if we need to make a copy of _TrieNode to _FrontierCandidate. Or
+    // we could just copy the _TrieNode directly, and sort that.
     // Sort by pre-computed rank
     candidates.sort((a, b) => a.rank.compareTo(b.rank));
 
@@ -279,9 +313,9 @@ class TrieGridBuilder {
       final endOffset = offset + cellCodes.length - 1;
       final placement = _WordPlacement(
         word: word,
+        cellCodes: cellCodes,
         startOffset: offset,
         endOffset: endOffset,
-        cellCodes: cellCodes,
       );
 
       // Save maxEndOffset for fast restore during backtrack
@@ -295,22 +329,7 @@ class TrieGridBuilder {
 
       // Debug: show frontier state after advancing
       if (_iterationCount < 20) {
-        final nodeCount = frontier.values.fold(
-          0,
-          (sum, list) => sum + list.length,
-        );
-        print(
-          'DEBUG: After placing "$word" at $offset: frontier=$nodeCount nodes in ${frontier.length} words',
-        );
-        if (nodeCount < 10) {
-          for (final nodes in frontier.values) {
-            for (final node in nodes) {
-              print(
-                '  - ${node.word} (terminal=${node.isTerminal}, parentEnd=${node.parentEndOffset})',
-              );
-            }
-          }
-        }
+        _debugFrontier(word, offset, frontier);
       }
 
       // Recurse with updated frontier
@@ -346,6 +365,8 @@ class TrieGridBuilder {
     List<_TrieNode> nodes,
     _WordPlacement placement,
   ) {
+    // TODO Do we need this complex save. There may be cheaper ways, using a stack for example.
+
     // Save the nodes being removed (for restore)
     final removedNodes = List<_TrieNode>.of(nodes);
 
@@ -411,6 +432,9 @@ class TrieGridBuilder {
   }
 
   /// Compute minimum offset after a given end offset.
+  ///
+  /// This is determined by the previous end offset and the
+  /// padding required, and wrapping onto the next row as needed.
   int _computeMinOffsetAfter(int prevEndOffset) {
     if (prevEndOffset == -1) return 0;
 
@@ -428,6 +452,9 @@ class TrieGridBuilder {
   }
 
   /// Find the earliest valid placement for a word starting from minOffset.
+  ///
+  /// Conducts a simple linear search for the first valid placement.
+  ///
   /// Returns null if no valid placement exists.
   int? _findValidPlacement(
     _SimpleGrid grid,
@@ -466,6 +493,9 @@ class TrieGridBuilder {
   }
 
   /// Place a word on the grid.
+  ///
+  /// This is as simple as updating the grid, and adding the placement to the
+  /// list of placements.
   void _placeWord(_SimpleGrid grid, _WordPlacement placement) {
     for (int i = 0; i < placement.cellCodes.length; i++) {
       final idx = placement.startOffset + i;
@@ -575,6 +605,27 @@ class TrieGridBuilder {
     for (final node in needsMoreWords) {
       final childWords = node.children.keys.toList();
       print('  Needs more words after "${node.word}": $childWords');
+    }
+  }
+
+  /// Prints the current state of the frontier for debugging.
+  void _debugFrontier(
+    String word,
+    int offset,
+    Map<String, List<_TrieNode>> frontier,
+  ) {
+    final nodeCount = frontier.values.fold(0, (sum, list) => sum + list.length);
+    print(
+      'DEBUG: After placing "$word" at $offset: frontier=$nodeCount nodes in ${frontier.length} words',
+    );
+    if (nodeCount < 10) {
+      for (final nodes in frontier.values) {
+        for (final node in nodes) {
+          print(
+            '  - ${node.word} (terminal=${node.isTerminal}, parentEnd=${node.parentEndOffset})',
+          );
+        }
+      }
     }
   }
 
@@ -694,10 +745,22 @@ class _TrieNode {
 
 /// A word placement with position info.
 class _WordPlacement {
+  /// The string representation of the word.
   final String word;
-  final int startOffset;
-  final int endOffset;
+
+  /// The encoded cell values for the word.
   final List<int> cellCodes;
+
+  /// The index in the grid where the word starts.
+  final int startOffset;
+
+  /// The index in the grid where the word ends.
+  ///
+  /// Calculated as `startOffset + length - 1`. For example, if "ABC" (length 3)
+  /// starts at 0, its endOffset is 2.
+  ///
+  /// TODO Consider changing this to endOffset + 1.
+  final int endOffset;
 
   _WordPlacement({
     required this.word,

@@ -4,6 +4,17 @@ import 'package:wordclock/languages/language.dart';
 import 'package:wordclock/languages/english.dart';
 import 'package:wordclock/logic/english_time_to_word.dart';
 import 'package:wordclock/model/word_grid.dart';
+import 'package:wordclock/logic/time_to_words.dart';
+
+class GridValidatorTestHelper {
+  static WordClockGrid createMockGrid(TimeToWords timeToWords) {
+    return WordClockGrid(
+      isDefault: true,
+      timeToWords: timeToWords,
+      grid: WordGrid(width: 1, cells: []), // Placeholder
+    );
+  }
+}
 
 void main() {
   group('GridValidator', () {
@@ -57,7 +68,7 @@ void main() {
         id: 'TEST',
         languageCode: 'en-test',
         displayName: 'Test',
-        timeToWords: EnglishTimeToWords(),
+        grids: [GridValidatorTestHelper.createMockGrid(EnglishTimeToWords())],
         requiresPadding: true,
       );
 

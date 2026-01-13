@@ -5,12 +5,14 @@ import 'package:wordclock/generator/backtracking/graph/word_node.dart';
 import 'package:wordclock/generator/backtracking/graph/cell_codec.dart';
 import 'package:wordclock/languages/language.dart';
 import 'package:wordclock/logic/time_to_words.dart';
+import 'package:wordclock/model/word_grid.dart';
 
 export 'package:wordclock/generator/backtracking/graph/dependency_graph.dart';
 export 'package:wordclock/generator/backtracking/graph/word_node.dart';
 export 'package:wordclock/generator/backtracking/graph/cell_codec.dart';
 export 'package:wordclock/languages/language.dart';
 export 'package:wordclock/logic/time_to_words.dart';
+export 'package:wordclock/model/word_grid.dart';
 
 /// Mock TimeToWords implementation for testing
 class MockTimeToWords extends TimeToWords {
@@ -72,10 +74,16 @@ WordClockLanguage createMockLanguage({
     languageCode: languageCode ?? 'en-TEST',
     displayName: displayName ?? 'Test Language',
     englishName: englishName ?? 'Test',
-    timeToWords: converter,
+    grids: [
+      WordClockGrid(
+        isDefault: true,
+        timeToWords: converter,
+        paddingAlphabet: paddingAlphabet,
+        grid: WordGrid(width: 1, cells: []), // Placeholder
+      ),
+    ],
     minuteIncrement: minuteIncrement,
     requiresPadding: requiresPadding,
-    paddingAlphabet: paddingAlphabet,
     atomizePhrases: atomizePhrases,
   );
 }

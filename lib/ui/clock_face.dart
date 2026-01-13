@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
 import 'package:wordclock/model/word_grid.dart';
+import 'package:wordclock/languages/language.dart';
 
 import 'package:wordclock/settings/theme_settings.dart';
 import 'package:wordclock/ui/clock_layout.dart';
@@ -60,7 +61,7 @@ class _ClockFaceState extends State<ClockFace>
 
   bool _lastHighlightAll = false;
 
-  void _recalculateIndices(DateTime now, WordGrid grid) {
+  void _recalculateIndices(DateTime now, WordClockGrid grid) {
     if (_lastTime != null &&
         _lastTime!.minute == now.minute &&
         _lastTime!.hour == now.hour &&
@@ -74,7 +75,7 @@ class _ClockFaceState extends State<ClockFace>
     _lastHighlightAll = widget.settingsController.highlightAll;
 
     _lastTime = now;
-    _lastGrid = grid;
+    _lastGrid = grid.grid;
     final lang = widget.settingsController.currentLanguage;
 
     if (widget.settingsController.highlightAll) {
@@ -84,7 +85,7 @@ class _ClockFaceState extends State<ClockFace>
     } else {
       final phrase = lang.timeToWords.convert(now);
       final units = lang.tokenize(phrase);
-      _activeIndices = grid.getIndices(
+      _activeIndices = grid.grid.getIndices(
         units,
         requiresPadding: lang.requiresPadding,
       );
@@ -174,7 +175,7 @@ class _ClockFaceState extends State<ClockFace>
         // Update cache if needed
         _updateCachedGrids(
           widget.settingsController,
-          grid,
+          grid.grid,
           _activeIndices,
           widget.animationDuration,
           widget.animationCurve,
@@ -213,7 +214,7 @@ class _ClockFaceState extends State<ClockFace>
                       // Layer 1: Inactive Elements
                       RepaintBoundary(
                         child: ClockLayout(
-                          grid: grid,
+                          grid: grid.grid,
                           remainder: 0,
                           showDots: showDots,
                           forceAllDots: true, // Always show placeholder dots
@@ -259,7 +260,7 @@ class _ClockFaceState extends State<ClockFace>
                           );
                         },
                         child: ClockLayout(
-                          grid: grid,
+                          grid: grid.grid,
                           remainder: _remainder,
                           showDots: showDots,
                           forceAllDots: false,

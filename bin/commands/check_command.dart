@@ -57,15 +57,16 @@ class CheckCommand extends Command<void> {
       final int? cliHeight = targetHeight > 0 ? targetHeight : null;
 
       // Check Default Grid
-      if (lang.defaultGrid == null) {
+      final defaultGrid = lang.defaultGridRef?.grid;
+      if (defaultGrid == null) {
         issues.add('Missing defaultGrid.');
       } else {
-        final g = lang.defaultGrid!;
         final gridIssues = GridValidator.validate(
-          g,
+          defaultGrid,
           lang,
           expectedWidth: config.gridWidth,
-          expectedHeight: cliHeight ?? g.height,
+          expectedHeight: cliHeight ?? defaultGrid.height,
+          timeToWords: lang.defaultGridRef?.timeToWords,
         );
         for (final issue in gridIssues) {
           issues.add('DefaultGrid: $issue');
@@ -73,13 +74,14 @@ class CheckCommand extends Command<void> {
       }
 
       // Check TimeCheck Grid
-      if (lang.timeCheckGrid != null) {
-        final g = lang.timeCheckGrid!;
+      final timeCheckGrid = lang.timeCheckGridRef?.grid;
+      if (timeCheckGrid != null) {
         final gridIssues = GridValidator.validate(
-          g,
+          timeCheckGrid,
           lang,
           expectedWidth: config.gridWidth,
-          expectedHeight: cliHeight ?? g.height,
+          expectedHeight: cliHeight ?? timeCheckGrid.height,
+          timeToWords: lang.timeCheckGridRef?.timeToWords,
         );
         for (final issue in gridIssues) {
           issues.add('TimeCheckGrid: $issue');

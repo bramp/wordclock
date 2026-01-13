@@ -25,6 +25,7 @@ void main() {
         width: 10,
         height: 2,
         language: language,
+        paddingAlphabet: '.',
         random: random,
         codec: codec,
       );
@@ -52,6 +53,7 @@ void main() {
         width: 10,
         height: 2,
         language: language,
+        paddingAlphabet: '.',
         random: random,
         codec: codec,
       );
@@ -85,6 +87,7 @@ void main() {
         width: 10,
         height: 3,
         language: language, // requiresPadding: false
+        paddingAlphabet: '.',
         random: random,
         codec: codec,
       );
@@ -126,6 +129,7 @@ void main() {
         width: 10,
         height: 3,
         language: langPadding,
+        paddingAlphabet: '.',
         random: random,
         codec: codec,
       );
@@ -154,6 +158,7 @@ void main() {
         width: 10,
         height: 3,
         language: language,
+        paddingAlphabet: '.',
         random: random,
         codec: codec,
       );
@@ -183,6 +188,7 @@ void main() {
         width: 5,
         height: 1,
         language: language,
+        paddingAlphabet: '.',
         random: random,
         codec: codec,
       );

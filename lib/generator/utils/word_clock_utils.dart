@@ -1,3 +1,4 @@
+import 'package:wordclock/logic/time_to_words.dart';
 import 'package:wordclock/languages/language.dart';
 import 'package:wordclock/model/word_grid.dart';
 
@@ -29,9 +30,14 @@ class WordClockUtils {
   /// This is useful for validation, graph building, and testing.
   static void forEachTime(
     WordClockLanguage language,
-    void Function(DateTime time, String phrase) visitor,
-  ) {
-    final timeConverter = language.timeToWords;
+    void Function(DateTime time, String phrase) visitor, {
+    TimeToWords? timeToWords,
+  }) {
+    assert(
+      timeToWords != null || language.defaultGridRef != null,
+      'If timeToWords is not provided, language.defaultGridRef must not be null.',
+    );
+    final timeConverter = timeToWords ?? language.defaultGridRef!.timeToWords;
     final increment = language.minuteIncrement;
 
     for (int h = 0; h < 24; h++) {

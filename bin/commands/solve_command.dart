@@ -349,7 +349,7 @@ class SolveCommand extends Command<void> {
     } else {
       // Just print the grid code
       print('\n// Copy the following to your language file:');
-      print(generateDefaultGridCode(result.grid, metadata));
+      print(generateGridCode(config.language, result.grid, metadata));
     }
   }
 

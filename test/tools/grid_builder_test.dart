@@ -22,7 +22,7 @@ void main() {
     expect(result.exitCode, 0, reason: "Grid Builder failed to run");
     expect(
       result.stdout,
-      contains('defaultGrid: WordGrid.fromLetters('),
+      contains('WordClockGrid('),
       reason: "Output missing GridDefinition",
     );
   });

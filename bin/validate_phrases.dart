@@ -133,8 +133,6 @@ All of your feedback and responses must be in English.''',
       print('    ${lang.englishName} (${lang.id}) validated. Score: $score');
 
       await Future.delayed(Duration(milliseconds: 500));
-
-      break; // TODO remove - this is for testing
     } catch (e) {
       print('    Error validating ${lang.englishName} (${lang.id}): $e');
     }

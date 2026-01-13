@@ -1,7 +1,22 @@
 import 'package:wordclock/logic/time_to_words.dart';
 import 'package:wordclock/model/word_grid.dart';
 
-import 'package:wordclock/logic/timecheck_time_to_words.dart';
+final class WordClockGrid {
+  final bool isDefault;
+  final bool isTimeCheck;
+
+  final TimeToWords timeToWords;
+  final String paddingAlphabet;
+  final WordGrid grid;
+
+  const WordClockGrid({
+    this.isDefault = false,
+    this.isTimeCheck = false,
+    required this.timeToWords,
+    this.paddingAlphabet = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ',
+    required this.grid,
+  });
+}
 
 final class WordClockLanguage {
   /// The unique identifier for this language (e.g., 'en', 'e3', 'pl').
@@ -10,7 +25,7 @@ final class WordClockLanguage {
   /// The BCP 47 language tag (e.g., 'en-US', 'zh-Hans-CN', 'en-US-x-digital').
   final String languageCode;
 
-  /// The name of the language displayed to the user (Native Name).
+  /// The name of the language displayed to the user (Native language name).
   final String displayName;
 
   /// The English name of the language (e.g. 'French', 'Japanese').
@@ -18,22 +33,25 @@ final class WordClockLanguage {
   final String englishName;
 
   /// A short description of this variant (e.g. 'Standard', 'Alternative').
+  /// TODO Remove the nullability and default to empty string.
   final String? description;
 
-  final TimeToWords timeToWords;
+  final List<WordClockGrid> grids;
 
-  final String paddingAlphabet;
+  WordClockGrid? get defaultGridRef => grids.cast<WordClockGrid?>().firstWhere(
+    (g) => g!.isDefault,
+    orElse: () => grids.cast<WordClockGrid?>().firstWhere(
+      (g) => g!.isTimeCheck,
+      orElse: () => grids.isNotEmpty ? grids.first : null,
+    ),
+  );
 
-  final WordGrid? _defaultGrid;
+  WordClockGrid? get timeCheckGridRef => grids
+      .cast<WordClockGrid?>()
+      .firstWhere((g) => g!.isTimeCheck, orElse: () => null);
 
-  /// The original grid from the TimeCheck dataset.
-  final WordGrid? timeCheckGrid;
-
-  /// The primary grid for this language. Defaults to [timeCheckGrid] if not provided.
-  WordGrid? get defaultGrid => _defaultGrid ?? timeCheckGrid;
-
-  /// The list of characters in the grid that are never used by any time.
-  final List<TimeCheckWord>? padding;
+  /// Convenience getter for the default time-to-words strategy.
+  TimeToWords get timeToWords => defaultGridRef!.timeToWords;
 
   /// The minute increment this language supports (e.g., 1 or 5).
   final int minuteIncrement;
@@ -46,21 +64,20 @@ final class WordClockLanguage {
   /// for the dependency graph. This increases character reuse.
   final bool atomizePhrases;
 
-  const WordClockLanguage({
+  WordClockLanguage({
     required this.id,
     required this.languageCode,
     required this.displayName,
     this.englishName = '',
     this.description = '',
-    required this.timeToWords,
-    this.paddingAlphabet = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ',
-    WordGrid? defaultGrid,
-    this.timeCheckGrid,
-    this.padding,
+    required this.grids,
     this.minuteIncrement = 5,
     this.requiresPadding = true,
     this.atomizePhrases = false,
-  }) : _defaultGrid = defaultGrid;
+  }) : assert(
+         grids.where((g) => g.isDefault).length <= 1,
+         'A language can have at most one default grid.',
+       );
 
   /// Tokenizes a phrase into units based on this language's configuration.
   ///

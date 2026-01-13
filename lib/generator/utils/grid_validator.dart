@@ -1,3 +1,4 @@
+import 'package:wordclock/logic/time_to_words.dart';
 import 'package:wordclock/generator/utils/word_clock_utils.dart';
 import 'package:wordclock/languages/language.dart';
 import 'package:wordclock/model/word_grid.dart';
@@ -12,6 +13,7 @@ class GridValidator {
     WordClockLanguage language, {
     int? expectedWidth,
     int? expectedHeight,
+    TimeToWords? timeToWords,
   }) {
     final issues = <String>{};
     final cells = grid.cells;
@@ -104,7 +106,7 @@ class GridValidator {
 
         lastEndIndex = indices.last;
       }
-    });
+    }, timeToWords: timeToWords);
 
     return issues.toList();
   }
