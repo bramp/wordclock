@@ -1,5 +1,4 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:wordclock/model/word_grid.dart';
 
 import '../../bin/utils/language_file_updater.dart';
 import '../generator/test_helpers.dart';

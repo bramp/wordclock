@@ -66,7 +66,7 @@ class _ClockFaceState extends State<ClockFace>
         _lastTime!.minute == now.minute &&
         _lastTime!.hour == now.hour &&
         _activeIndices.isNotEmpty &&
-        _lastGrid == grid &&
+        _lastGrid == grid.grid &&
         _lastHighlightAll == widget.settingsController.highlightAll) {
       // No change that affects words.
       return;

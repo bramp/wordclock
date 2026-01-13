@@ -62,7 +62,7 @@ String generateGridCode(
   buffer.writeln(
     '$indent// Iterations: ${metadata.iterationCount}, Duration: ${metadata.duration.inMilliseconds}ms',
   );
-  buffer.writeln('$indent\WordClockGrid(');
+  buffer.writeln('${indent}WordClockGrid(');
   buffer.writeln('$indent  isDefault: true,');
 
   // Try to preserve the existing strategy if possible, but for now we'll use the default one

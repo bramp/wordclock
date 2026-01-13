@@ -92,7 +92,9 @@ void main() {
 
   group('EnglishAlternativeTimeToWords', () {
     test('new behavior (TWENTY FIVE)', () {
-      const converter = EnglishAlternativeTimeToWords(useSpaceInTwentyFive: true);
+      const converter = EnglishAlternativeTimeToWords(
+        useSpaceInTwentyFive: true,
+      );
       final time = DateTime(2024, 1, 1, 12, 25);
       expect(converter.convert(time), equals('IT IS TWENTY FIVE PAST TWELVE'));
     });
