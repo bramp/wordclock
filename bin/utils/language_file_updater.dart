@@ -52,21 +52,6 @@ String generateGridCode(
   List<WordPlacement> wordPlacements = const [],
   String indent = '    ',
 }) {
-  final buffer = StringBuffer();
-
-  // Add @generated marker with metadata
-  buffer.writeln('$indent// @generated begin - do not edit manually');
-  buffer.writeln(
-    '$indent// Generated: ${metadata.timestamp.toIso8601String()}',
-  );
-  buffer.writeln('$indent// Algorithm: ${metadata.algorithm}');
-  buffer.writeln('$indent// Seed: ${metadata.seed}');
-  buffer.writeln(
-    '$indent// Iterations: ${metadata.iterationCount}, Duration: ${metadata.duration.inMilliseconds}ms',
-  );
-  buffer.writeln('${indent}WordClockGrid(');
-  buffer.writeln('$indent  isDefault: true,');
-
   // Try to preserve the existing strategy if possible, but for now we'll use the default one
   // from the language object.
   final strategy = lang.defaultGridRef!.timeToWords;
@@ -75,21 +60,9 @@ String generateGridCode(
   final strategyName = strategy.runtimeType.toString();
 
   // Handle English space flag
-  String strategyParams = '';
-  if (strategyName.contains('English')) {
-    // We assume we want useSpaceInTwentyFive: true for default grids now
-    strategyParams = '(useSpaceInTwentyFive: true)';
-  } else {
-    strategyParams = '()';
-  }
-
-  buffer.writeln('$indent  timeToWords: $strategyName$strategyParams,');
-  buffer.writeln(
-    '$indent  paddingAlphabet: \'${lang.defaultGridRef!.paddingAlphabet}\',',
-  );
-  buffer.writeln('$indent  grid: WordGrid.fromLetters(');
-  buffer.writeln('$indent    width: ${grid.width},');
-  buffer.writeln('$indent    letters:');
+  final strategyParams = strategyName.contains('English')
+      ? '(useSpaceInTwentyFive: true)'
+      : '()';
 
   // Group words by row for comments
   final rowWords = <int, List<String>>{};
@@ -102,23 +75,44 @@ String generateGridCode(
     rowWords.putIfAbsent(p.row, () => []).add(word);
   }
 
-  for (int row = 0; row < grid.height; row++) {
+  final rowLines = List.generate(grid.height, (row) {
     final line = grid.cells
         .sublist(row * grid.width, (row + 1) * grid.width)
         .join('');
+
     // Escape special characters
     final escapedLine = line.replaceAll(r'\', r'\\').replaceAll("'", r"\'");
     final comment = rowWords[row]?.join(' ') ?? '';
     final commentStr = comment.isNotEmpty ? ' // $comment' : '';
-    buffer.writeln("$indent      '$escapedLine'$commentStr");
-  }
 
-  buffer.writeln('$indent    ,');
-  buffer.writeln('$indent  ),');
-  buffer.writeln('$indent),');
-  buffer.write('$indent// @generated end');
+    // Relative indentation of 6 spaces within the WordClockGrid block
+    return "      '$escapedLine'$commentStr";
+  }).join('\n');
 
-  return buffer.toString();
+  final template =
+      '''
+// @generated begin - do not edit manually
+// Generated: ${metadata.timestamp.toIso8601String()}
+// Algorithm: ${metadata.algorithm}
+// Seed: ${metadata.seed}
+// Iterations: ${metadata.iterationCount}, Duration: ${metadata.duration.inMilliseconds}ms
+WordClockGrid(
+  isDefault: true,
+  timeToWords: $strategyName$strategyParams,
+  paddingAlphabet: '${lang.defaultGridRef!.paddingAlphabet}',
+  grid: WordGrid.fromLetters(
+    width: ${grid.width},
+    letters:
+$rowLines
+    ,
+  ),
+),
+// @generated end''';
+
+  return template
+      .split('\n')
+      .map((line) => line.isEmpty ? line : '$indent$line')
+      .join('\n');
 }
 
 /// Updates the defaultGrid section in a language file for a specific language ID.
