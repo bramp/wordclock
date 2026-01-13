@@ -246,5 +246,30 @@ void main() {
       final issues = GridValidator.validate(result.grid, language);
       expect(issues, isEmpty);
     });
+
+    test('prunes when space is insufficient', () {
+      // 3 words of length 4 = 12 cells required.
+      // Grid is 3x3 = 9 cells.
+      // Should prune immediately.
+      final language = createMockLanguage(
+        id: 'PRUNE',
+        phrases: ['AAAA BBBB CCCC'],
+        requiresPadding: true,
+      );
+
+      final builder = TrieGridBuilder(
+        width: 3,
+        height: 3,
+        language: language,
+        seed: 0,
+      );
+
+      final result = builder.build();
+
+      // Should fail to find a solution (stopReason completed but no grid)
+      // Or rather, it should complete but return empty/partial grid.
+      // With pruning, it should return very quickly.
+      expect(result.wordPlacements, isEmpty);
+    });
   });
 }
