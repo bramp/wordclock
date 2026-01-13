@@ -324,6 +324,10 @@ class SolveCommand extends Command<void> {
       );
     }
 
+    if (!result.isOptimal) {
+      return;
+    }
+
     // Create metadata for generated section
     final metadata = GridGenerationMetadata(
       algorithm: algorithmName,
@@ -525,6 +529,12 @@ class SolveCommand extends Command<void> {
         print(
           '  - Only placed ${result.placedWords}/${result.totalWords} words',
         );
+      }
+      if (result.validationIssues.isNotEmpty) {
+        print('  - Validation issues:');
+        for (final issue in result.validationIssues) {
+          print('    * $issue');
+        }
       }
       print('⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️\n');
     } else {
