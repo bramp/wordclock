@@ -25,7 +25,7 @@ void main() {
         letters:
             "ITEISDTENLF"
             "ARQUARTERFM"
-            "CTWENTYFIVE"
+            "TWENTYCFIVE"
             "TOHALFCPAST"
             "TWELVEEIGHT"
             "FIVETWONINE"
@@ -48,7 +48,7 @@ void main() {
         letters:
             "ITEISDXYZLF" // TEN -> XYZ
             "ARQUARTERFM"
-            "CTWENTYFIVE"
+            "TWENTY FIVE"
             "TOHALFCPAST"
             "TWELVEEIGHT"
             "FIVETWONINE"

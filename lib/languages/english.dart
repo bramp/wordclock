@@ -9,25 +9,31 @@ final englishAlternativeLanguage = WordClockLanguage(
   englishName: 'English',
   description: 'Alternative',
   grids: [
+    // @generated begin - do not edit manually
+    // Generated: 2026-01-16T16:56:26.283496
+    // Algorithm: Trie
+    // Seed: 0
+    // Iterations: 24751, Duration: 16ms
     WordClockGrid(
       isDefault: true,
-      timeToWords: EnglishAlternativeTimeToWords(),
+      timeToWords: EnglishAlternativeTimeToWords(useSpaceInTwentyFive: true),
       paddingAlphabet: 'ACDEFLMPRSUX',
       grid: WordGrid.fromLetters(
         width: 11,
         letters:
-            "ITEISLFIVEA"
-            "FTWENTYFIVE"
-            "PMHALFEDTEN"
-            "CQUARTERCTO"
-            "PASTLTWELVE"
-            "ELEVENEIGHT"
-            "SEVENETHREE"
-            "FIVENINETEN"
-            "UFOURRTWONE"
-            "ASIXEO'CLOCK",
+            'ITEISLFIVEA' // IT IS FIVE A
+            'FTENPTWENTY' // TEN TWENTY
+            'TWENTYAFIVE' // TWENTY FIVE
+            'HALFQUARTER' // HALF QUARTER
+            'EPASTODFIVE' // PAST TO FIVE
+            'TENFIVEONEC' // TEN TEN FIVE ONE
+            'TWELVELEVEN' // TWELVE ELEVEN
+            'THREEIGHTWO' // THREE EIGHT TWO
+            'SIXSEVENINE' // SIX SEVEN NINE
+            'FOURCO\'CLOCK', // FOUR O'CLOCK
       ),
     ),
+    // @generated end,
     WordClockGrid(
       isTimeCheck: true,
       timeToWords: EnglishAlternativeTimeToWords(),
@@ -58,25 +64,31 @@ final englishLanguage = WordClockLanguage(
   englishName: 'English',
   description: null,
   grids: [
+    // @generated begin - do not edit manually
+    // Generated: 2026-01-16T16:56:26.294171
+    // Algorithm: Trie
+    // Seed: 0
+    // Iterations: 26, Duration: 5ms
     WordClockGrid(
       isDefault: true,
-      timeToWords: EnglishTimeToWords(),
+      timeToWords: EnglishTimeToWords(useSpaceInTwentyFive: true),
       paddingAlphabet: 'ACDEFLMPRSUX',
       grid: WordGrid.fromLetters(
         width: 11,
         letters:
-            "ITEISLFIVEF"
-            "PTWENTYFIVE"
-            "QUARTERHALF"
-            "MTENEDPASTO"
-            "TWELVELEVEN"
-            "EIGHTCSEVEN"
-            "CTHREELFIVE"
-            "NINEFOURTEN"
-            "ETWONEURSIX"
-            "AEDCLO'CLOCK",
+            'ITEISLFIVEF' // IT IS FIVE
+            'TENPQUARTER' // TEN QUARTER
+            'TWENTYAFIVE' // TWENTY FIVE
+            'EHALFDPASTO' // HALF PAST TO
+            'FIVETENONEC' // FIVE FIVE TEN TEN ONE
+            'CTWELVELTWO' // TWELVE TWO
+            'ETHREEUFOUR' // THREE FOUR
+            'SIXSEVENINE' // SIX SEVEN NINE
+            'EIGHTELEVEN' // EIGHT ELEVEN
+            'RAEDCO\'CLOCK', // O'CLOCK
       ),
     ),
+    // @generated end,
     WordClockGrid(
       isTimeCheck: true,
       timeToWords: EnglishTimeToWords(),
