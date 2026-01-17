@@ -3,6 +3,8 @@ import 'dart:io';
 import 'package:args/command_runner.dart';
 import 'package:wordclock/generator/backtracking/graph/graph_builder.dart';
 import 'package:wordclock/generator/utils/word_clock_utils.dart';
+import 'package:wordclock/languages/all.dart';
+import 'package:wordclock/languages/language.dart';
 import '../utils/utils.dart';
 
 class PhrasesCommand extends Command<void> {
@@ -17,8 +19,7 @@ class PhrasesCommand extends Command<void> {
       ..addOption(
         'lang',
         abbr: 'l',
-        mandatory: true,
-        help: 'Language ID to use.',
+        help: 'Language ID to use (required unless --all is specified).',
       )
       ..addFlag(
         'unique',
@@ -31,14 +32,45 @@ class PhrasesCommand extends Command<void> {
         abbr: 'd',
         defaultsTo: true,
         help: 'Print debug information to stderr.',
-      );
+      )
+      ..addFlag('all', help: 'Print for all languages.');
   }
 
   @override
   void run() {
-    final lang = getLanguage(argResults!);
+    final showAll = argResults!['all'] as bool;
     final unique = argResults!['unique'] as bool;
     final debug = argResults!['debug'] as bool;
+
+    if (showAll) {
+      for (final lang in WordClockLanguages.all) {
+        try {
+          _printForLanguage(lang, unique: unique, debug: debug);
+        } catch (e) {
+          print('Error processing ${lang.id}: $e');
+        }
+        print('\n${'=' * 40}\n');
+      }
+      return;
+    }
+
+    final langId = argResults!['lang'] as String?;
+    if (langId == null) {
+      throw UsageException(
+        '--lang is required unless --all is specified.',
+        usage,
+      );
+    }
+
+    final lang = getLanguage(argResults!);
+    _printForLanguage(lang, unique: unique, debug: debug);
+  }
+
+  void _printForLanguage(
+    WordClockLanguage lang, {
+    required bool unique,
+    required bool debug,
+  }) {
     final seen = <String>{};
 
     print('Phrases for ${lang.id} (${lang.englishName}):');
