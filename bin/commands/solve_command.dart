@@ -324,7 +324,7 @@ class SolveCommand extends Command<void> {
       );
     }
 
-    if (!result.isOptimal) {
+    if (result.stopReason != StopReason.completed) {
       return;
     }
 

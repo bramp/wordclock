@@ -102,7 +102,10 @@ class IndexedWordList {
     // Pre-compute maximum incoming overlap for each word.
     // For word i, this is the max overlap where i's prefix matches
     // any other word j's suffix (j placed before i).
-    final maxIncomingOverlap = computeMaxIncomingOverlaps(allNodes);
+    final maxIncomingOverlap = computeMaxIncomingOverlaps(
+      wordLengths,
+      allNodes.map((n) => n.cellCodes).toList(),
+    );
 
     // Pre-compute minimum contribution (cells beyond overlap) for each word
     final minContribution = List<int>.generate(
@@ -126,20 +129,23 @@ class IndexedWordList {
   /// any other word j. This represents the best-case overlap when placing i.
   ///
   /// @visibleForTesting
-  static List<int> computeMaxIncomingOverlaps(List<WordNode> nodes) {
-    final n = nodes.length;
+  static List<int> computeMaxIncomingOverlaps(
+    List<int> lengths,
+    List<List<int>> cellCodes,
+  ) {
+    final n = cellCodes.length;
     final maxOverlap = List<int>.filled(n, 0);
 
     for (int i = 0; i < n; i++) {
-      final codesI = nodes[i].cellCodes;
-      final lenI = codesI.length;
+      final codesI = cellCodes[i];
+      final lenI = lengths[i];
 
       // Check against all other words j (j comes before i)
       for (int j = 0; j < n; j++) {
         if (i == j) continue;
 
-        final codesJ = nodes[j].cellCodes;
-        final lenJ = codesJ.length;
+        final codesJ = cellCodes[j];
+        final lenJ = lengths[j];
 
         // Find longest suffix of j that matches prefix of i
         // Try overlap lengths from min(lenI, lenJ) down to 1

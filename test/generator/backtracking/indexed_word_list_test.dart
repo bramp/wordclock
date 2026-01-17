@@ -15,7 +15,9 @@ void main() {
         );
       }).toList();
 
-      return IndexedWordList.computeMaxIncomingOverlaps(nodes);
+      final codes = nodes.map((n) => n.cellCodes).toList();
+      final lengths = nodes.map((n) => n.cellCodes.length).toList();
+      return IndexedWordList.computeMaxIncomingOverlaps(lengths, codes);
     }
 
     test('no overlap possible between completely different words', () {
@@ -102,7 +104,10 @@ void main() {
       ];
 
       // DEFGH prefix 'DE' matches ABCDE suffix 'DE' = 2 char overlap
-      final overlaps = IndexedWordList.computeMaxIncomingOverlaps(nodes);
+      final overlaps = IndexedWordList.computeMaxIncomingOverlaps(
+        nodes.map((n) => n.cellCodes.length).toList(),
+        nodes.map((n) => n.cellCodes).toList(),
+      );
       expect(overlaps[0], 0); // ABCDE: no overlap
       expect(overlaps[1], 2); // DEFGH: 2 char overlap
 
@@ -129,7 +134,10 @@ void main() {
         ),
       ];
 
-      final overlaps = IndexedWordList.computeMaxIncomingOverlaps(nodes);
+      final overlaps = IndexedWordList.computeMaxIncomingOverlaps(
+        nodes.map((n) => n.cellCodes.length).toList(),
+        nodes.map((n) => n.cellCodes).toList(),
+      );
       expect(overlaps[0], 4); // Full overlap
       expect(overlaps[1], 4); // Full overlap
 
@@ -226,5 +234,7 @@ List<int> _computeOverlapsForStrings(List<String> words) {
     );
   }).toList();
 
-  return IndexedWordList.computeMaxIncomingOverlaps(nodes);
+  final codes = nodes.map((n) => n.cellCodes).toList();
+  final lengths = nodes.map((n) => n.cellCodes.length).toList();
+  return IndexedWordList.computeMaxIncomingOverlaps(lengths, codes);
 }
