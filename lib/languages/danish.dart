@@ -9,6 +9,11 @@ final danishLanguage = WordClockLanguage(
   englishName: 'Danish',
   description: null,
   grids: [
+    // @generated begin - do not edit manually
+    // Generated: 2026-01-16T16:56:16.185354
+    // Algorithm: Trie
+    // Seed: 0
+    // Iterations: 27, Duration: 5ms
     WordClockGrid(
       isDefault: true,
       timeToWords: DanishTimeToWords(),
@@ -16,18 +21,19 @@ final danishLanguage = WordClockLanguage(
       grid: WordGrid.fromLetters(
         width: 11,
         letters:
-            "KLOKKENPERL"
-            "KVARTHALVIM"
-            "TYVEOVERSTI"
-            "IJIPEJPRFEM"
-            "MMINUTTERII"
-            "NOVERONHALV"
-            "ELLEVESSEKS"
-            "OTTETOLVSYV"
-            "FIREFEMTREI"
-            "ESLMSTTIINI",
+            'KLOKKENPERL' // KLOKKEN ER
+            'MSIKVARTYVE' // KVART TYVE
+            'HALVJFEMITI' // HALV FEM TI
+            'PMINUTTEREI' // MINUTTER I
+            'JOVERPRHALV' // OVER HALV HALV
+            'FEMTITOLVET' // FEM FEM TI TI TOLV TO ET
+            'TREFIRESEKS' // TRE FIRE SEKS
+            'SYVMOTTEINI' // SYV OTTE NI
+            'NONSIELLEVE' // ELLEVE
+            'ESLMSTIVAII',
       ),
     ),
+    // @generated end,
     WordClockGrid(
       isTimeCheck: true,
       timeToWords: DanishTimeToWords(),

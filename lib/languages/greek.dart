@@ -9,6 +9,11 @@ final greekLanguage = WordClockLanguage(
   englishName: 'Greek',
   description: null,
   grids: [
+    // @generated begin - do not edit manually
+    // Generated: 2026-01-16T16:56:41.835282
+    // Algorithm: Trie
+    // Seed: 0
+    // Iterations: 550, Duration: 5ms
     WordClockGrid(
       isDefault: true,
       timeToWords: GreekTimeToWords(),
@@ -16,18 +21,19 @@ final greekLanguage = WordClockLanguage(
       grid: WordGrid.fromLetters(
         width: 11,
         letters:
-            "HKΩPATEINAI"
-            "TEΣΣEPIΣMIA"
-            "ENTEKAENNIA"
-            "ΔΩΔEKATPEIΣ"
-            "OΧTΩEΦTAΔYO"
-            "EΞIEΠAPAKAI"
-            "ΔΠENTEXΔEKA"
-            "KAIΠAPAMIΣH"
-            "EIKOΣIXΔEKA"
-            "TΠENTETAPTO",
+            'HKΩPATEINAI' // H ΩPA EINAI
+            'ΔΩΔEKAΠENTE' // ΔΩΔEKA ΔEKA ΠENTE
+            'MIAΔYOTPEIΣ' // MIA ΔYO TPEIΣ
+            'TEΣΣEPIΣEΞI' // TEΣΣEPIΣ EΞI
+            'EEΦTAΔXOΧTΩ' // EΦTA OΧTΩ
+            'ENNIAENTEKA' // ENNIA ENTEKA
+            'XKAITPΠENTE' // KAI ΠENTE
+            'PΠAPAΧXΔEKA' // ΠAPA ΔEKA
+            'EIKOΣIPMIΣH' // EIKOΣI MIΣH
+            'HΠENTETAPTO', // ΠENTE TETAPTO
       ),
     ),
+    // @generated end,
     WordClockGrid(
       isTimeCheck: true,
       timeToWords: GreekTimeToWords(),

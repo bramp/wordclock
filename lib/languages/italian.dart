@@ -9,6 +9,11 @@ final italianLanguage = WordClockLanguage(
   englishName: 'Italian',
   description: null,
   grids: [
+    // @generated begin - do not edit manually
+    // Generated: 2026-01-16T16:56:41.846954
+    // Algorithm: Trie
+    // Seed: 0
+    // Iterations: 938, Duration: 6ms
     WordClockGrid(
       isDefault: true,
       timeToWords: ItalianTimeToWords(),
@@ -16,18 +21,19 @@ final italianLanguage = WordClockLanguage(
       grid: WordGrid.fromLetters(
         width: 11,
         letters:
-            "SONOLÈZL’UNA"
-            "KLEZQUATTRO"
-            "ODODICINQUE"
-            "UNDICISETTE"
-            "BDIECIKNOVE"
-            "OTTOSEIDUEB"
-            "TREBMENOZUN"
-            "VENTICINQUE"
-            "DIECIZMEZZA"
-            "SCCBKQUARTO",
+            'SONOÈLEL’UNA' // SONO È LE L’UNA
+            'LDODICINQUE' // DODICI CINQUE
+            'DIECIDUETRE' // DIECI DUE TRE
+            'QUATTROZSEI' // QUATTRO SEI
+            'KSETTEZOTTO' // SETTE OTTO
+            'NOVEOUNDICI' // NOVE UNDICI
+            'BKEBBCINQUE' // E CINQUE
+            'MENOMEZZAUN' // MENO MEZZA UN
+            'DIECIQUARTO' // DIECI QUARTO
+            'VENTICINQUE', // VENTI VENTICINQUE CINQUE
       ),
     ),
+    // @generated end,
     WordClockGrid(
       isTimeCheck: true,
       timeToWords: ItalianTimeToWords(),

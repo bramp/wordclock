@@ -9,6 +9,11 @@ final romanianLanguage = WordClockLanguage(
   englishName: 'Romanian',
   description: null,
   grids: [
+    // @generated begin - do not edit manually
+    // Generated: 2026-01-16T16:56:54.906613
+    // Algorithm: Trie
+    // Seed: 0
+    // Iterations: 166517, Duration: 2203ms
     WordClockGrid(
       isDefault: true,
       timeToWords: RomanianTimeToWords(),
@@ -16,19 +21,19 @@ final romanianLanguage = WordClockLanguage(
       grid: WordGrid.fromLetters(
         width: 11,
         letters:
-            "ESTEOORAZNZ"
-            "PŞAPTEBDOUĂ"
-            "NUNSPREZECE"
-            "PATRUNUNOUĂ"
-            "TREIŞASEOPT"
-            "FĂRĂŞIBZECE"
-            "ŞIBCINCIZŞI"
-            "FĂRĂZZECEUN"
-            "VLLTREIZECI"
-            "DOUĂZECIBŞI"
-            "SFERTNCINCI",
+            'ESTEOORAZNZ' // ESTE ORA
+            'PDOUĂBCINCI' // DOUĂ CINCI
+            'UNUTREIŞASE' // UNU TREI ŞASE
+            'PATRUNŞAPTE' // PATRU ŞAPTE
+            'OPTNOUĂSPRE' // OPT NOUĂ SPRE
+            'BUNSPREZECE' // UNSPREZECE ZECE
+            'ŞIFĂRĂBZECE' // ŞI FĂRĂ ZECE
+            'UNZDOUĂZECI' // UN DOUĂZECI
+            'TREIZECIZŞI' // TREIZECI ŞI
+            'CINCIVSFERT', // CINCI SFERT
       ),
     ),
+    // @generated end,
     WordClockGrid(
       isTimeCheck: true,
       timeToWords: RomanianTimeToWords(),

@@ -9,6 +9,11 @@ final berneseGermanLanguage = WordClockLanguage(
   englishName: 'Bernese German',
   description: 'Bernese German',
   grids: [
+    // @generated begin - do not edit manually
+    // Generated: 2026-01-16T16:56:11.011076
+    // Algorithm: Trie
+    // Seed: 0
+    // Iterations: 22, Duration: 11ms
     WordClockGrid(
       isDefault: true,
       timeToWords: BerneseGermanTimeToWords(),
@@ -16,18 +21,19 @@ final berneseGermanLanguage = WordClockLanguage(
       grid: WordGrid.fromLetters(
         width: 11,
         letters:
-            "ESUISCHBFÜF"
-            "RVIERTUFZÄÄ"
-            "TZWÄNZGLVOR"
-            "TOABOOHAUBI"
-            "SÄCHSIVIERI"
-            "ZWÖUFIACHTI"
-            "LSIBNIEFÜFI"
-            "EUFIZÄNIDRÜ"
-            "ZWÖINÜNIEIS"
-            "MMFTBSASQUT",
+            'ESUISCHBFÜF' // ES ISCH FÜF
+            'RZÄÄFVIERTU' // ZÄÄ VIERTU
+            'TZWÄNZGLTAB' // ZWÄNZG AB
+            'OVOROOHAUBI' // VOR HAUBI
+            'LZWÖUFIEEIS' // ZWÖUFI EIS
+            'ZWÖIDRÜFÜFI' // ZWÖI DRÜ FÜFI
+            'VIERISÄCHSI' // VIERI SÄCHSI
+            'SIBNIMACHTI' // SIBNI ACHTI
+            'MNÜNIFTZÄNI' // NÜNI ZÄNI
+            'BSASQUTEUFI', // EUFI
       ),
     ),
+    // @generated end,
     WordClockGrid(
       isTimeCheck: true,
       timeToWords: BerneseGermanTimeToWords(),
