@@ -1,5 +1,5 @@
 import 'package:wordclock/languages/language.dart';
-import 'package:wordclock/languages/polish.dart';
+// import 'package:wordclock/languages/polish.dart';
 import 'package:wordclock/languages/catalan.dart';
 import 'package:wordclock/languages/chinese.dart';
 import 'package:wordclock/languages/czech.dart';
@@ -15,7 +15,7 @@ import 'package:wordclock/languages/japanese.dart';
 import 'package:wordclock/languages/norwegian.dart';
 import 'package:wordclock/languages/portuguese.dart';
 import 'package:wordclock/languages/romanian.dart';
-import 'package:wordclock/languages/russian.dart';
+// import 'package:wordclock/languages/russian.dart';
 import 'package:wordclock/languages/spanish.dart';
 import 'package:wordclock/languages/swedish.dart';
 import 'package:wordclock/languages/turkish.dart';
@@ -41,10 +41,10 @@ class WordClockLanguages {
     italianLanguage,
     japaneseLanguage,
     norwegianLanguage,
-    polishLanguage,
+    // polishLanguage,
     portugueseLanguage,
     romanianLanguage,
-    russianLanguage,
+    // russianLanguage,
     spanishLanguage,
     swabianGermanLanguage,
     swedishLanguage,

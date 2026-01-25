@@ -12,28 +12,18 @@ void main() {
       group('Language: ${lang.displayName} (${lang.id})', () {
         final defaultGrid = lang.defaultGridRef;
         if (defaultGrid != null) {
-          test(
-            'defaultGrid valid',
-            () {
-              _validateGrid(
-                lang,
-                defaultGrid.grid,
-                timeToWords: defaultGrid.timeToWords,
-              );
-            },
-            skip: ['PL'].contains(lang.id) ? 'Needs fixing' : null,
-          );
+          test('defaultGrid valid', () {
+            _validateGrid(
+              lang,
+              defaultGrid.grid,
+              timeToWords: defaultGrid.timeToWords,
+            );
+          });
 
-          test(
-            'defaultGrid size is 11x10',
-            () {
-              expect(defaultGrid.grid.width, 11);
-              expect(defaultGrid.grid.height, 10);
-            },
-            skip: ['PL', 'PE', 'RU', 'RO'].contains(lang.id)
-                ? 'Needs fixing to fit 11x10'
-                : null,
-          );
+          test('defaultGrid size is 11x10', () {
+            expect(defaultGrid.grid.width, 11);
+            expect(defaultGrid.grid.height, 10);
+          });
         }
 
         final timeCheckGrid = lang.timeCheckGridRef;
