@@ -10,10 +10,10 @@ final englishAlternativeLanguage = WordClockLanguage(
   description: 'Alternative',
   grids: [
     // @generated begin - do not edit manually
-    // Generated: 2026-01-16T16:56:26.283496
-    // Algorithm: Trie
+    // Generated: 2026-01-25T09:42:52.224383
+    // Algorithm: Backtracking
     // Seed: 0
-    // Iterations: 24751, Duration: 16ms
+    // Iterations: 24, Duration: 4ms
     WordClockGrid(
       isDefault: true,
       timeToWords: EnglishAlternativeTimeToWords(useSpaceInTwentyFive: true),
@@ -21,16 +21,16 @@ final englishAlternativeLanguage = WordClockLanguage(
       grid: WordGrid.fromLetters(
         width: 11,
         letters:
-            'ITEISLFIVEA' // IT IS FIVE A
-            'FTENPTWENTY' // TEN TWENTY
-            'TWENTYAFIVE' // TWENTY FIVE
-            'HALFQUARTER' // HALF QUARTER
-            'EPASTODFIVE' // PAST TO FIVE
-            'TENFIVEONEC' // TEN TEN FIVE ONE
+            'ITEISLHALFF' // IT IS HALF A
+            'PTWENTYMTEN' // TWENTY TEN
+            'QUARTERFIVE' // QUARTER FIVE
+            'PASTOEEIGHT' // PAST TO EIGHT
             'TWELVELEVEN' // TWELVE ELEVEN
-            'THREEIGHTWO' // THREE EIGHT TWO
-            'SIXSEVENINE' // SIX SEVEN NINE
-            'FOURCO\'CLOCK', // FOUR O'CLOCK
+            'SEVENDTHREE' // SEVEN THREE
+            'FIVENINETEN' // FIVE NINE TEN
+            'CFOURCTWONE' // FOUR TWO ONE
+            'LSIXEO\'CLOCK' // SIX O'CLOCK
+            'URAEDCLRCXP',
       ),
     ),
     // @generated end,
@@ -65,10 +65,10 @@ final englishLanguage = WordClockLanguage(
   description: null,
   grids: [
     // @generated begin - do not edit manually
-    // Generated: 2026-01-16T16:56:26.294171
-    // Algorithm: Trie
+    // Generated: 2026-01-25T09:42:52.234047
+    // Algorithm: Backtracking
     // Seed: 0
-    // Iterations: 26, Duration: 5ms
+    // Iterations: 23, Duration: 3ms
     WordClockGrid(
       isDefault: true,
       timeToWords: EnglishTimeToWords(useSpaceInTwentyFive: true),
@@ -76,16 +76,16 @@ final englishLanguage = WordClockLanguage(
       grid: WordGrid.fromLetters(
         width: 11,
         letters:
-            'ITEISLFIVEF' // IT IS FIVE
-            'TENPQUARTER' // TEN QUARTER
-            'TWENTYAFIVE' // TWENTY FIVE
-            'EHALFDPASTO' // HALF PAST TO
-            'FIVETENONEC' // FIVE FIVE TEN TEN ONE
-            'CTWELVELTWO' // TWELVE TWO
-            'ETHREEUFOUR' // THREE FOUR
-            'SIXSEVENINE' // SIX SEVEN NINE
-            'EIGHTELEVEN' // EIGHT ELEVEN
-            'RAEDCO\'CLOCK', // O'CLOCK
+            'ITEISLHALFF' // IT IS HALF
+            'QUARTERPTEN' // QUARTER TEN
+            'TWENTYMFIVE' // TWENTY FIVE
+            'PASTOEEIGHT' // PAST TO EIGHT
+            'TWELVELEVEN' // TWELVE ELEVEN
+            'SEVENDTHREE' // SEVEN THREE
+            'FIVENINETEN' // FIVE NINE TEN
+            'CFOURCTWONE' // FOUR TWO ONE
+            'LSIXEO\'CLOCK' // SIX O'CLOCK
+            'URAEDCLRCXP',
       ),
     ),
     // @generated end,

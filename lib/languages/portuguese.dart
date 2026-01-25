@@ -9,6 +9,11 @@ final portugueseLanguage = WordClockLanguage(
   englishName: 'Portuguese',
   description: null,
   grids: [
+    // @generated begin - do not edit manually
+    // Generated: 2026-01-25T09:43:53.245965
+    // Algorithm: Backtracking
+    // Seed: 0
+    // Iterations: 29, Duration: 5ms
     WordClockGrid(
       isDefault: true,
       timeToWords: PortugueseTimeToWords(),
@@ -16,19 +21,19 @@ final portugueseLanguage = WordClockLanguage(
       grid: WordGrid.fromLetters(
         width: 11,
         letters:
-            "SÃOÉQUATROE"
-            "MEIONOVEUMA"
-            "SEISDUASETE"
-            "OITOTRÊSDIA"
-            "EONZELMENOS"
-            "CINCOPDEZOE"
-            "ZHORASYMEIA"
-            "NOITEHORAEM"
-            "MENOSHVINTE"
-            "MEIAADEZHUM"
-            "QUARTOCINCO",
+            'SÃOÉQUATROE' // SÃO É QUATRO
+            'ECINCOLMEIA' // CINCO MEIA
+            'MEIODUASEIS' // MEIO DUAS SEIS
+            'TRÊSETEOITO' // TRÊS SETE OITO
+            'NOVEONZEUMA' // NOVE ONZE UMA
+            'DEZNOITEDIA' // DEZ NOITE DIA
+            'HORASPMENOS' // HORAS HORA MENOS E
+            'VINTEMEIAUM' // VINTE MEIA E UM
+            'ODEZZQUARTO' // DEZ QUARTO
+            'YMHAHHCINCO', // CINCO
       ),
     ),
+    // @generated end,
     WordClockGrid(
       isTimeCheck: true,
       timeToWords: PortugueseTimeToWords(),

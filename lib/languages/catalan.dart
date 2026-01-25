@@ -9,6 +9,11 @@ final catalanLanguage = WordClockLanguage(
   englishName: 'Catalan',
   description: null,
   grids: [
+    // @generated begin - do not edit manually
+    // Generated: 2026-01-25T09:42:49.110142
+    // Algorithm: Backtracking
+    // Seed: 0
+    // Iterations: 29, Duration: 4ms
     WordClockGrid(
       isDefault: true,
       timeToWords: CatalanTimeToWords(),
@@ -16,18 +21,19 @@ final catalanLanguage = WordClockLanguage(
       grid: WordGrid.fromLetters(
         width: 11,
         letters:
-            "SÓNÉSDOSLES"
-            "UNOLAZQUART"
-            "TRESNQUARTS"
-            "MENYSIZCINC"
-            "DED'QUATRESP"
-            "DDOTZENVUIT"
-            "DUESONZENOU"
-            "UNADSETDSIS"
-            "DEUZMENYSZI"
-            "UEEDNROCINC",
+            'SÓNÉSDOSLES' // SÓN ÉS DOS LES
+            'UNOLAZQUART' // UN LA QUART
+            'TRESNQUARTS' // TRES QUARTS
+            'MENYSIZCINC' // MENYS I CINC
+            'DED\'QUATRESP' // DE D' QUATRE TRES
+            'DDOTZENVUIT' // DOTZE VUIT
+            'DUESONZENOU' // DUES ONZE NOU
+            'UNADSETDSIS' // UNA SET SIS
+            'DEUZMENYSZI' // DEU MENYS I
+            'UEEDNROCINC', // CINC
       ),
     ),
+    // @generated end,
     WordClockGrid(
       isTimeCheck: true,
       timeToWords: CatalanTimeToWords(),

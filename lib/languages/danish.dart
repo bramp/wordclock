@@ -10,10 +10,10 @@ final danishLanguage = WordClockLanguage(
   description: null,
   grids: [
     // @generated begin - do not edit manually
-    // Generated: 2026-01-16T16:56:16.185354
-    // Algorithm: Trie
+    // Generated: 2026-01-25T09:42:52.180856
+    // Algorithm: Backtracking
     // Seed: 0
-    // Iterations: 27, Duration: 5ms
+    // Iterations: 24, Duration: 3ms
     WordClockGrid(
       isDefault: true,
       timeToWords: DanishTimeToWords(),
@@ -25,12 +25,12 @@ final danishLanguage = WordClockLanguage(
             'MSIKVARTYVE' // KVART TYVE
             'HALVJFEMITI' // HALV FEM TI
             'PMINUTTEREI' // MINUTTER I
-            'JOVERPRHALV' // OVER HALV HALV
-            'FEMTITOLVET' // FEM FEM TI TI TOLV TO ET
-            'TREFIRESEKS' // TRE FIRE SEKS
-            'SYVMOTTEINI' // SYV OTTE NI
-            'NONSIELLEVE' // ELLEVE
-            'ESLMSTIVAII',
+            'JOVERPRHALV' // OVER HALV
+            'MELLEVETOLV' // ELLEVE ET TOLV TO
+            'FIRESEKSFEM' // FIRE SEKS FEM
+            'OTTETRESYVI' // OTTE TRE SYV
+            'NONSIETISNI' // TI NI
+            'LMSTIVAIIKA',
       ),
     ),
     // @generated end,

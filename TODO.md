@@ -37,3 +37,36 @@
 - [ ] Allow for wordclock.me/$lang/ routing
 - [ ] Replace the word "atom" with "word"
 - [ ] Add additional visual modes to the clock. Such as displaying the time in seconds. Or a audio visualizer.
+
+## Language Grid Status
+
+The following languages have successfully generated optimal grids:
+
+- [x] CH (Bernese German)
+- [x] CA (Catalan)
+- [x] CS (Chinese Simplified)
+- [x] CT (Chinese Traditional)
+- [x] CZ (Czech)
+- [x] DK (Danish)
+- [x] NL (Dutch)
+- [x] D4 (East German)
+- [x] E2 (English Alternative)
+- [x] EN (English)
+- [x] FR (French)
+- [x] D2 (German Alternative)
+- [x] DE (German)
+- [x] GR (Greek)
+- [x] IT (Italian)
+- [x] JP (Japanese)
+- [x] NO (Norwegian)
+- [x] PE (Portuguese)
+- [x] RO (Romanian) - Generated via `-a trie`
+- [x] ES (Spanish)
+- [x] D3 (Swabian German)
+- [x] SE (Swedish)
+- [x] TR (Turkish)
+
+The following languages currently timeout and need optimization or a different approach:
+
+- [ ] PL (Polish)
+- [ ] RU (Russian)

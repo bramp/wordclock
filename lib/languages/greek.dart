@@ -10,10 +10,10 @@ final greekLanguage = WordClockLanguage(
   description: null,
   grids: [
     // @generated begin - do not edit manually
-    // Generated: 2026-01-16T16:56:41.835282
-    // Algorithm: Trie
+    // Generated: 2026-01-25T09:42:53.171291
+    // Algorithm: Backtracking
     // Seed: 0
-    // Iterations: 550, Duration: 5ms
+    // Iterations: 23, Duration: 5ms
     WordClockGrid(
       isDefault: true,
       timeToWords: GreekTimeToWords(),
@@ -22,15 +22,15 @@ final greekLanguage = WordClockLanguage(
         width: 11,
         letters:
             'HKΩPATEINAI' // H ΩPA EINAI
-            'ΔΩΔEKAΠENTE' // ΔΩΔEKA ΔEKA ΠENTE
-            'MIAΔYOTPEIΣ' // MIA ΔYO TPEIΣ
-            'TEΣΣEPIΣEΞI' // TEΣΣEPIΣ EΞI
-            'EEΦTAΔXOΧTΩ' // EΦTA OΧTΩ
-            'ENNIAENTEKA' // ENNIA ENTEKA
-            'XKAITPΠENTE' // KAI ΠENTE
-            'PΠAPAΧXΔEKA' // ΠAPA ΔEKA
-            'EIKOΣIPMIΣH' // EIKOΣI MIΣH
-            'HΠENTETAPTO', // ΠENTE TETAPTO
+            'TEΣΣEPIΣMIA' // TEΣΣEPIΣ MIA
+            'ΔΩΔEKATPEIΣ' // ΔΩΔEKA ΔEKA TPEIΣ
+            'ENTEKAΠENTE' // ENTEKA ΠENTE
+            'EENNIAΔEΦTA' // ENNIA EΦTA
+            'OΧTΩΔYOEΞIX' // OΧTΩ ΔYO EΞI
+            'XTΠAPAPPKAI' // ΠAPA KAI
+            'TETAPTOΔEKA' // TETAPTO ΔEKA
+            'EIKOΣIΧMIΣH' // EIKOΣI MIΣH
+            'XPHXKHΠENTE', // ΠENTE
       ),
     ),
     // @generated end,

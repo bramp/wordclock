@@ -9,6 +9,11 @@ final czechLanguage = WordClockLanguage(
   englishName: 'Czech',
   description: null,
   grids: [
+    // @generated begin - do not edit manually
+    // Generated: 2026-01-25T09:42:52.156275
+    // Algorithm: Backtracking
+    // Seed: 0
+    // Iterations: 13375078, Duration: 3006ms
     WordClockGrid(
       isDefault: true,
       timeToWords: CzechTimeToWords(),
@@ -16,18 +21,19 @@ final czechLanguage = WordClockLanguage(
       grid: WordGrid.fromLetters(
         width: 11,
         letters:
-            "JSOUJEČTYŘI"
-            "JEDENÁCTPĚT"
-            "DVANÁCTŠEST"
-            "JEDNAOSMDVĚ"
-            "DEVĚTŘISEDM"
-            "DESETNDESET"
-            "DANČTYŘICET"
-            "PADESÁTNULA"
-            "DVACETŘICET"
-            "PATNÁCTEPĚT",
+            'JSOUJEČTYŘI' // JSOU JE ČTYŘI
+            'JEDENÁCTPĚT' // JEDENÁCT PĚT
+            'DVANÁCTŠEST' // DVANÁCT ŠEST
+            'JEDNAOSMDVĚ' // JEDNA OSM DVĚ
+            'DEVĚTŘISEDM' // DEVĚT TŘI SEDM
+            'DESETNDESET' // DESET DESET
+            'DANČTYŘICET' // ČTYŘICET
+            'PADESÁTNULA' // PADESÁT NULA
+            'DVACETŘICET' // DVACET TŘICET
+            'PATNÁCTEPĚT', // PATNÁCT PĚT
       ),
     ),
+    // @generated end,
     WordClockGrid(
       isTimeCheck: true,
       timeToWords: CzechTimeToWords(),

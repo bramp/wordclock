@@ -9,6 +9,11 @@ final turkishLanguage = WordClockLanguage(
   englishName: 'Turkish',
   description: null,
   grids: [
+    // @generated begin - do not edit manually
+    // Generated: 2026-01-25T09:46:29.709875
+    // Algorithm: Backtracking
+    // Seed: 0
+    // Iterations: 191404284, Duration: 36349ms
     WordClockGrid(
       isDefault: true,
       timeToWords: TurkishTimeToWords(),
@@ -16,18 +21,19 @@ final turkishLanguage = WordClockLanguage(
       grid: WordGrid.fromLetters(
         width: 11,
         letters:
-            "SAATKALTIYI"
-            "DOKUZUDÖRDÜ"
-            "SEKIZİPBEŞİ"
-            "DYEDİYİSÜÇÜ"
-            "ONURONRBİRİ"
-            "İKİYİPYİRMİ"
-            "ÇEYREKMOTUZ"
-            "KIRKELLİONM"
-            "BEŞYGEÇİYOR"
-            "RDÖRTMBUÇUK",
+            'SAATKALTIYI' // SAAT ALTIYI ALTI
+            'DOKUZUDÖRDÜ' // DOKUZU DOKUZ DÖRDÜ
+            'SEKIZİPBEŞİ' // SEKIZİ SEKIZ BEŞİ
+            'DYEDİYİSÜÇÜ' // YEDİYİ YEDİ ÜÇÜ ÜÇ
+            'ONURONRBİRİ' // ONU ON BİRİ BİR
+            'İKİYİPYİRMİ' // İKİYİ İKİ YİRMİ
+            'ÇEYREKMOTUZ' // ÇEYREK OTUZ
+            'KIRKELLİONM' // KIRK ELLİ ON
+            'BEŞYGEÇİYOR' // BEŞ GEÇİYOR
+            'RDÖRTMBUÇUK', // DÖRT BUÇUK
       ),
     ),
+    // @generated end,
     WordClockGrid(
       isTimeCheck: true,
       timeToWords: TurkishTimeToWords(),

@@ -10,10 +10,10 @@ final spanishLanguage = WordClockLanguage(
   description: null,
   grids: [
     // @generated begin - do not edit manually
-    // Generated: 2026-01-16T16:57:01.712616
-    // Algorithm: Trie
+    // Generated: 2026-01-25T09:45:53.290399
+    // Algorithm: Backtracking
     // Seed: 0
-    // Iterations: 685, Duration: 5ms
+    // Iterations: 25, Duration: 4ms
     WordClockGrid(
       isDefault: true,
       timeToWords: SpanishTimeToWords(),
@@ -22,15 +22,15 @@ final spanishLanguage = WordClockLanguage(
         width: 11,
         letters:
             'SONESLASLAL' // SON ES LAS LA
-            'NDOCEECINCO' // DOCE CINCO
-            'DIEZUNADOSP' // DIEZ UNA DOS
-            'TRESOCUATRO' // TRES CUATRO
-            'ONMSEISIETE' // SEIS SIETE
-            'MOCHOSNUEVE' // OCHO NUEVE
-            'ONCEOYMENOS' // ONCE Y MENOS
-            'DIEZMCUARTO' // DIEZ CUARTO
+            'CUATROCINCO' // CUATRO CINCO
+            'NUEVENSIETE' // NUEVE SIETE
+            'DOCEONCEDOS' // DOCE ONCE DOS
+            'DIEZOCHOUNA' // DIEZ OCHO UNA
+            'ETRESEISPOY' // TRES SEIS Y
+            'MENOSOCINCO' // MENOS CINCO
+            'VEINTICINCO' // VEINTICINCO
             'VEINTEMEDIA' // VEINTE MEDIA
-            'VEINTICINCO', // VEINTICINCO CINCO
+            'CUARTONDIEZ', // CUARTO DIEZ
       ),
     ),
     // @generated end,

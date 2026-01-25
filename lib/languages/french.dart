@@ -9,6 +9,11 @@ final frenchLanguage = WordClockLanguage(
   englishName: 'French',
   description: null,
   grids: [
+    // @generated begin - do not edit manually
+    // Generated: 2026-01-25T09:42:53.118008
+    // Algorithm: Backtracking
+    // Seed: 0
+    // Iterations: 3675519, Duration: 877ms
     WordClockGrid(
       isDefault: true,
       timeToWords: FrenchTimeToWords(),
@@ -16,18 +21,19 @@ final frenchLanguage = WordClockLanguage(
       grid: WordGrid.fromLetters(
         width: 11,
         letters:
-            "ILEESTEONZE"
-            "QUATRETROIS"
-            "MINUITNDEUX"
-            "HUITMIDISIX"
-            "UNEUFRHEURE"
-            "SEPTCINQDIX"
-            "PHEURESUTET"
-            "MOINSODEMIE"
-            "MVINGT-CINQ"
-            "DIXLEAQUART",
+            'ILEESTEONZE' // IL EST ONZE
+            'QUATRETROIS' // QUATRE TROIS
+            'MINUITNDEUX' // MINUIT DEUX
+            'HUITMIDISIX' // HUIT MIDI SIX
+            'UNEUFRHEURE' // UNE NEUF HEURE
+            'SEPTCINQDIX' // SEPT CINQ DIX
+            'PHEURESUTET' // HEURES ET
+            'MOINSODEMIE' // MOINS DEMIE DEMI
+            'MVINGT-CINQ' // VINGT VINGT-CINQ CINQ
+            'DIXLEAQUART', // DIX LE QUART
       ),
     ),
+    // @generated end,
     WordClockGrid(
       isTimeCheck: true,
       timeToWords: FrenchTimeToWords(),

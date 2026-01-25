@@ -10,10 +10,10 @@ final romanianLanguage = WordClockLanguage(
   description: null,
   grids: [
     // @generated begin - do not edit manually
-    // Generated: 2026-01-16T16:56:54.906613
+    // Generated: 2026-01-25T09:25:52.460064
     // Algorithm: Trie
     // Seed: 0
-    // Iterations: 166517, Duration: 2203ms
+    // Iterations: 166517, Duration: 2201ms
     WordClockGrid(
       isDefault: true,
       timeToWords: RomanianTimeToWords(),
