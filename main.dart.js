@@ -83090,7 +83090,7 @@ $0(){return A.anC()},
 $S:0}
 A.anD.prototype={
 $0(){var s,r,q=$.aBE()
-$.aoM.m(0,"flutter-fire-analytics","12.1.0")
+$.aoM.m(0,"flutter-fire-analytics","12.1.1")
 A.aDN("analytics")
 s=A.at_(null,null)
 A.JR(s,$.VK(),!0)
