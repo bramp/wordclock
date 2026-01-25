@@ -6,6 +6,7 @@ import 'package:wordclock/generator/utils/word_clock_utils.dart';
 import 'package:wordclock/languages/language.dart';
 import 'package:wordclock/model/word_grid.dart';
 import 'package:wordclock/generator/model/word_placement.dart';
+import 'package:wordclock/generator/grid_solver.dart';
 
 /// A greedy grid builder that generates word clock grids.
 ///
@@ -13,7 +14,7 @@ import 'package:wordclock/generator/model/word_placement.dart';
 /// 1. Uses a constraint-based algorithm to place words
 /// 2. Greedily fills the grid row by row
 /// 3. Supports word overlap when characters match
-class GreedyGridBuilder {
+class GreedyGridBuilder implements GridSolver {
   final int width;
   final int height;
   final WordClockLanguage language;
@@ -29,6 +30,7 @@ class GreedyGridBuilder {
   /// Attempts to build a grid that satisfies all constraints.
   ///
   /// Returns a GridBuildResult with the grid and validation information.
+  @override
   GridBuildResult build() {
     // Count unique words needed
     final uniqueWords = <String>{};

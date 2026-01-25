@@ -50,3 +50,5 @@ assets/timecheck_languages.json
 check-new.js
 
 bin/grid_builder
+phrases_dump/
+phrases_validation/

@@ -12,6 +12,7 @@ import 'package:wordclock/generator/backtracking/grid_post_processor.dart';
 import 'package:wordclock/generator/model/grid_build_result.dart';
 import 'package:wordclock/generator/model/grid_build_progress.dart';
 import 'package:wordclock/generator/utils/grid_validator.dart';
+import 'package:wordclock/generator/grid_solver.dart';
 import 'package:wordclock/generator/model/word_placement.dart' as public;
 import 'package:wordclock/languages/language.dart';
 import 'package:wordclock/model/types.dart';
@@ -84,7 +85,7 @@ import 'package:wordclock/model/word_grid.dart';
 ///   print('Success!');
 /// }
 /// ```
-class BacktrackingGridBuilder {
+class BacktrackingGridBuilder implements GridSolver {
   final int width;
   final int height;
   final WordClockLanguage language;
@@ -151,6 +152,7 @@ class BacktrackingGridBuilder {
        _maxAllowedOffset = height * width;
 
   /// Attempts to build a grid that satisfies all constraints.
+  @override
   GridBuildResult build() {
     // 1. Build word dependency graph (this also creates the CellCodec)
     graph =
@@ -397,7 +399,6 @@ class BacktrackingGridBuilder {
           _clearTrieCache(node);
         }
 
-        // Remove placement
         state.removePlacement(p);
       }
 
@@ -497,16 +498,14 @@ class BacktrackingGridBuilder {
       final offset = findEarliestPlacementByPhrase(state, node);
 
       if (offset != -1) {
-        final p = state.placeWord(node, offset);
-        if (p != null) {
-          _updateTrieCache(node, p.endOffset);
+        final p = state.placeWordUnchecked(node, offset);
+        _updateTrieCache(node, p.endOffset);
 
-          // Recurse with this word removed from mask
-          _solve(state, rankNodes, rankIndex, remainingMask & ~lowestBit);
+        // Recurse with this word removed from mask
+        _solve(state, rankNodes, rankIndex, remainingMask & ~lowestBit);
 
-          _clearTrieCache(node);
-          state.removePlacement(p);
-        }
+        _clearTrieCache(node);
+        state.removePlacement(p);
       }
 
       if (_shouldStop) return;
@@ -556,6 +555,7 @@ class BacktrackingGridBuilder {
   /// of its predecessor word when placed, enabling O(1) lookups.
   ///
   /// Returns 1D offset (row * width + col), or -1 if not found.
+  @visibleForTesting
   int findEarliestPlacementByPhrase(GridState state, WordNode node) {
     // If this word can be first in any phrase, it can start at offset 0
     if (node.hasEmptyPredecessor) {
@@ -619,6 +619,7 @@ class BacktrackingGridBuilder {
   ///    in what is often the hottest loop in the solver.
   /// 4. **Local variables:** Grid and cellCodes are cached in local variables
   ///    to avoid repeated field access.
+  @visibleForTesting
   int findFirstValidPlacement(GridState state, WordNode node, int minOffset) {
     final wordLen = node.cellCodes.length;
     final maxCol = width - wordLen;

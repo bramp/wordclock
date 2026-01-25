@@ -1,23 +1,36 @@
 import 'dart:typed_data';
+
+import 'package:meta/meta.dart';
 import 'package:wordclock/generator/backtracking/graph/word_node.dart';
 import 'package:wordclock/generator/backtracking/graph/cell_codec.dart';
 import 'package:wordclock/generator/model/word_placement.dart' as public;
-import 'package:wordclock/generator/utils/grid_validator.dart';
 import 'package:wordclock/model/types.dart';
 
 /// Sentinel value for empty cells in the integer grid
 const int emptyCell = -1;
 
 /// Represents a placed word on the grid.
-class Placement {
-  /// The word node that was placed
-  final WordNode node;
+class SolverPlacement {
+  /// The word text
+  final String word;
+
+  /// Cell codes (private storage)
+  final List<int>? _cellCodes;
 
   /// 1D offset where the word starts
   final int startOffset;
 
   /// Grid width (needed to derive row/col)
   final int width;
+
+  /// Length of the word in cells
+  final int length;
+
+  /// The DAG node associated with this placement (optional, for Backtracking solver)
+  final WordNode? node;
+
+  /// Effective cell codes (from local storage or node)
+  List<int>? get cellCodes => _cellCodes ?? node?.cellCodes;
 
   /// Row where the word starts (0-based)
   int get row => startOffset ~/ width;
@@ -26,61 +39,42 @@ class Placement {
   int get startCol => startOffset % width;
 
   /// Column where the word ends (inclusive, 0-based)
-  int get endCol => startCol + node.cellCodes.length - 1;
+  int get endCol => startCol + length - 1;
 
   /// 1D offset where the word ends
-  int get endOffset => startOffset + node.cellCodes.length - 1;
+  int get endOffset => startOffset + length - 1;
 
-  /// Length of the word in cells
-  int get length => node.cellCodes.length;
-
-  /// Convert to solver-agnostic placement for reporting
+  /// Convert to public placement for reporting
   public.WordPlacement toPublic() => public.WordPlacement(
-    word: node.word,
+    word: word,
     startOffset: startOffset,
     width: width,
     length: length,
   );
 
-  Placement({
-    required this.node,
+  SolverPlacement({
+    required this.word,
     required this.startOffset,
     required this.width,
-  });
+    required this.length,
+    List<int>? cellCodes,
+    this.node,
+  }) : _cellCodes = cellCodes;
 
   /// Create a new placement shifted to a specific row and column.
-  Placement shiftedTo(int row, int col) {
-    return Placement(node: node, startOffset: row * width + col, width: width);
-  }
-
-  /// Check if this placement comes after [other] in reading order
-  bool comesAfter(Placement other) {
-    // Use shared validation logic
-    return GridValidator.canPlaceAfter(
-      prevEndRow: other.row,
-      prevEndCol: other.endCol,
-      currStartRow: row,
-      currStartCol: startCol,
-      requiresPadding: false, // Just checking reading order here
-    );
-  }
-
-  /// Check if this placement has proper separation from [other] on the same row
-  bool hasSeparationFrom(Placement other, {required bool requiresPadding}) {
-    // Use shared validation logic
-    return GridValidator.hasSeparation(
-      word1Row: other.row,
-      word1StartCol: other.startCol,
-      word1EndCol: other.endCol,
-      word2Row: row,
-      word2StartCol: startCol,
-      word2EndCol: endCol,
-      requiresPadding: requiresPadding,
+  SolverPlacement shiftedTo(int row, int col) {
+    return SolverPlacement(
+      word: word,
+      startOffset: row * width + col,
+      width: width,
+      length: length,
+      cellCodes: _cellCodes,
+      node: node,
     );
   }
 
   @override
-  String toString() => 'Placement(${node.id}@($row,$startCol-$endCol))';
+  String toString() => 'SolverPlacement($word@($row,$startCol-$endCol))';
 }
 
 /// Represents the current state of the grid during backtracking.
@@ -89,14 +83,15 @@ class GridState {
   /// Uses Int8List for better cache locality and faster iteration.
   final Int8List grid;
 
+  /// Codec for converting between cell strings and integer codes
+  final CellCodec codec;
+
   /// Reference count for each cell: [row * width + col] -> number of words using this cell.
   /// Uses Uint8List since overlap count is always small (typically 0-3).
   final Uint8List _usage;
 
-  /// Codec for converting between cell strings and integer codes
-  final CellCodec codec;
-
-  /// Public getter for usage (mostly for testing/assertions)
+  /// Public getter for usage
+  @visibleForTesting
   Uint8List get usage => _usage;
 
   /// Width of the grid
@@ -106,7 +101,7 @@ class GridState {
   final int height;
 
   /// Track word placements as a stack (LIFO for backtracking)
-  final List<Placement> _placementStack;
+  final List<SolverPlacement> _placementStack;
 
   int _filledCellsCount = 0;
   int _totalWordsLength = 0;
@@ -114,8 +109,8 @@ class GridState {
   /// Number of words currently placed
   int get placementCount => _placementStack.length;
 
-  /// Direct access to placement stack (for efficient indexed access)
-  List<Placement> get placements => _placementStack;
+  /// Direct access to placement stack
+  List<SolverPlacement> get placements => _placementStack;
 
   /// Total unique cells filled
   int get filledCells => _filledCellsCount;
@@ -137,7 +132,6 @@ class GridState {
       _usage = Uint8List(width * height),
       _placementStack = [];
 
-  /// Private constructor for cloning
   GridState._cloneFrom({
     required this.width,
     required this.height,
@@ -172,12 +166,14 @@ class GridState {
     return newState;
   }
 
-  /// Check if a word can be placed at the given 1D offset using cell codes
+  /// Check if a word can be placed at the given 1D offset.
   ///
   /// Returns true if placement is possible
   bool canPlaceWord(List<int> cellCodes, int offset) {
-    // Check bounds
-    assert(offset >= 0 && offset % width + cellCodes.length <= width);
+    if (offset < 0 || offset + cellCodes.length > grid.length) return false;
+    if (offset % width + cellCodes.length > width) {
+      return false; // Checks wrap-around
+    }
 
     // Check each cell
     for (int i = 0; i < cellCodes.length; i++) {
@@ -190,33 +186,17 @@ class GridState {
     return true;
   }
 
-  /// Place a word node on the grid at the given 1D offset.
-  ///
-  /// This method validates placement before writing to the grid.
-  /// Returns the WordPlacement if successful, null if placement fails.
-  ///
-  /// **Performance note:** If you've already validated the placement via
-  /// [findEarliestPlacementByPhrase] or similar, use [placeWordUnchecked]
-  /// instead to avoid redundant validation.
-  Placement? placeWord(WordNode node, int offset) {
-    if (!canPlaceWord(node.cellCodes, offset)) return null;
-    return placeWordUnchecked(node, offset);
-  }
+  /// Place a generic word. Used by Trie solver.
+  SolverPlacement? placeGenericWord({
+    required String word,
+    required List<int> cellCodes,
+    required int offset,
+    WordNode? node,
+  }) {
+    // Optimistic placement (assumes bounded checks done by caller or loop logic)
+    // But let's verify codes match if not empty.
+    // Actually, placeWordUnchecked assumes valid.
 
-  /// Place a word node on the grid without checking validity.
-  ///
-  /// **Performance optimization:** This method skips the [canPlaceWord] check.
-  /// Use this when you've already validated the placement elsewhere (e.g.,
-  /// [findEarliestPlacementByPhrase] already scans for valid positions).
-  /// Avoiding the redundant validation saves ~5-10% in hot loops.
-  ///
-  /// **Precondition:** Caller MUST ensure the placement is valid:
-  /// - `offset >= 0`
-  /// - Word fits on the row: `offset % width + node.cellCodes.length <= width`
-  /// - All cells are either empty or match the word's cell codes
-  Placement placeWordUnchecked(WordNode node, int offset) {
-    // Place the word using cell codes
-    final cellCodes = node.cellCodes;
     for (int i = 0; i < cellCodes.length; i++) {
       final idx = offset + i;
       if (grid[idx] == emptyCell) {
@@ -228,26 +208,47 @@ class GridState {
 
     _totalWordsLength += cellCodes.length;
 
-    // Create placement record
-    final placement = Placement(node: node, startOffset: offset, width: width);
+    final placement = SolverPlacement(
+      word: word,
+      startOffset: offset,
+      width: width,
+      length: cellCodes.length,
+      cellCodes: cellCodes,
+      node: node,
+    );
 
-    // Record placement (push to stack)
     _placementStack.add(placement);
-
     return placement;
   }
 
-  /// Remove a placed word from the grid (backtracking support)
-  /// Note: Must be called in LIFO order (most recent placement first)
-  void removePlacement(Placement placement) {
-    // Pop from stack (assert LIFO order)
+  /// Place a word node WITHOUT validity checks.
+  /// Use ONLY if you are sure the word fits (e.g. after findFirstValidPlacement).
+  SolverPlacement placeWordUnchecked(WordNode node, int offset) {
+    return placeGenericWord(
+      word: node.word,
+      cellCodes: node.cellCodes,
+      offset: offset,
+      node: node,
+    )!;
+  }
+
+  /// Place a word node (DAG solver). Wraps placeGenericWord.
+  SolverPlacement? placeWord(WordNode node, int offset) {
+    if (!canPlaceWord(node.cellCodes, offset)) return null;
+    return placeWordUnchecked(node, offset);
+  }
+
+  /// Remove a placed word (backtracking)
+  /// Remove a placed word (backtracking)
+  void removePlacement(SolverPlacement placement) {
     assert(
       _placementStack.isNotEmpty && _placementStack.last == placement,
       'removePlacement must be called in LIFO order',
     );
     _placementStack.removeLast();
 
-    final cellCodes = placement.node.cellCodes;
+    final cellCodes = placement.cellCodes!;
+
     for (int i = 0; i < cellCodes.length; i++) {
       final idx = placement.startOffset + i;
       _usage[idx]--;
@@ -260,7 +261,7 @@ class GridState {
     _totalWordsLength -= cellCodes.length;
   }
 
-  /// Convert grid to flat list of cells (decodes integer codes back to strings)
+  /// Convert grid to flat list of cells
   List<Cell?> toFlatList({Cell? paddingChar}) {
     return grid
         .map((code) => code == emptyCell ? paddingChar : codec.decode(code))

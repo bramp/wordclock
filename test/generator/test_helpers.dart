@@ -89,7 +89,7 @@ WordClockLanguage createMockLanguage({
 }
 
 /// Helper to create a Placement manually
-Placement createPlacement(
+SolverPlacement createPlacement(
   String word,
   int row,
   int col,
@@ -104,10 +104,13 @@ Placement createPlacement(
     cellCodes: c.encodeAll(word.split('')),
     phrases: {phrase ?? 'PHRASE'},
   );
-  return Placement(
-    node: node,
+  return SolverPlacement(
+    word: word,
     startOffset: row * gridWidth + col,
     width: gridWidth,
+    length: word.length,
+    node: node,
+    cellCodes: node.cellCodes,
   );
 }
 
@@ -118,7 +121,11 @@ void setupBuilder(BacktrackingGridBuilder builder, WordDependencyGraph graph) {
 }
 
 /// Helper to place a word and update the trie cache (mimics what _solve does)
-Placement? placeWordWithCache(GridState state, WordNode node, int offset) {
+SolverPlacement? placeWordWithCache(
+  GridState state,
+  WordNode node,
+  int offset,
+) {
   final placement = state.placeWord(node, offset);
   if (placement != null) {
     // Update trie cache with end offset

@@ -1,19 +1,18 @@
 import 'dart:math';
-import 'dart:typed_data';
 
 import 'package:meta/meta.dart';
-
-import 'package:wordclock/generator/backtracking/indexed_word_list.dart';
 import 'package:wordclock/generator/backtracking/graph/cell_codec.dart';
 import 'package:wordclock/generator/backtracking/graph/graph_builder.dart';
-import 'package:wordclock/generator/backtracking/graph/word_node.dart';
+import 'package:wordclock/generator/backtracking/graph/phrase_trie.dart';
 import 'package:wordclock/generator/backtracking/grid_post_processor.dart';
 import 'package:wordclock/generator/backtracking/grid_state.dart';
+import 'package:wordclock/generator/backtracking/indexed_word_list.dart';
 import 'package:wordclock/generator/model/grid_build_progress.dart';
 import 'package:wordclock/generator/model/grid_build_result.dart';
+import 'package:wordclock/generator/grid_solver.dart';
+import 'package:wordclock/generator/model/word_placement.dart' as public;
 import 'package:wordclock/generator/utils/grid_validator.dart';
 import 'package:wordclock/generator/utils/word_clock_utils.dart';
-import 'package:wordclock/generator/model/word_placement.dart' as public;
 import 'package:wordclock/languages/language.dart';
 import 'package:wordclock/model/types.dart';
 import 'package:wordclock/model/word_grid.dart';
@@ -22,49 +21,7 @@ import 'package:wordclock/model/word_grid.dart';
 typedef ProgressCallback = bool Function(GridBuildProgress progress);
 
 /// A trie-based grid builder that discovers word instances dynamically.
-///
-/// ## Key Difference from BacktrackingGridBuilder
-///
-/// Instead of pre-computing word instances (CINCI vs CINCI#1) and using a
-/// dependency graph with inDegree constraints, this solver:
-///
-/// 1. **Tracks trie paths independently** - Each phrase has its own progress
-///    through the trie, and paths are independent of each other.
-///
-/// 2. **Discovers instances dynamically** - When placing "CINCI", we don't
-///    pre-decide if it's CINCI or CINCI#1. Instead, we place it and see
-///    which trie paths it satisfies.
-///
-/// 3. **Allows flexible word reuse** - The same physical word position can
-///    satisfy multiple trie paths that happen to need that word after
-///    compatible predecessors.
-///
-/// ## Optimization Roadmap
-///
-/// 1. [x] **Pruning: Unique Word Space**
-///    Calculate the minimum number of cells each unique word *must* contribute
-///    (length - max_possible_overlap). Track the sum of these for unplaced
-///    unique words. Prune if `needed_space > available_cells`.
-///    *Note: This provides massive early exit potential.*
-///
-/// 2. [x] **Structure: Bitset Frontier**
-///    Replace `Map<String, List<_TrieNode>>` with a fixed-size `List<List<_TrieNode>>`
-///    indexed by word ID, and a bitset (`Uint32List`) for active word tracking.
-///    *Note: Aiming to remove Map.iteration and Map.[] overhead (current ~11% CPU).*
-///
-/// 4. [ ] **Logic: Greedy Node Sharing**
-///    When placing a word at an offset, satisfy ALL frontier nodes for that word
-///    that are compatible with that offset.
-///    *Note: This reduces search depth and branching factor significantly.*
-///
-/// 5. [ ] **Heuristic: Least Constrained Variable**
-///    Sort candidates by how many valid slots they have left. Early placement of
-///    "hard" words prevents deep backtracking.
-///
-/// 6. [ ] **Heuristic: Unlock Potential**
-///    Prioritize words that are precursors to many other words in the trie.
-///
-class TrieGridBuilder {
+class TrieGridBuilder implements GridSolver {
   final int width;
   final int height;
   final WordClockLanguage language;
@@ -86,7 +43,7 @@ class TrieGridBuilder {
   final ProgressCallback? onProgress;
 
   // Internal state
-  _SimpleGrid? _bestState;
+  GridState? _bestState;
   int _minHeightFound;
   int _maxAllowedOffset;
   int _maxWordsPlaced = -1;
@@ -129,10 +86,11 @@ class TrieGridBuilder {
     );
     builder.codec = CellCodec();
     final trieData = builder._buildPhraseTrie();
-    return (trieData.trie.countTopologicalSorts(), trieData.trie.countNodes());
+    return (BigInt.from(trieData.trie.phraseCount), trieData.trie.roots.length);
   }
 
   /// Attempts to build a grid that satisfies all constraints.
+  @override
   GridBuildResult build() {
     codec = CellCodec();
 
@@ -149,8 +107,8 @@ class TrieGridBuilder {
       'Trie solver supports up to 64 unique words',
     );
 
-    // 2. Initialize search state - simple grid
-    final grid = _SimpleGrid(width: width, height: height);
+    // 2. Initialize search state - use GridState
+    final grid = GridState(width: width, height: height, codec: codec);
     _minHeightFound = height;
     _maxAllowedOffset = height * width;
     _maxWordsPlaced = -1;
@@ -162,7 +120,6 @@ class TrieGridBuilder {
     _allComplete = false;
 
     // 3. Initialize frontier - one entry per phrase (starting at root nodes)
-    // Each phrase path needs its own entry even if they share the first word
     final frontier = _createInitialFrontier(trie, trieData.uniqueWordIndex);
 
     // 4. Run the solver
@@ -200,24 +157,8 @@ class TrieGridBuilder {
         codec: codec,
       );
 
-      // Convert _SimpleGrid placements to GridPostProcessor placements
-      final processorPlacements = finalState.placements.map((p) {
-        return Placement(
-          node: WordNode(
-            word: p.word,
-            instance: 0,
-            cellCodes: p.cellCodes,
-            phrases: {},
-          ),
-          startOffset: p.startOffset,
-          width: width,
-        );
-      }).toList();
-
-      final postResult = processor.process(processorPlacements);
+      final postResult = processor.process(finalState.placements);
       gridCells = postResult.grid;
-
-      // Extract final word placements
       wordPlacements = [for (final p in postResult.placements) p.toPublic()];
     } else {
       gridCells = List.filled(width * height, ' ');
@@ -227,9 +168,6 @@ class TrieGridBuilder {
     final resultGrid = WordGrid(width: width, cells: gridCells);
     final validationIssues = GridValidator.validate(resultGrid, language);
 
-    // For trie solver: if all phrases are complete, set totalWords to match
-    // placedWords so isOptimal (which checks placedWords == totalWords)
-    // will be true. Otherwise use unique words count as the target.
     final totalWords = _allComplete ? wordPlacements.length : _totalUniqueWords;
 
     return GridBuildResult(
@@ -245,7 +183,7 @@ class TrieGridBuilder {
 
   /// Build phrase trie from language.
   _TrieData _buildPhraseTrie() {
-    final trie = _PhraseTrie();
+    final trie = PhraseTrie();
     final uniqueWords = <String>[];
     final uniqueWordIndex = <String, int>{};
     final wordCells = <List<int>>[];
@@ -255,7 +193,6 @@ class TrieGridBuilder {
       final words = language.tokenize(phrase);
       if (words.isEmpty) continue;
 
-      // Add to trie
       trie.addPhrase(phrase, words);
 
       for (final word in words) {
@@ -299,7 +236,7 @@ class TrieGridBuilder {
   }
 
   _Frontier _createInitialFrontier(
-    _PhraseTrie trie,
+    PhraseTrie trie,
     Map<String, int> uniqueWordIndex,
   ) {
     final frontier = _Frontier(uniqueWordIndex.length);
@@ -311,14 +248,9 @@ class TrieGridBuilder {
   }
 
   /// Main recursive solver using trie-based frontier.
-  ///
-  /// The frontier tracks which trie nodes are currently "blocked" awaiting a
-  /// word placement.
   void _solveTrie(
-    _SimpleGrid grid,
-    _PhraseTrie trie,
-
-    // Set of words needing to be placed, and the TrieNodes that they would advance
+    GridState grid,
+    PhraseTrie trie,
     _Frontier frontier,
 
     // List of unique words for ID -> String conversion
@@ -400,21 +332,17 @@ class TrieGridBuilder {
       final offset = _findValidPlacement(grid, cellCodes, minOffset);
       if (offset == null) continue; // No valid placement, try next word
 
-      final endOffset = offset + cellCodes.length - 1;
-      final placement = _WordPlacement(
+      // Add to grid using generic API
+      final placement = grid.placeGenericWord(
         word: word,
         cellCodes: cellCodes,
-        startOffset: offset,
-        endOffset: endOffset,
+        offset: offset,
       );
 
-      // Save maxEndOffset for fast restore during backtrack
-      final savedMaxEndOffset = grid.maxEndOffset;
+      if (placement == null) {
+        continue; // Should not happen if _findValidPlacement is correct
+      }
 
-      // Add to grid
-      _placeWord(grid, placement);
-
-      // Advance frontier and capture undo info (avoids full copy)
       final undoInfo = _advanceFrontierWithUndo(frontier, nodes, placement);
 
       // Unique Word Space Tracking
@@ -440,7 +368,7 @@ class TrieGridBuilder {
 
       // Backtrack: undo frontier changes and node offsets
       _undoFrontierAdvance(frontier, undoInfo);
-      _removeWord(grid, placement, savedMaxEndOffset);
+      grid.removePlacement(placement);
 
       // Undo Unique Word Space Tracking
       if (wasUnplaced) {
@@ -451,13 +379,12 @@ class TrieGridBuilder {
     }
   }
 
-  /// Assign ranks and word IDs to all trie nodes.
   void _annotateTrie(
-    _PhraseTrie trie,
+    PhraseTrie trie,
     List<int> wordRank,
     Map<String, int> uniqueWordIndex,
   ) {
-    void annotateRecursive(_TrieNode node) {
+    void annotateRecursive(PhraseTrieNode node) {
       final id = uniqueWordIndex[node.word]!;
       node.wordId = id;
       node.rank = wordRank[id];
@@ -474,18 +401,14 @@ class TrieGridBuilder {
 
   _FrontierUndoInfo _advanceFrontierWithUndo(
     _Frontier frontier,
-    List<_TrieNode> nodes,
-    _WordPlacement placement,
+    List<PhraseTrieNode> nodes,
+    SolverPlacement placement,
   ) {
-    // TODO Do we need this complex save. There may be cheaper ways, using a stack for example.
-
-    // Save the nodes being removed (for restore)
-    final removedNodes = List<_TrieNode>.of(nodes);
+    final removedNodes = List<PhraseTrieNode>.of(nodes);
     final wordId = nodes.first.wordId;
 
-    // Save node offsets and track children added
-    final savedOffsets = <(_TrieNode, int, int)>[];
-    final addedChildren = <(_TrieNode, int)>[]; // (child, wordId)
+    final savedOffsets = <(PhraseTrieNode, int, int)>[];
+    final addedChildren = <(PhraseTrieNode, int)>[];
 
     for (final node in nodes) {
       savedOffsets.add((node, node.parentEndOffset, node.endOffset));
@@ -500,7 +423,6 @@ class TrieGridBuilder {
       }
     }
 
-    // Remove the placed word's nodes from frontier
     frontier.removeWord(wordId);
 
     return _FrontierUndoInfo(
@@ -511,7 +433,6 @@ class TrieGridBuilder {
     );
   }
 
-  /// Undo frontier advance using saved undo info.
   void _undoFrontierAdvance(_Frontier frontier, _FrontierUndoInfo undoInfo) {
     // Restore node offsets
     for (final (node, parentEnd, end) in undoInfo.savedOffsets) {
@@ -554,15 +475,11 @@ class TrieGridBuilder {
   /// Conducts a simple linear search for the first valid placement.
   ///
   /// Returns null if no valid placement exists.
-  int? _findValidPlacement(
-    _SimpleGrid grid,
-    List<int> cellCodes,
-    int minOffset,
-  ) {
+  int? _findValidPlacement(GridState grid, List<int> cellCodes, int minOffset) {
     final wordLen = cellCodes.length;
     final maxCol = width - wordLen;
     final maxOffset = _maxAllowedOffset - wordLen;
-    final cells = grid.cells;
+    final cells = grid.grid; // Access Int8List directly for speed
 
     int offset = minOffset;
     int col = offset % width;
@@ -579,7 +496,7 @@ class TrieGridBuilder {
       bool valid = true;
       for (int i = 0; i < wordLen; i++) {
         final existing = cells[offset + i];
-        if (existing != _SimpleGrid.emptyCell && existing != cellCodes[i]) {
+        if (existing != -1 && existing != cellCodes[i]) {
           valid = false;
           break;
         }
@@ -600,41 +517,9 @@ class TrieGridBuilder {
     return null;
   }
 
-  /// Place a word on the grid.
-  void _placeWord(_SimpleGrid grid, _WordPlacement placement) {
-    for (int i = 0; i < placement.cellCodes.length; i++) {
-      final idx = placement.startOffset + i;
-      grid.usage[idx]++;
-      grid.cells[idx] = placement.cellCodes[i];
-    }
-    if (placement.endOffset > grid.maxEndOffset) {
-      grid.maxEndOffset = placement.endOffset;
-    }
-    grid.placements.add(placement);
-  }
-
-  /// Remove a word from the grid.
-  /// Pass savedMaxEndOffset to avoid recomputing it.
-  void _removeWord(
-    _SimpleGrid grid,
-    _WordPlacement placement,
-    int savedMaxEndOffset,
-  ) {
-    for (int i = 0; i < placement.cellCodes.length; i++) {
-      final idx = placement.startOffset + i;
-      grid.usage[idx]--;
-      if (grid.usage[idx] == 0) {
-        grid.cells[idx] = _SimpleGrid.emptyCell;
-      }
-    }
-    grid.placements.removeLast();
-    // Restore maxEndOffset directly instead of recalculating
-    grid.maxEndOffset = savedMaxEndOffset;
-  }
-
   void _reportProgressFromFrontier(
     DateTime now,
-    _SimpleGrid grid,
+    GridState grid,
     _Frontier frontier,
   ) {
     if (now.difference(_lastProgressReport).inSeconds < 1) return;
@@ -658,18 +543,6 @@ class TrieGridBuilder {
       _maxPhrasesCompleted = phrasesCompleted;
     }
 
-    // Convert placements to WordPlacement for progress
-    final wordPlacements = grid.placements
-        .map(
-          (p) => public.WordPlacement(
-            word: p.word,
-            startOffset: p.startOffset,
-            width: width,
-            length: p.cellCodes.length,
-          ),
-        )
-        .toList();
-
     final shouldContinue = onProgress!(
       GridBuildProgress(
         bestWords: _maxWordsPlaced,
@@ -678,11 +551,8 @@ class TrieGridBuilder {
         bestPhrases: _maxPhrasesCompleted,
         totalPhrases: _totalPhrases,
         width: width,
-        cells: List.generate(width * height, (i) {
-          final code = grid.cells[i];
-          return code == _SimpleGrid.emptyCell ? null : codec.decode(code);
-        }),
-        wordPlacements: wordPlacements,
+        cells: grid.toFlatList(),
+        wordPlacements: [for (final p in grid.placements) p.toPublic()],
         iterationCount: _iterationCount,
         startTime: _startTime,
       ),
@@ -695,7 +565,7 @@ class TrieGridBuilder {
 
   bool get _shouldStop => _stopRequested || (findFirstValid && _allComplete);
 
-  void _updateBestState(_SimpleGrid grid) {
+  void _updateBestState(GridState grid) {
     final totalPlacements = grid.placements.length;
     if (totalPlacements > _maxWordsPlaced) {
       _maxWordsPlaced = totalPlacements;
@@ -703,7 +573,7 @@ class TrieGridBuilder {
     }
   }
 
-  void _recordCompletedState(_SimpleGrid grid) {
+  void _recordCompletedState(GridState grid) {
     _allComplete = true;
     final currentHeight = grid.maxEndOffset ~/ width + 1;
     if (currentHeight <= _minHeightFound) {
@@ -716,12 +586,12 @@ class TrieGridBuilder {
 
 /// Data returned from building the phrase trie.
 class _TrieData {
-  final _PhraseTrie trie;
+  final PhraseTrie trie;
   final List<String> uniqueWords;
   final List<List<int>> wordCells;
-  final List<int> wordRank; // Topological rank of word (indexed by wordId)
-  final List<int> minContribution; // Min space contribution (indexed by wordId)
-  final Map<String, int> uniqueWordIndex; // Word -> Index
+  final List<int> wordRank;
+  final List<int> minContribution;
+  final Map<String, int> uniqueWordIndex;
 
   _TrieData({
     required this.trie,
@@ -733,167 +603,40 @@ class _TrieData {
   });
 }
 
-/// Simple phrase trie that stores phrases as word sequences.
-class _PhraseTrie {
-  /// Root-level children keyed by first word
-  final Map<String, _TrieNode> roots = {};
+class _Frontier {
+  final List<List<PhraseTrieNode>> wordLists;
+  final _SimpleBitSet activeWords;
 
-  /// Count of phrases added
-  int phraseCount = 0;
-
-  void addPhrase(String phrase, List<String> words) {
-    if (words.isEmpty) return;
-
-    // Get or create root node for first word
-    var node = roots.putIfAbsent(
-      words[0],
-      () => _TrieNode(word: words[0], depth: 1),
-    );
-
-    // Walk/create path for remaining words
-    for (int i = 1; i < words.length; i++) {
-      final word = words[i];
-      var child = node.children[word];
-      if (child == null) {
-        child = _TrieNode(word: word, depth: i + 1);
-        node.children[word] = child;
-      }
-      node = child;
-    }
-
-    // Mark terminal
-    node.isTerminal = true;
-    node.terminalPhrases.add(phrase);
-    phraseCount++;
+  _Frontier(int totalWords)
+    : wordLists = List.generate(totalWords, (_) => <PhraseTrieNode>[]),
+      activeWords = _SimpleBitSet() {
+    assert(totalWords <= 64);
   }
 
-  @override
-  String toString() {
-    int nodeCount = 0;
-    void countNodes(_TrieNode node) {
-      nodeCount++;
-      for (final child in node.children.values) {
-        countNodes(child);
-      }
-    }
+  bool get isEmpty => activeWords.isEmpty;
 
-    for (final root in roots.values) {
-      countNodes(root);
-    }
-
-    final sorts = countTopologicalSorts();
-    String sortsStr;
-    if (sorts == BigInt.zero) {
-      sortsStr = '0';
-    } else {
-      final s = sorts.toString();
-      if (s.length <= 15) {
-        sortsStr = s;
-      } else {
-        sortsStr = '${s[0]}.${s.substring(1, 4)}e+${s.length - 1}';
-      }
-    }
-
-    return 'PhraseTrie:\n'
-        '  ${roots.length} root words\n'
-        '  $nodeCount total nodes\n'
-        '  $phraseCount phrases ($sortsStr topological sorts)';
+  void addNode(int wordId, PhraseTrieNode node) {
+    wordLists[wordId].add(node);
+    activeWords.set(wordId);
   }
 
-  /// Returns the number of unique word sequences that can satisfy this trie.
-  /// Since the trie is a tree/forest, we can use the Hook Length Formula:
-  /// n! / PRODUCT(subtree_size(v)) for all v in V.
-  BigInt countTopologicalSorts() {
-    final subtreeSize = <_TrieNode, int>{};
-    final allNodes = <_TrieNode>[];
-
-    int computeSize(_TrieNode node) {
-      allNodes.add(node);
-      int size = 1;
-      for (final child in node.children.values) {
-        size += computeSize(child);
-      }
-      return subtreeSize[node] = size;
+  void removeNode(int wordId, PhraseTrieNode node) {
+    final list = wordLists[wordId];
+    list.remove(node);
+    if (list.isEmpty) {
+      activeWords.clear(wordId);
     }
-
-    int totalNodes = 0;
-    for (final root in roots.values) {
-      totalNodes += computeSize(root);
-    }
-
-    if (totalNodes == 0) return BigInt.zero;
-
-    // Hook length formula for forest: n! / PRODUCT(subtree_size(v))
-    var numerator = BigInt.one;
-    for (int i = 2; i <= totalNodes; i++) {
-      numerator *= BigInt.from(i);
-    }
-
-    var denominator = BigInt.one;
-    for (final node in allNodes) {
-      denominator *= BigInt.from(subtreeSize[node]!);
-    }
-
-    return numerator ~/ denominator;
   }
 
-  /// Returns the total number of nodes in the trie.
-  int countNodes() {
-    int count = 0;
-    void traverse(_TrieNode node) {
-      count++;
-      for (final child in node.children.values) {
-        traverse(child);
-      }
-    }
-
-    for (final root in roots.values) {
-      traverse(root);
-    }
-    return count;
+  void removeWord(int wordId) {
+    wordLists[wordId] = [];
+    activeWords.clear(wordId);
   }
-}
 
-/// A node in the phrase trie.
-class _TrieNode {
-  /// The word at this node
-  final String word;
-
-  /// Depth in trie (1 for first word, etc.)
-  final int depth;
-
-  /// Word index in lexicon
-  int wordId = -1;
-
-  /// Pre-computed topological rank for sorting (lower = place earlier).
-  /// Cached here to avoid map lookups in the hot path.
-  int rank = 0;
-
-  /// Children: word -> child node
-  final Map<String, _TrieNode> children = {};
-
-  /// True if this node is the end of at least one phrase
-  bool isTerminal = false;
-
-  /// Which phrases end at this node
-  final List<String> terminalPhrases = [];
-
-  /// The end offset of the parent/predecessor word.
-  /// This node's word must be placed at position >= parentEndOffset.
-  /// For root nodes, this is -1 (can be placed from offset 0).
-  int parentEndOffset;
-
-  /// The end offset where this node's word was placed.
-  /// Only valid after the node has been satisfied.
-  int endOffset;
-
-  _TrieNode({required this.word, required this.depth})
-    : parentEndOffset = -1,
-      endOffset = -1;
-
-  @override
-  String toString() =>
-      'TrieNode($word, depth=$depth, terminal=$isTerminal, parentEnd=$parentEndOffset)';
+  void restoreNodes(int wordId, List<PhraseTrieNode> nodes) {
+    wordLists[wordId] = nodes;
+    activeWords.set(wordId);
+  }
 }
 
 /// A simple bitset implementation using a single 64-bit integer.
@@ -927,104 +670,9 @@ class _SimpleBitSet {
   }
 }
 
-/// Structure tracking the trie frontier during search.
-class _Frontier {
-  /// A list of trie nodes awaiting placement, indexed by word ID.
-  /// Each entry contains all nodes in the trie that can be satisfied by the word.
-  final List<List<_TrieNode>> wordLists;
-
-  /// A bitset tracking which word IDs have at least one node in [wordLists].
-  final _SimpleBitSet activeWords;
-
-  _Frontier(int totalWords)
-    : wordLists = List.generate(totalWords, (_) => <_TrieNode>[]),
-      activeWords = _SimpleBitSet() {
-    assert(totalWords <= 64);
-  }
-
-  bool get isEmpty => activeWords.isEmpty;
-
-  void addNode(int wordId, _TrieNode node) {
-    wordLists[wordId].add(node);
-    activeWords.set(wordId);
-  }
-
-  void removeNode(int wordId, _TrieNode node) {
-    final list = wordLists[wordId];
-    list.remove(node);
-    if (list.isEmpty) {
-      activeWords.clear(wordId);
-    }
-  }
-
-  void removeWord(int wordId) {
-    wordLists[wordId] = [];
-    activeWords.clear(wordId);
-  }
-
-  void restoreNodes(int wordId, List<_TrieNode> nodes) {
-    wordLists[wordId] = nodes;
-    activeWords.set(wordId);
-  }
-}
-
-/// A word placement with position info.
-class _WordPlacement {
-  final String word;
-  final List<int> cellCodes;
-  final int startOffset;
-  final int endOffset;
-
-  _WordPlacement({
-    required this.word,
-    required this.startOffset,
-    required this.endOffset,
-    required this.cellCodes,
-  });
-}
-
-/// Simple grid state for the trie solver.
-class _SimpleGrid {
-  static const int emptyCell = -1;
-
-  final Int8List cells;
-  final Uint8List usage;
-  final int width;
-  final int height;
-  final List<_WordPlacement> placements;
-  int maxEndOffset;
-
-  _SimpleGrid({required this.width, required this.height})
-    : cells = Int8List(width * height)..fillRange(0, width * height, emptyCell),
-      usage = Uint8List(width * height),
-      placements = [],
-      maxEndOffset = -1;
-
-  _SimpleGrid._clone({
-    required this.cells,
-    required this.usage,
-    required this.width,
-    required this.height,
-    required this.placements,
-    required this.maxEndOffset,
-  });
-
-  _SimpleGrid clone() {
-    return _SimpleGrid._clone(
-      cells: Int8List.fromList(cells),
-      usage: Uint8List.fromList(usage),
-      width: width,
-      height: height,
-      placements: List.of(placements),
-      maxEndOffset: maxEndOffset,
-    );
-  }
-}
-
-/// Candidate for frontier iteration - avoids map lookups in hot path.
 class _FrontierCandidate {
   final int wordId;
-  final List<_TrieNode> nodes;
+  final List<PhraseTrieNode> nodes;
   final int rank;
   final int maxParentEndOffset;
 
@@ -1040,9 +688,9 @@ class _FrontierCandidate {
 /// Allows restoring frontier state without copying the entire map.
 class _FrontierUndoInfo {
   final int removedWordId;
-  final List<_TrieNode> removedNodes;
-  final List<(_TrieNode, int, int)> savedOffsets;
-  final List<(_TrieNode, int)> addedChildren;
+  final List<PhraseTrieNode> removedNodes;
+  final List<(PhraseTrieNode, int, int)> savedOffsets;
+  final List<(PhraseTrieNode, int)> addedChildren;
 
   _FrontierUndoInfo({
     required this.removedWordId,

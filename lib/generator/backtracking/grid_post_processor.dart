@@ -6,6 +6,7 @@ import 'package:wordclock/model/types.dart';
 import 'package:wordclock/model/word_grid.dart';
 
 /// Post-processes word placements to apply aesthetic alignments and fill padding.
+/// Post-processes word placements to apply aesthetic alignments and fill padding.
 class GridPostProcessor {
   final int width;
   final int height;
@@ -25,7 +26,7 @@ class GridPostProcessor {
   }) : paddingCells = WordGrid.splitIntoCells(paddingAlphabet);
 
   /// Processes the placements and returns the final grid cells.
-  GridPostProcessResult process(List<Placement> placements) {
+  GridPostProcessResult process(List<SolverPlacement> placements) {
     // 1. Distribute padding horizontally
     final shifted = distributePadding(placements);
 
@@ -41,8 +42,8 @@ class GridPostProcessor {
   /// Distributes trailing padding horizontally for each row.
   /// Last row: all padding moves to the left (words pushed right).
   /// Other rows: padding is distributed between the left and internal gaps.
-  List<Placement> distributePadding(List<Placement> original) {
-    final allPlacements = List<Placement>.from(original);
+  List<SolverPlacement> distributePadding(List<SolverPlacement> original) {
+    final allPlacements = List<SolverPlacement>.from(original);
 
     // Find the first and last rows that actually contain words
     int firstRowWithWords = -1;
@@ -127,12 +128,15 @@ class GridPostProcessor {
   }
 
   /// Generates a grid from a list of placements
-  List<Cell?> generateGrid(List<Placement> placements) {
+  List<Cell?> generateGrid(List<SolverPlacement> placements) {
     final grid = List<Cell?>.filled(width * height, null);
     for (final p in placements) {
-      final cellCodes = p.node.cellCodes;
-      for (int i = 0; i < cellCodes.length; i++) {
-        grid[p.row * width + p.startCol + i] = codec.decode(cellCodes[i]);
+      // Use effective cellCodes from placement, or re-encode if missing
+      final codes =
+          p.cellCodes ?? codec.encodeAll(WordGrid.splitIntoCells(p.word));
+
+      for (int i = 0; i < codes.length; i++) {
+        grid[p.row * width + p.startCol + i] = codec.decode(codes[i]);
       }
     }
     return grid;
@@ -151,22 +155,22 @@ class GridPostProcessor {
 /// Result of the post-processing step.
 class GridPostProcessResult {
   final List<Cell> grid;
-  final List<Placement> placements;
+  final List<SolverPlacement> placements;
 
   GridPostProcessResult({required this.grid, required this.placements});
 }
 
 /// A cluster of overlapping word placements on a single row.
 class _Cluster {
-  final List<Placement> members = [];
+  final List<SolverPlacement> members = [];
   int startCol;
   int endCol;
 
-  _Cluster(Placement p) : startCol = p.startCol, endCol = p.endCol {
+  _Cluster(SolverPlacement p) : startCol = p.startCol, endCol = p.endCol {
     members.add(p);
   }
 
-  void add(Placement p) {
+  void add(SolverPlacement p) {
     members.add(p);
     if (p.startCol < startCol) startCol = p.startCol;
     if (p.endCol > endCol) endCol = p.endCol;

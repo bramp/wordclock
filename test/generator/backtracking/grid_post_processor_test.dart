@@ -110,8 +110,8 @@ void main() {
       // 8 ~/ 2 = 4 per slot.
       // A starts at 4.
       // B starts at 4 + 1 (A) + 4 (padding) = 9.
-      final a = result.placements.firstWhere((p) => p.node.word == 'A');
-      final b = result.placements.firstWhere((p) => p.node.word == 'B');
+      final a = result.placements.firstWhere((p) => p.word == 'A');
+      final b = result.placements.firstWhere((p) => p.word == 'B');
       expect(a.startCol, equals(4));
       expect(b.startCol, equals(9));
 
@@ -147,8 +147,8 @@ void main() {
       // Distribution: slot 0 = 4, slot 1 = 3.
       // A starts at 4.
       // B starts at 4 + 1 (A) + 3 (extra) + 1 (mandatory) = 9.
-      final a = result.placements.firstWhere((p) => p.node.word == 'A');
-      final b = result.placements.firstWhere((p) => p.node.word == 'B');
+      final a = result.placements.firstWhere((p) => p.word == 'A');
+      final b = result.placements.firstWhere((p) => p.word == 'B');
       expect(a.startCol, equals(4));
       expect(b.startCol, equals(9));
     });
@@ -177,8 +177,8 @@ void main() {
       // Fair: slot 0 = 7.
       // Both shift by 7.
       // ABC at 7, B at 8.
-      final abc = result.placements.firstWhere((p) => p.node.word == 'ABC');
-      final b = result.placements.firstWhere((p) => p.node.word == 'B');
+      final abc = result.placements.firstWhere((p) => p.word == 'ABC');
+      final b = result.placements.firstWhere((p) => p.word == 'B');
       expect(abc.startCol, equals(7));
       expect(b.startCol, equals(8));
     });

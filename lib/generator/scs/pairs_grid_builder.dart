@@ -9,6 +9,7 @@ import 'package:wordclock/languages/language.dart';
 import 'package:wordclock/model/types.dart';
 import 'package:wordclock/generator/backtracking/graph/graph_builder.dart';
 import 'package:wordclock/model/word_grid.dart';
+import 'package:wordclock/generator/grid_solver.dart';
 
 /// A grid builder that uses the "Hierarchical Merge" (Pairs) algorithm for solving
 /// the Shortest Common Supersequence (SCS) problem.
@@ -19,7 +20,7 @@ import 'package:wordclock/model/word_grid.dart';
 /// Then it wraps this sequence onto the grid.
 ///
 /// WARNING: This builder currently does not work. It never seems to find a solution.
-class PairsGridBuilder {
+class PairsGridBuilder implements GridSolver {
   final int width;
   final int height;
   final WordClockLanguage language;
@@ -38,6 +39,7 @@ class PairsGridBuilder {
     this.paddingAlphabet,
   }) : random = Random(seed);
 
+  @override
   GridBuildResult build() {
     final startTime = DateTime.now();
 
