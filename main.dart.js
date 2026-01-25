@@ -39588,13 +39588,13 @@ for(;;)switch(s){case 0:k=v.G
 if(k.firebase_core!=null){s=1
 break}o=A.bu(k.flutterfire_web_sdk_version)
 if(o==null)o=null
-n=o==null?"12.3.0":o
+n=o==null?"12.7.0":o
 m=p.ga8I()
 k=$.VL()
 l=A.j(k).i("aN<2>")
 s=3
 return A.U(A.hT(A.xW(new A.aN(k,l),new A.a_z(p,m,n),l.i("v.E"),t.uz),t.H),$async$vl)
-case 3:$.aoM.m(0,"flutter-fire-core","4.3.0")
+case 3:$.aoM.m(0,"flutter-fire-core","4.4.0")
 $.aoM.al(0,A.aLG())
 case 1:return A.O(q,r)}})
 return A.P($async$vl,r)},
