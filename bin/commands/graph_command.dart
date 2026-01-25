@@ -2,9 +2,7 @@
 import 'package:args/command_runner.dart';
 import 'package:wordclock/model/word_grid.dart';
 import 'package:wordclock/generator/backtracking/graph/graph_builder.dart';
-import 'package:wordclock/generator/greedy/dependency_graph.dart';
 import 'package:wordclock/generator/backtracking/dot_exporter.dart';
-import 'package:wordclock/generator/greedy/dot_exporter.dart';
 import '../utils/config.dart';
 import '../utils/utils.dart';
 
@@ -33,8 +31,8 @@ class GraphCommand extends Command<void> {
         'algorithm',
         abbr: 'a',
         defaultsTo: 'backtracking',
-        allowed: ['greedy', 'backtracking'],
-        help: 'Graph type (backtracking=word-level, greedy=char-level).',
+        allowed: ['backtracking'],
+        help: 'Graph type (backtracking=word-level).',
       );
   }
 
@@ -44,14 +42,6 @@ class GraphCommand extends Command<void> {
     print('// Language: ${lang.englishName} (${lang.id})');
     final algorithm = argResults!['algorithm'];
     final gridSource = argResults!['grid'];
-
-    // For greedy (character-level) graphs, we only support 'language' source for now
-    if (algorithm == 'greedy' && gridSource != 'language') {
-      print(
-        'Error: Greedy (character-level) graphs only support "language" source.',
-      );
-      return;
-    }
 
     if (gridSource == 'language') {
       // Original logic: Build fresh from language definition
@@ -86,16 +76,9 @@ class GraphCommand extends Command<void> {
   }
 
   void _exportGraph(Config config) {
-    if (config.algorithm == 'backtracking') {
-      // Export word-level dependency graph for backtracking algorithm
-      final wordGraph = WordDependencyGraphBuilder.build(
-        language: config.language,
-      );
-      print(WordGraphDotExporter.export(wordGraph));
-    } else {
-      // Export character-level dependency graph for greedy algorithm
-      final graph = DependencyGraphBuilder.build(language: config.language);
-      print(DotExporter.export(graph));
-    }
+    final wordGraph = WordDependencyGraphBuilder.build(
+      language: config.language,
+    );
+    print(WordGraphDotExporter.export(wordGraph));
   }
 }

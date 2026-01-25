@@ -1,6 +1,5 @@
 // ignore_for_file: avoid_print
 import 'package:args/command_runner.dart';
-import 'package:wordclock/generator/greedy/grid_builder.dart';
 import 'package:wordclock/generator/backtracking/grid_builder.dart';
 import 'package:wordclock/generator/backtracking/trie_grid_builder.dart';
 import 'package:wordclock/generator/scs/pairs_grid_builder.dart';
@@ -106,7 +105,7 @@ class SolveCommand extends Command<void> {
         'algorithm',
         abbr: 'a',
         defaultsTo: 'backtracking',
-        allowed: ['greedy', 'backtracking', 'trie', 'scs'],
+        allowed: ['backtracking', 'trie', 'scs'],
         help: 'Generation algorithm.',
       )
       ..addOption(
@@ -300,8 +299,7 @@ class SolveCommand extends Command<void> {
         return _generateWithSCS(config);
       }
 
-      // Use GreedyGridBuilder
-      return _generateWithGreedy(config);
+      throw ArgumentError('Unknown algorithm: ${config.algorithm}');
     } catch (e) {
       print('Error generating grid: $e');
       return LanguageSolveResult(
@@ -368,78 +366,6 @@ class SolveCommand extends Command<void> {
         ),
       );
     }
-  }
-
-  LanguageSolveResult _generateWithGreedy(Config config) {
-    final int finalSeed = config.seed ?? 0;
-    final int targetHeight = config.targetHeight > 0 ? config.targetHeight : 10;
-
-    print('Greedy Grid Builder');
-    print('Note: The greedy algorithm does NOT support physical word overlap.');
-    print(
-      '      TimeCheckGrids may be more compact due to hand-optimized word placement.',
-    );
-    print('');
-
-    final builder = GreedyGridBuilder(
-      width: config.gridWidth,
-      height: targetHeight,
-      language: config.language,
-      seed: finalSeed,
-    );
-
-    final result = builder.build();
-
-    if (result.placedWords == 0) {
-      print('\nFailed to generate grid with greedy algorithm.');
-      if (result.validationIssues.isNotEmpty) {
-        print('Reasons:');
-        for (final issue in result.validationIssues) {
-          print('  - $issue');
-        }
-      }
-      print('\nTry:');
-      print('  - Increasing height');
-      print('  - Increasing width');
-      print('  - Using the backtracking algorithm: --algorithm=backtracking');
-      return LanguageSolveResult(
-        langId: config.language.id,
-        status: SolveStatus.failed,
-        placedWords: result.placedWords,
-        totalWords: result.totalWords,
-      );
-    }
-
-    // Print warnings if not optimal
-    if (!result.isOptimal) {
-      print('\n⚠️⚠️⚠️ WARNING: Grid is not optimal ⚠️⚠️⚠️');
-      if (result.placedWords < result.totalWords) {
-        print(
-          '  - Only placed ${result.placedWords}/${result.totalWords} words',
-        );
-      }
-      if (result.validationIssues.isNotEmpty) {
-        print('  - Validation issues:');
-        for (final issue in result.validationIssues) {
-          print('    * $issue');
-        }
-      }
-      print('⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️\n');
-    } else {
-      print('\n✓✓✓ Grid is optimal! ✓✓✓\n');
-    }
-
-    // Output the result
-    _outputResult(config, result, 'Greedy', finalSeed, Duration.zero);
-
-    return LanguageSolveResult(
-      langId: config.language.id,
-      status: result.isOptimal ? SolveStatus.optimal : SolveStatus.solved,
-      duration: Duration.zero,
-      iterations: result.iterationCount,
-      placedWords: result.placedWords,
-      totalWords: result.totalWords,
-    );
   }
 
   LanguageSolveResult _generateWithTrie(Config config) {
