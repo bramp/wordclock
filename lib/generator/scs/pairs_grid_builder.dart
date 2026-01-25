@@ -130,7 +130,9 @@ class PairsGridBuilder {
 
     // Let's assign IDs to sequences to manage the cache.
     int nextId = 0;
-    for (var s in pool) s.id = nextId++;
+    for (var s in pool) {
+      s.id = nextId++;
+    }
 
     // cache: key is (id1 << 32 | id2) -> saving
     // Using simple map string key "id1-id2" or just iterate.

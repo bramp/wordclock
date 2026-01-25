@@ -1,6 +1,7 @@
-// ignore_for_file: avoid_print
 import 'dart:math';
 import 'dart:typed_data';
+
+import 'package:meta/meta.dart';
 
 import 'package:wordclock/generator/backtracking/indexed_word_list.dart';
 import 'package:wordclock/generator/backtracking/graph/cell_codec.dart';
@@ -115,6 +116,21 @@ class TrieGridBuilder {
        ),
        _minHeightFound = height,
        _maxAllowedOffset = height * width;
+
+  /// Calculates statistics for the phrase trie for a given language.
+  /// (topologicalSorts, totalNodes)
+  @visibleForTesting
+  static (BigInt, int) calculateStats(WordClockLanguage language) {
+    final builder = TrieGridBuilder(
+      width: 11,
+      height: 10,
+      language: language,
+      seed: 0,
+    );
+    builder.codec = CellCodec();
+    final trieData = builder._buildPhraseTrie();
+    return (trieData.trie.countTopologicalSorts(), trieData.trie.countNodes());
+  }
 
   /// Attempts to build a grid that satisfies all constraints.
   GridBuildResult build() {
@@ -234,9 +250,10 @@ class TrieGridBuilder {
     final uniqueWordIndex = <String, int>{};
     final wordCells = <List<int>>[];
 
-    WordClockUtils.forEachTime(language, (time, phrase) {
+    final phrases = WordClockUtils.getAllPhrases(language);
+    for (final phrase in phrases) {
       final words = language.tokenize(phrase);
-      if (words.isEmpty) return;
+      if (words.isEmpty) continue;
 
       // Add to trie
       trie.addPhrase(phrase, words);
@@ -248,7 +265,7 @@ class TrieGridBuilder {
           wordCells.add(codec.encodeAll(WordGrid.splitIntoCells(word)));
         }
       }
-    });
+    }
 
     final lengths = wordCells.map((c) => c.length).toList();
     final overlaps = IndexedWordList.computeMaxIncomingOverlaps(
@@ -345,7 +362,6 @@ class TrieGridBuilder {
 
     // Solution found when frontier is empty (all paths reached terminal)
     if (frontier.isEmpty) {
-      print('DEBUG: Frontier empty - all paths complete! Recording solution.');
       _recordCompletedState(grid);
       return;
     }
@@ -407,11 +423,6 @@ class TrieGridBuilder {
       if (wasUnplaced) {
         placedWordsMask.set(wordId);
         spaceDelta = minContribution[wordId];
-      }
-
-      // Debug: show frontier state after advancing
-      if (_iterationCount < 20) {
-        _debugFrontier(word, offset, frontier);
       }
 
       // Recurse with updated frontier
@@ -516,21 +527,6 @@ class TrieGridBuilder {
 
     // Restore removed word's nodes
     frontier.restoreNodes(undoInfo.removedWordId, undoInfo.removedNodes);
-  }
-
-  /// Prints the current state of the frontier for debugging.
-  void _debugFrontier(String word, int offset, _Frontier frontier) {
-    if (frontier.isEmpty) {
-      print('DEBUG: After placing "$word" at $offset: frontier empty');
-      return;
-    }
-
-    int nodeCount = 0;
-    frontier.activeWords.forEachSetBit((id) {
-      nodeCount += frontier.wordLists[id].length;
-    });
-
-    print('DEBUG: After placing "$word" at $offset: frontier=$nodeCount nodes');
   }
 
   /// Compute minimum offset after a given end offset.
@@ -769,6 +765,92 @@ class _PhraseTrie {
     node.isTerminal = true;
     node.terminalPhrases.add(phrase);
     phraseCount++;
+  }
+
+  @override
+  String toString() {
+    int nodeCount = 0;
+    void countNodes(_TrieNode node) {
+      nodeCount++;
+      for (final child in node.children.values) {
+        countNodes(child);
+      }
+    }
+
+    for (final root in roots.values) {
+      countNodes(root);
+    }
+
+    final sorts = countTopologicalSorts();
+    String sortsStr;
+    if (sorts == BigInt.zero) {
+      sortsStr = '0';
+    } else {
+      final s = sorts.toString();
+      if (s.length <= 15) {
+        sortsStr = s;
+      } else {
+        sortsStr = '${s[0]}.${s.substring(1, 4)}e+${s.length - 1}';
+      }
+    }
+
+    return 'PhraseTrie:\n'
+        '  ${roots.length} root words\n'
+        '  $nodeCount total nodes\n'
+        '  $phraseCount phrases ($sortsStr topological sorts)';
+  }
+
+  /// Returns the number of unique word sequences that can satisfy this trie.
+  /// Since the trie is a tree/forest, we can use the Hook Length Formula:
+  /// n! / PRODUCT(subtree_size(v)) for all v in V.
+  BigInt countTopologicalSorts() {
+    final subtreeSize = <_TrieNode, int>{};
+    final allNodes = <_TrieNode>[];
+
+    int computeSize(_TrieNode node) {
+      allNodes.add(node);
+      int size = 1;
+      for (final child in node.children.values) {
+        size += computeSize(child);
+      }
+      return subtreeSize[node] = size;
+    }
+
+    int totalNodes = 0;
+    for (final root in roots.values) {
+      totalNodes += computeSize(root);
+    }
+
+    if (totalNodes == 0) return BigInt.zero;
+
+    // Hook length formula for forest: n! / PRODUCT(subtree_size(v))
+    var numerator = BigInt.one;
+    for (int i = 2; i <= totalNodes; i++) {
+      numerator *= BigInt.from(i);
+    }
+
+    var denominator = BigInt.one;
+    for (final node in allNodes) {
+      denominator *= BigInt.from(subtreeSize[node]!);
+    }
+
+    return numerator ~/ denominator;
+  }
+
+  /// Returns the total number of nodes in the trie.
+  int countNodes() {
+    int count = 0;
+    void traverse(_TrieNode node) {
+      count++;
+      for (final child in node.children.values) {
+        traverse(child);
+      }
+    }
+
+    for (final root in roots.values) {
+      traverse(root);
+    }
+    return count;
   }
 }
 
