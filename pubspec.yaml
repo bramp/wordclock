@@ -42,7 +42,7 @@ dependencies:
 
   # Google Analytics / Firebase Analytics
   firebase_core: ^4.4.0
-  firebase_analytics: ^12.1.0
+  firebase_analytics: ^12.1.1
   meta: ^1.17.0
 
 dev_dependencies:
