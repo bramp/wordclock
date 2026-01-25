@@ -3,6 +3,7 @@ import 'package:args/command_runner.dart';
 import 'package:wordclock/generator/greedy/grid_builder.dart';
 import 'package:wordclock/generator/backtracking/grid_builder.dart';
 import 'package:wordclock/generator/backtracking/trie_grid_builder.dart';
+import 'package:wordclock/generator/scs/pairs_grid_builder.dart';
 import 'package:wordclock/languages/all.dart';
 import 'package:wordclock/model/word_grid.dart';
 import 'package:wordclock/generator/model/grid_build_result.dart';
@@ -105,7 +106,7 @@ class SolveCommand extends Command<void> {
         'algorithm',
         abbr: 'a',
         defaultsTo: 'backtracking',
-        allowed: ['greedy', 'backtracking', 'trie'],
+        allowed: ['greedy', 'backtracking', 'trie', 'scs'],
         help: 'Generation algorithm.',
       )
       ..addOption(
@@ -293,6 +294,10 @@ class SolveCommand extends Command<void> {
 
       if (config.algorithm == 'trie') {
         return _generateWithTrie(config);
+      }
+
+      if (config.algorithm == 'scs') {
+        return _generateWithSCS(config);
       }
 
       // Use GreedyGridBuilder
@@ -669,6 +674,59 @@ class SolveCommand extends Command<void> {
     return LanguageSolveResult(
       langId: config.language.id,
       status: status,
+      duration: duration,
+      iterations: result.iterationCount,
+      placedWords: result.placedWords,
+      totalWords: result.totalWords,
+    );
+  }
+
+  LanguageSolveResult _generateWithSCS(Config config) {
+    final int finalSeed = config.seed ?? 0;
+    final int targetHeight = config.targetHeight > 0 ? config.targetHeight : 10;
+
+    print('Hierarchical Merge (Pairs) SCS Grid Builder');
+    print(
+      'Note: This algorithm constructs a single supersequence string and wraps it.',
+    );
+    print('');
+
+    final builder = PairsGridBuilder(
+      width: config.gridWidth,
+      height: targetHeight,
+      language: config.language,
+      seed: finalSeed,
+      paddingAlphabet: config.language.defaultGridRef?.paddingAlphabet,
+    );
+
+    final result = builder.build();
+
+    final duration = result.startTime != null
+        ? DateTime.now().difference(result.startTime!)
+        : Duration.zero;
+
+    if (result.placedWords < result.totalWords) {
+      print('\nFailed to fit all words with SCS algorithm.');
+      print('Placed ${result.placedWords}/${result.totalWords} words.');
+      print('Try:');
+      print('  - Increasing height');
+      print('  - Increasing width');
+      return LanguageSolveResult(
+        langId: config.language.id,
+        status: SolveStatus.failed,
+        duration: duration,
+        iterations: result.iterationCount,
+        placedWords: result.placedWords,
+        totalWords: result.totalWords,
+      );
+    }
+
+    print('\n✓✓✓ Grid generated (SCS fit)! ✓✓✓\n');
+    _outputResult(config, result, 'SCS', finalSeed, duration);
+
+    return LanguageSolveResult(
+      langId: config.language.id,
+      status: SolveStatus.solved,
       duration: duration,
       iterations: result.iterationCount,
       placedWords: result.placedWords,
