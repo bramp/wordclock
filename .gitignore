@@ -52,3 +52,7 @@ check-new.js
 bin/grid_builder
 phrases_dump/
 phrases_validation/
+
+# Test results
+test_report.json
+junit.xml

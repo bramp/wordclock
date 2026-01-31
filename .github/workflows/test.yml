@@ -26,10 +26,25 @@ jobs:
         run: flutter analyze
 
       - name: Run tests
-        run: flutter test --coverage
+        run: flutter test --machine --coverage > test_report.json
+
+      - name: Convert tests to JUnit
+        if: always()
+        run: |
+          dart pub global activate junitreport
+          export PATH="$PATH":"$HOME/.pub-cache/bin"
+          tojunit --input test_report.json --output junit.xml
 
       - name: Upload coverage to Codecov
+        if: always()
         uses: codecov/codecov-action@v4
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
           fail_ci_if_error: false
+
+      - name: Upload test results to Codecov
+        if: always()
+        uses: codecov/test-results-action@v1
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}
+          file: junit.xml

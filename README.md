@@ -3,6 +3,7 @@
 [![Test](https://github.com/bramp/wordclock/actions/workflows/test.yml/badge.svg)](https://github.com/bramp/wordclock/actions/workflows/test.yml)
 [![Deploy to GitHub Pages](https://github.com/bramp/wordclock/actions/workflows/deploy.yml/badge.svg)](https://github.com/bramp/wordclock/actions/workflows/deploy.yml)
 [![codecov](https://codecov.io/gh/bramp/wordclock/branch/main/graph/badge.svg)](https://codecov.io/gh/bramp/wordclock)
+[![Test Results](https://img.shields.io/badge/Codecov-Test_Results-blue)](https://codecov.io/gh/bramp/wordclock/tests)
 [![License](https://img.shields.io/github/license/bramp/wordclock)](https://github.com/bramp/wordclock/blob/main/LICENSE)
 [![Flutter](https://img.shields.io/badge/Flutter-%2302569B.svg?style=flat&logo=Flutter&logoColor=white)](https://flutter.dev)
 [![Dart](https://img.shields.io/badge/Dart-%230175C2.svg?style=flat&logo=Dart&logoColor=white)](https://dart.dev)
