@@ -1,6 +1,16 @@
 # WordClock
 
-A minimal, aesthetic word clock application built with Flutter. Inspired by [QLOCKTWO](https://www.qlocktwo.com/).
+[![Test](https://github.com/bramp/wordclock/actions/workflows/test.yml/badge.svg)](https://github.com/bramp/wordclock/actions/workflows/test.yml)
+[![Deploy to GitHub Pages](https://github.com/bramp/wordclock/actions/workflows/deploy.yml/badge.svg)](https://github.com/bramp/wordclock/actions/workflows/deploy.yml)
+[![codecov](https://codecov.io/gh/bramp/wordclock/branch/main/graph/badge.svg)](https://codecov.io/gh/bramp/wordclock)
+[![License](https://img.shields.io/github/license/bramp/wordclock)](https://github.com/bramp/wordclock/blob/main/LICENSE)
+[![Flutter](https://img.shields.io/badge/Flutter-%2302569B.svg?style=flat&logo=Flutter&logoColor=white)](https://flutter.dev)
+[![Dart](https://img.shields.io/badge/Dart-%230175C2.svg?style=flat&logo=Dart&logoColor=white)](https://dart.dev)
+[![Repo Size](https://img.shields.io/github/repo-size/bramp/wordclock)](https://github.com/bramp/wordclock)
+[![Last Commit](https://img.shields.io/github/last-commit/bramp/wordclock)](https://github.com/bramp/wordclock)
+[![Maintenance](https://img.shields.io/badge/Maintained%3F-yes-green.svg)](https://github.com/bramp/wordclock/graphs/commit-activity)
+
+ A minimal, aesthetic word clock application built with Flutter. Inspired by [QLOCKTWO](https://www.qlocktwo.com/).
 
 Features:
 
