@@ -65,8 +65,8 @@ void main() {
         );
 
         final builder = BacktrackingGridBuilder(
-          width: 4, // A x B C or A x C B
-          height: 2,
+          width: 4, // A . B C or A . C B
+          height: 1,
           language: language,
           seed: 0,
           useFrontier: useFrontier,
@@ -91,7 +91,7 @@ void main() {
 
         final builder = BacktrackingGridBuilder(
           width: 16,
-          height: 2,
+          height: 1,
           language: language,
           seed: 0,
           useFrontier: useFrontier,

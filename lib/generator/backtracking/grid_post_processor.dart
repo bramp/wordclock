@@ -43,28 +43,14 @@ class GridPostProcessor {
   /// Last row: all padding moves to the left (words pushed right).
   /// Other rows: padding is distributed between the left and internal gaps.
   List<SolverPlacement> distributePadding(List<SolverPlacement> original) {
-    final allPlacements = List<SolverPlacement>.from(original);
+    if (original.isEmpty) return [];
 
-    // Find the first and last rows that actually contain words
-    int firstRowWithWords = -1;
-    int lastRowWithWords = -1;
-    for (final p in allPlacements) {
-      if (firstRowWithWords == -1 || p.row < firstRowWithWords) {
-        firstRowWithWords = p.row;
-      }
-      if (p.row > lastRowWithWords) {
-        lastRowWithWords = p.row;
-      }
-    }
-
-    for (int r = 0; r < height; r++) {
-      final rowPlacements = allPlacements.where((p) => p.row == r).toList();
-      if (rowPlacements.isEmpty) continue;
-
-      // Sort by start column to process clusters left-to-right
-      rowPlacements.sort((a, b) => a.startCol.compareTo(b.startCol));
-
-      // Group overlapping words into clusters that must move together
+    // 1. Group original placements into clusters by their solver-assigned rows.
+    final usedRows = original.map((p) => p.row).toSet().toList()..sort();
+    final rowsOfClusters = <List<_Cluster>>[];
+    for (final r in usedRows) {
+      final rowPlacements = original.where((p) => p.row == r).toList()
+        ..sort((a, b) => a.startCol.compareTo(b.startCol));
       final clusters = <_Cluster>[];
       for (final p in rowPlacements) {
         if (clusters.isEmpty || p.startCol > clusters.last.endCol) {
@@ -73,58 +59,97 @@ class GridPostProcessor {
           clusters.last.add(p);
         }
       }
+      rowsOfClusters.add(clusters);
+    }
+
+    // 2. Split rows vertically to use as much grid height as possible.
+    final totalClustersCount = rowsOfClusters.fold(
+      0,
+      (sum, list) => sum + list.length,
+    );
+    final rowCountTarget = min(totalClustersCount, height);
+    while (rowsOfClusters.length < rowCountTarget) {
+      int splitIdx = -1;
+      for (int i = 0; i < rowsOfClusters.length; i++) {
+        if (rowsOfClusters[i].length > 1) {
+          if (splitIdx == -1 ||
+              rowsOfClusters[i].length > rowsOfClusters[splitIdx].length) {
+            splitIdx = i;
+          }
+        }
+      }
+      if (splitIdx == -1) break;
+      final list = rowsOfClusters[splitIdx];
+      int mid = (list.length + 1) ~/ 2;
+      rowsOfClusters.replaceRange(splitIdx, splitIdx + 1, [
+        list.sublist(0, mid),
+        list.sublist(mid),
+      ]);
+    }
+
+    // 3. Map resulting rows to physical row indices [0...height-1], spreading vertically.
+    final rowCount = rowsOfClusters.length;
+    final physicalRows = List.generate(rowCount, (i) {
+      if (rowCount <= 1) return 0;
+      return (i * (height - 1)) ~/ (rowCount - 1);
+    });
+
+    final firstRowWithWords = physicalRows.first;
+    final lastRowWithWords = physicalRows.last;
+
+    // 4. Create shifted placements with aesthetic horizontal alignment for each row.
+    final result = <SolverPlacement>[];
+    for (int i = 0; i < rowCount; i++) {
+      final clusters = rowsOfClusters[i];
+      final r = physicalRows[i];
 
       final occupiedLength = clusters.fold(0, (sum, c) => sum + c.length);
       final totalPadding = width - occupiedLength;
       final numSlots = clusters.length;
-
-      // Calculate minimum mandatory gaps between clusters if required
-      int minGapTotal = 0;
-      if (language.requiresPadding) {
-        minGapTotal = numSlots - 1;
-      }
-
+      int minGapTotal = language.requiresPadding ? numSlots - 1 : 0;
       final extraPadding = totalPadding - minGapTotal;
 
-      // We should never have negative extra padding if the solver found a valid state
-      if (extraPadding < 0) continue;
+      // Fallback if solver found a state that doesn't fit our padding rules (shouldn't happen)
+      if (extraPadding < 0) {
+        for (final c in clusters) {
+          for (final p in c.members) {
+            result.add(p.shiftedTo(r, p.startCol));
+          }
+        }
+        continue;
+      }
 
       final distribution = List.filled(numSlots, 0);
       if (r == lastRowWithWords && r != firstRowWithWords) {
-        // Last row with words: push to absolute right (all extra padding to slot 0)
+        // Last row with words: push right
         distribution[0] = extraPadding;
       } else if (r == firstRowWithWords) {
-        // First row with words: push to absolute left (all extra padding to the end)
-        // distribution is already 0-filled, all padding remains trailing.
+        // First row with words: push left
       } else {
-        // Fair distribution: spread extra padding among left and internal slots
+        // Intermediate: fair spread
         int perSlot = extraPadding ~/ numSlots;
         int remainder = extraPadding % numSlots;
-        for (int i = 0; i < numSlots; i++) {
-          distribution[i] = perSlot + (i < remainder ? 1 : 0);
+        for (int k = 0; k < numSlots; k++) {
+          distribution[k] = perSlot + (k < remainder ? 1 : 0);
         }
       }
 
-      // Apply distribution by shifting clusters absolutely based on the new gaps
       int currentPos = 0;
-      for (int i = 0; i < numSlots; i++) {
-        currentPos += distribution[i];
-
-        // Shift this cluster's members to their new absolute positions
-        final colDelta = currentPos - clusters[i].startCol;
-        for (final p in clusters[i].members) {
-          // Find the index in the main list and replace it
-          final idx = allPlacements.indexOf(p);
-          allPlacements[idx] = p.shiftedTo(p.row, p.startCol + colDelta);
+      for (int k = 0; k < numSlots; k++) {
+        currentPos += distribution[k];
+        final cluster = clusters[k];
+        final colDelta = currentPos - cluster.startCol;
+        for (final p in cluster.members) {
+          result.add(p.shiftedTo(r, p.startCol + colDelta));
         }
-
-        currentPos += clusters[i].length;
-        if (language.requiresPadding && i < numSlots - 1) {
-          currentPos += 1; // Add the mandatory gap
+        currentPos += cluster.length;
+        if (language.requiresPadding && k < numSlots - 1) {
+          currentPos += 1;
         }
       }
     }
-    return allPlacements;
+
+    return result;
   }
 
   /// Generates a grid from a list of placements

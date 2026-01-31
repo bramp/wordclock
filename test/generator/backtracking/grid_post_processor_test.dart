@@ -183,6 +183,58 @@ void main() {
       expect(b.startCol, equals(8));
     });
 
+    test('splits multiple clusters from one row into multiple rows', () {
+      final processor = GridPostProcessor(
+        width: 10,
+        height: 3,
+        language: language,
+        paddingAlphabet: '.',
+        random: random,
+        codec: codec,
+      );
+
+      // Three independent clusters on Row 0
+      final p1 = createPlacement('A', 0, 0, 10, codec: codec);
+      final p2 = createPlacement('B', 0, 2, 10, codec: codec);
+      final p3 = createPlacement('C', 0, 4, 10, codec: codec);
+
+      final result = processor.process([p1, p2, p3]);
+
+      // Since rowCountTarget = min(Clusters, height) = min(3, 3) = 3
+      // They should be split across rows 0, 1, and 2.
+      final a = result.placements.firstWhere((p) => p.word == 'A');
+      final b = result.placements.firstWhere((p) => p.word == 'B');
+      final c = result.placements.firstWhere((p) => p.word == 'C');
+
+      expect(a.row, equals(0));
+      expect(b.row, equals(1));
+      expect(c.row, equals(2));
+    });
+
+    test('spreads non-empty rows vertically across the grid', () {
+      final processor = GridPostProcessor(
+        width: 10,
+        height: 10, // Tall grid, few words
+        language: language,
+        paddingAlphabet: '.',
+        random: random,
+        codec: codec,
+      );
+
+      // Two words on separate original rows
+      final p1 = createPlacement('START', 0, 0, 10, codec: codec);
+      final p2 = createPlacement('END', 1, 0, 10, codec: codec);
+
+      final result = processor.process([p1, p2]);
+
+      // 2 clusters, 10 height. Spreading should put them at 0 and 9.
+      final start = result.placements.firstWhere((p) => p.word == 'START');
+      final end = result.placements.firstWhere((p) => p.word == 'END');
+
+      expect(start.row, equals(0));
+      expect(end.row, equals(9));
+    });
+
     test('fills remaining space with padding alphabet', () {
       final processor = GridPostProcessor(
         width: 5,
