@@ -82,4 +82,59 @@ void main() {
       expect(iNode2.children.keys, ['S']);
     });
   });
+
+  group('PhraseTrie - counts and strings', () {
+    test('countNodes returns correct number of nodes', () {
+      final language = createMockLanguage();
+      final trie = PhraseTrie.fromPhrases(['A B', 'A C', 'D'], language);
+      // Nodes: A, A->B, A->C, D
+      expect(trie.countNodes(), 4);
+    });
+
+    test('countTopologicalSorts returns correct number for simple tree', () {
+      final language = createMockLanguage();
+      final trie = PhraseTrie.fromPhrases(['A B', 'A C'], language);
+      // Total nodes = 3 (A, B, C)
+      // Subtree sizes: A=3, B=1, C=1
+      // Formula: 3! / (3 * 1 * 1) = 6 / 3 = 2
+      // Valid sorts: (A, B, C), (A, C, B)
+      expect(trie.countTopologicalSorts(), BigInt.from(2));
+    });
+
+    test('countTopologicalSorts returns zero for empty trie', () {
+      final trie = PhraseTrie();
+      expect(trie.countTopologicalSorts(), BigInt.zero);
+    });
+
+    test('toString returns descriptive string', () {
+      final language = createMockLanguage();
+      final trie = PhraseTrie.fromPhrases(['IT IS FIVE'], language);
+      final str = trie.toString();
+      expect(str, contains('PhraseTrie:'));
+      expect(str, contains('1 root words'));
+      expect(str, contains('3 total nodes'));
+      expect(str, contains('1 phrases'));
+    });
+
+    test('toString handles large number of sorts', () {
+      final language = createMockLanguage();
+      // 20 single-word phrases -> 20! sorts
+      // 20! = 2,432,902,008,176,640,000 (19 digits)
+      final trie = PhraseTrie.fromPhrases(
+        List.generate(20, (i) => 'WORD$i'),
+        language,
+      );
+      final str = trie.toString();
+      expect(str, contains('sorts'));
+      expect(str, contains('e+')); // Scientific notation
+    });
+
+    test('PhraseTrieNode toString', () {
+      final node = PhraseTrieNode(word: 'TEST', depth: 2);
+      expect(
+        node.toString(),
+        contains('PhraseTrieNode(TEST, depth=2, terminal=false, end=-1)'),
+      );
+    });
+  });
 }
