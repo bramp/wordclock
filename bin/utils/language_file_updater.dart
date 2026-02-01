@@ -154,6 +154,14 @@ bool updateLanguageFile(
   }
 
   file.writeAsStringSync(updatedContent);
+
+  // Format the updated file
+  try {
+    Process.runSync('dart', ['format', filePath]);
+  } catch (e) {
+    print('Warning: Failed to format $filePath: $e');
+  }
+
   print('Updated $filePath for language $languageId');
   return true;
 }

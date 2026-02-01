@@ -27,6 +27,9 @@ class WordDependencyGraph {
   /// Cell codec for encoding/decoding cells to integers
   final CellCodec codec;
 
+  /// Sentinel value returned when the number of sorts exceeds calculation limits.
+  static final overflowSorts = BigInt.from(-1);
+
   WordDependencyGraph({
     required this.nodes,
     required this.edges,
@@ -107,6 +110,8 @@ class WordDependencyGraph {
     String sortsStr;
     if (sorts == BigInt.zero) {
       sortsStr = '0';
+    } else if (sorts == overflowSorts) {
+      sortsStr = '> 2^30';
     } else {
       final s = sorts.toString();
       if (s.length <= 15) {
@@ -122,6 +127,9 @@ class WordDependencyGraph {
 
   /// Calculates the number of valid topological sorts (linear extensions).
   /// This represents the number of valid word placement sequences.
+  ///
+  /// Returns [overflowSorts] if the calculation is too expensive (i.e., the graph
+  /// has a connected component larger than 30 nodes).
   BigInt countTopologicalSorts() {
     final all = allNodes;
     if (all.isEmpty) return BigInt.zero;
@@ -135,6 +143,7 @@ class WordDependencyGraph {
     for (final componentNodes in components) {
       final componentSorts = _countSortsRecursive(componentNodes);
       if (componentSorts == BigInt.zero) return BigInt.zero;
+      if (componentSorts == overflowSorts) return overflowSorts;
 
       // Combine with previous result using multinomial coefficient:
       // result = result * componentSorts * nCr(totalNodesFound + size, size)
@@ -184,7 +193,8 @@ class WordDependencyGraph {
 
   BigInt _countSortsRecursive(List<WordNode> nodes) {
     final n = nodes.length;
-    if (n > 63) return BigInt.zero; // Safety limit for bitset
+    // Safety limit for bitset. 2^30 is reasonable for modern CPUs (~1s).
+    if (n > 30) return overflowSorts;
 
     final idToIndex = {for (int i = 0; i < n; i++) nodes[i].id: i};
     final predMasks = List<int>.filled(n, 0);
