@@ -51,11 +51,9 @@ void main() {
     // Ideally this map should be empty.
     final allowedExcess = <String, int>{
       'DK': 1,
-      'JP': 0,
       'CA': 2, // Improved from 13 to 2 with multi-strategy
       'DE': 1,
       'SE': 1,
-      'CH': 1,
       // All others default to 0
     };
 

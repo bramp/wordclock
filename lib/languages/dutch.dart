@@ -10,27 +10,27 @@ final dutchLanguage = WordClockLanguage(
   description: null,
   grids: [
     // @generated begin - do not edit manually
-    // Generated: 2026-01-25T09:42:52.195704
+    // Generated: 2026-01-31T21:41:18.486872
     // Algorithm: Backtracking
     // Seed: 0
     // Iterations: 22, Duration: 4ms
     WordClockGrid(
       isDefault: true,
-      timeToWords: ReferenceDutchTimeToWords(),
+      timeToWords: DutchTimeToWords(),
       paddingAlphabet: 'ACEGHKMOPSTZ',
       grid: WordGrid.fromLetters(
         width: 11,
         letters:
-            'HETGISKTIEN' // HET IS TIEN
-            'HKWARTOVIJF' // KWART VIJF
-            'MOVERGEVOOR' // OVER VOOR
-            'HALFCTWAALF' // HALF TWAALF
-            'CKZEVENEGEN' // ZEVEN NEGEN
+            'HETGISKHOMG' // HET IS
+            'ECCKGTPTIEN' // TIEN
+            'AKWARTGVIJF' // KWART VIJF
+            'EOVERCKVOOR' // OVER VOOR
+            'HALFPTWAALF' // HALF TWAALF
+            'CZZEVENEGEN' // ZEVEN NEGEN
             'TIENVIJFELF' // TIEN VIJF ELF
             'VIERACHTWEE' // VIER ACHT TWEE
-            'DRIEÉÉNZESG' // DRIE ÉÉN ZES
-            'TPAGECKPUUR' // UUR
-            'CZOMSAECHHM',
+            'DRIEÉÉNZESO' // DRIE ÉÉN ZES
+            'MSAECHHMUUR', // UUR
       ),
     ),
     // @generated end,

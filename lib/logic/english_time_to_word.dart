@@ -6,7 +6,7 @@ abstract class _BaseEnglishTimeToWords implements TimeToWords {
 
   const _BaseEnglishTimeToWords({
     /// The original algorithm used 'TWENTYFIVE' instead of 'TWENTY FIVE'.
-    this.useSpaceInTwentyFive = false,
+    this.useSpaceInTwentyFive = true,
   });
 
   String get intro => 'IT IS';
@@ -158,4 +158,32 @@ class ReferenceEnglishAlternativeTimeToWords extends _BaseEnglishTimeToWords {
     55 => " FIVE TO",
     _ => "",
   };
+}
+
+/// English implementation that differs from [ReferenceEnglishTimeToWords] by:
+/// - Consistently using a space in "TWENTY FIVE".
+class EnglishTimeToWords extends ReferenceEnglishTimeToWords {
+  const EnglishTimeToWords() : super(useSpaceInTwentyFive: true);
+
+  @override
+  String getDelta(int minute) {
+    if (minute == 0) return " O'CLOCK";
+    return super.getDelta(minute);
+  }
+}
+
+/// English Alternative implementation that differs from [ReferenceEnglishAlternativeTimeToWords] by:
+/// - Removing the optional "A" from "A QUARTER" (e.g., "QUARTER PAST").
+/// - Consistently using a space in "TWENTY FIVE".
+// TODO This alternative, is basically now the same as the ReferenceEnglishTimeToWords?
+class EnglishAlternativeTimeToWords
+    extends ReferenceEnglishAlternativeTimeToWords {
+  const EnglishAlternativeTimeToWords() : super(useSpaceInTwentyFive: true);
+
+  @override
+  String getDelta(int minute) {
+    if (minute == 0) return " O'CLOCK";
+    // Recommendation: Drop the redundant "A" from "A QUARTER" for compactness.
+    return super.getDelta(minute).replaceAll(' A QUARTER', ' QUARTER');
+  }
 }

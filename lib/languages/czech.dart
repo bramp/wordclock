@@ -10,27 +10,27 @@ final czechLanguage = WordClockLanguage(
   description: null,
   grids: [
     // @generated begin - do not edit manually
-    // Generated: 2026-01-25T09:42:52.156275
+    // Generated: 2026-01-31T21:41:17.891719
     // Algorithm: Backtracking
     // Seed: 0
-    // Iterations: 13375078, Duration: 3006ms
+    // Iterations: 4462, Duration: 15ms
     WordClockGrid(
       isDefault: true,
-      timeToWords: ReferenceCzechTimeToWords(),
+      timeToWords: CzechTimeToWords(),
       paddingAlphabet: 'ADEN',
       grid: WordGrid.fromLetters(
         width: 11,
         letters:
-            'JSOUJEČTYŘI' // JSOU JE ČTYŘI
-            'JEDENÁCTPĚT' // JEDENÁCT PĚT
+            'JENJEDENÁCT' // JE JEDENÁCT
             'DVANÁCTŠEST' // DVANÁCT ŠEST
-            'JEDNAOSMDVĚ' // JEDNA OSM DVĚ
-            'DEVĚTŘISEDM' // DEVĚT TŘI SEDM
+            'JEDNADČTYŘI' // JEDNA ČTYŘI
+            'DEVĚTDVĚTŘI' // DEVĚT DVĚ TŘI
+            'SEDMOSMAPĚT' // SEDM OSM PĚT
             'DESETNDESET' // DESET DESET
-            'DANČTYŘICET' // ČTYŘICET
-            'PADESÁTNULA' // PADESÁT NULA
+            'ENEČTYŘICET' // ČTYŘICET
+            'DDDNPATNÁCT' // PATNÁCT
             'DVACETŘICET' // DVACET TŘICET
-            'PATNÁCTEPĚT', // PATNÁCT PĚT
+            'PADESÁTEPĚT', // PADESÁT PĚT
       ),
     ),
     // @generated end,

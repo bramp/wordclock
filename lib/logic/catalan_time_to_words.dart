@@ -114,3 +114,19 @@ class ReferenceCatalanTimeToWords implements TimeToWords {
     }
   }
 }
+
+/// Catalan implementation that differs from [ReferenceCatalanTimeToWords] by:
+/// - Removing the space after apostrophes in "D' UNA" and "D' ONZE" (e.g., "D'UNA", "D'ONZE").
+class CatalanTimeToWords extends ReferenceCatalanTimeToWords {
+  const CatalanTimeToWords();
+
+  @override
+  String convert(DateTime time) {
+    // Call the reference implementation and then fix the spacing issues
+    // identified in the expert review.
+    final result = super.convert(time);
+
+    // Fix: Remove space after the apostrophe in "D' UNA" and "D' ONZE"
+    return result.replaceAll("D' ", "D'");
+  }
+}

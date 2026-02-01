@@ -10,10 +10,10 @@ final swedishLanguage = WordClockLanguage(
   description: null,
   grids: [
     // @generated begin - do not edit manually
-    // Generated: 2026-01-25T09:45:53.320109
+    // Generated: 2026-01-31T21:42:23.651125
     // Algorithm: Backtracking
     // Seed: 0
-    // Iterations: 23, Duration: 2ms
+    // Iterations: 23, Duration: 3ms
     WordClockGrid(
       isDefault: true,
       timeToWords: ReferenceSwedishTimeToWords(),
@@ -23,14 +23,14 @@ final swedishLanguage = WordClockLanguage(
         letters:
             'KLOCKANIÄRY' // KLOCKAN ÄR
             'UUKVARTJUGO' // KVART TJUGO
-            'HALVEFEMTIO' // HALV FEM TIO
-            'ÖVERVIYHALV' // ÖVER I HALV
+            'EVHALVYOFEM' // HALV FEM
+            'KZZVVPVQTIO' // TIO
+            'UPAÖVERNKLI' // ÖVER I
+            'YMMKLASHALV' // HALV
             'TOLVFYRAFEM' // TOLV FYRA FEM
             'ÄTTAELVATIO' // ÄTTA ELVA TIO
             'ETTVÅTRESEX' // ETT TVÅ TRE SEX
-            'OKZZSJUVNIO' // SJU NIO
-            'VPVQUPANKLY'
-            'MMKLASQKNLT',
+            'QKNLSJUTNIO', // SJU NIO
       ),
     ),
     // @generated end,

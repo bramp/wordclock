@@ -9,26 +9,28 @@ final russianLanguage = WordClockLanguage(
   englishName: 'Russian',
   description: null,
   grids: [
+    // @generated begin - do not edit manually
     WordClockGrid(
       isDefault: true,
-      timeToWords: ReferenceRussianTimeToWords(),
+      timeToWords: RussianTimeToWords(),
       paddingAlphabet: 'АДМРЯ',
       grid: WordGrid.fromLetters(
         width: 11,
         letters:
-            "ШЕСТЬОДИНЧЕ"
-            "ДВАТРИДВЕВО"
-            "НАДЦАТЬСЕМЬ"
-            "ТЫЧАСРЕПЯТЬ"
-            "ЧАСАДЕАВЯТЬ"
-            "ЯСЯТЬЯЧАСОВ"
-            "ПЯТНАДСОРОК"
-            "ЯДВАДАТРИДЕ"
-            "ЯТРИДРМЦАТЬ"
-            "ПЯТЬМДЕСЯТЬ"
-            "ДПЯТЬЯМИНУТ",
+            'ШЕСТЬОДИНЧЕ'
+            'ДВАТРИДВЕВО'
+            'НАДЦАТЬСЕМЬ'
+            'ТЫЧАСРЕПЯТЬ'
+            'ЧАСАДЕАВЯТЬ'
+            'ЯСЯТЬЯЧАСОВ'
+            'ПЯТНАДСОРОК'
+            'ЯДВАДАТРИДЕ'
+            'ЯТРИДРМЦАТЬ'
+            'ПЯТЬМДЕСЯТЬ'
+            'ДПЯТЬЯМИНУТ',
       ),
     ),
+    // @generated end,
     WordClockGrid(
       isReference: true,
       timeToWords: ReferenceRussianTimeToWords(),
@@ -50,4 +52,5 @@ final russianLanguage = WordClockLanguage(
     ),
   ],
   minuteIncrement: 5,
+  atomizePhrases: true,
 );

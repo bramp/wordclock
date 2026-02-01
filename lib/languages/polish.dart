@@ -8,24 +8,28 @@ final polishLanguage = WordClockLanguage(
   displayName: 'Polski',
   englishName: 'Polish',
   grids: [
+    // @generated begin - do not edit manually
     WordClockGrid(
       isDefault: true,
       timeToWords: PolishTimeToWords(),
-      paddingAlphabet: 'ABCDEFGHIJKLMNOPQRSTUWXYZÓĄĆĘŃŚŻ',
+      paddingAlphabet: 'ÓĄĆĘŃŚŻ',
       grid: WordGrid.fromLetters(
         width: 11,
         letters:
-            "PIERWSZÓSTP"
-            "BCZWARTRZEC"
-            "DZIESIJEDEN"
-            "DZIEWIÓSMĄT"
-            "DWUNDRUGAST"
-            "AĘCZTERTRZY"
-            "TDWADZIEŚCI"
-            "PIĘTANAŚŚCI"
-            "PIĘĆEDZIESI"
-            "HĄTŚĘĆJPIĘĆ",
+            'PIERWSZÓSTP'
+            'BCZWARTRZEC'
+            'DZIESIJEDEN'
+            'DZIEWIÓSMĄT'
+            'DWUNDRUGAST'
+            'AĘCZTERTRZY'
+            'TDWADZIEŚCI'
+            'PIĘTANAŚŚCI'
+            'PIĘĆEDZIESI'
+            'HĄTŚĘĆJPIĘĆ',
       ),
     ),
+    // @generated end
   ],
+  minuteIncrement: 5,
+  atomizePhrases: true,
 );

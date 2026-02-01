@@ -10,27 +10,27 @@ final englishAlternativeLanguage = WordClockLanguage(
   description: 'Alternative',
   grids: [
     // @generated begin - do not edit manually
-    // Generated: 2026-01-25T09:42:52.224383
+    // Generated: 2026-01-31T21:41:19.078532
     // Algorithm: Backtracking
     // Seed: 0
-    // Iterations: 24, Duration: 4ms
+    // Iterations: 23, Duration: 5ms
     WordClockGrid(
       isDefault: true,
-      timeToWords: ReferenceEnglishAlternativeTimeToWords(useSpaceInTwentyFive: true),
+      timeToWords: EnglishAlternativeTimeToWords(),
       paddingAlphabet: 'ACDEFLMPRSUX',
       grid: WordGrid.fromLetters(
         width: 11,
         letters:
-            'ITEISLHALFF' // IT IS HALF A
-            'PTWENTYMTEN' // TWENTY TEN
-            'QUARTERFIVE' // QUARTER FIVE
-            'PASTOEEIGHT' // PAST TO EIGHT
+            'ITEISLFPMED' // IT IS
+            'CCLEURAHALF' // HALF
+            'QUARTERETEN' // QUARTER TEN
+            'TWENTYDFIVE' // TWENTY FIVE
+            'PASTOCEIGHT' // PAST TO EIGHT
             'TWELVELEVEN' // TWELVE ELEVEN
-            'SEVENDTHREE' // SEVEN THREE
+            'SEVENLTHREE' // SEVEN THREE
             'FIVENINETEN' // FIVE NINE TEN
-            'CFOURCTWONE' // FOUR TWO ONE
-            'LSIXEO\'CLOCK' // SIX O'CLOCK
-            'URAEDCLRCXP',
+            'RFOURCTWONE' // FOUR TWO ONE
+            'XSIXPO\'CLOCK', // SIX O'CLOCK
       ),
     ),
     // @generated end,
@@ -52,6 +52,12 @@ final englishAlternativeLanguage = WordClockLanguage(
             'SEVENTWELVE'
             'TENSEO\'CLOCK',
       ),
+      customTokenizer: (phrase) {
+        if (phrase.contains('TWENTY FIVE')) {
+          phrase = phrase.replaceAll('TWENTY FIVE', 'TWENTYFIVE');
+        }
+        return phrase.split(' ').where((w) => w.isNotEmpty).toList();
+      },
     ),
   ],
   minuteIncrement: 5,
@@ -65,27 +71,27 @@ final englishLanguage = WordClockLanguage(
   description: null,
   grids: [
     // @generated begin - do not edit manually
-    // Generated: 2026-01-25T09:42:52.234047
+    // Generated: 2026-01-31T21:41:19.379080
     // Algorithm: Backtracking
     // Seed: 0
-    // Iterations: 23, Duration: 3ms
+    // Iterations: 23, Duration: 4ms
     WordClockGrid(
       isDefault: true,
-      timeToWords: ReferenceEnglishTimeToWords(useSpaceInTwentyFive: true),
+      timeToWords: EnglishTimeToWords(),
       paddingAlphabet: 'ACDEFLMPRSUX',
       grid: WordGrid.fromLetters(
         width: 11,
         letters:
-            'ITEISLHALFF' // IT IS HALF
-            'QUARTERPTEN' // QUARTER TEN
-            'TWENTYMFIVE' // TWENTY FIVE
-            'PASTOEEIGHT' // PAST TO EIGHT
+            'ITEISLFPMED' // IT IS
+            'CCLEURAHALF' // HALF
+            'QUARTERETEN' // QUARTER TEN
+            'TWENTYDFIVE' // TWENTY FIVE
+            'PASTOCEIGHT' // PAST TO EIGHT
             'TWELVELEVEN' // TWELVE ELEVEN
-            'SEVENDTHREE' // SEVEN THREE
+            'SEVENLTHREE' // SEVEN THREE
             'FIVENINETEN' // FIVE NINE TEN
-            'CFOURCTWONE' // FOUR TWO ONE
-            'LSIXEO\'CLOCK' // SIX O'CLOCK
-            'URAEDCLRCXP',
+            'RFOURCTWONE' // FOUR TWO ONE
+            'XSIXPO\'CLOCK', // SIX O'CLOCK
       ),
     ),
     // @generated end,
@@ -107,6 +113,12 @@ final englishLanguage = WordClockLanguage(
             'SEVENTWELVE'
             'TENSEO\'CLOCK',
       ),
+      customTokenizer: (phrase) {
+        if (phrase.contains('TWENTY FIVE')) {
+          phrase = phrase.replaceAll('TWENTY FIVE', 'TWENTYFIVE');
+        }
+        return phrase.split(' ').where((w) => w.isNotEmpty).toList();
+      },
     ),
   ],
   minuteIncrement: 5,

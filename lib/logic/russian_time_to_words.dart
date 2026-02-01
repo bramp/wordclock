@@ -128,3 +128,30 @@ class ReferenceRussianTimeToWords implements TimeToWords {
     return words.replaceAll('  ', ' ').trim();
   }
 }
+
+/// Russian implementation that differs from [ReferenceRussianTimeToWords] by:
+/// - Fixing split and misspelled numerals (e.g. "ДВЕНАДЦАТЬ", "ДЕСЯТЬ", "ЧЕТЫРЕ").
+class RussianTimeToWords extends ReferenceRussianTimeToWords {
+  const RussianTimeToWords();
+
+  @override
+  String convert(DateTime time) {
+    String result = super.convert(time);
+
+    // Fix split/misspelled hours
+    result = result.replaceAll('ДВЕ НАДЦАТЬ', 'ДВЕНАДЦАТЬ');
+    result = result.replaceAll('ЧЕ ТЫ РЕ', 'ЧЕТЫРЕ');
+    result = result.replaceAll('ВО СЕМЬ', 'ВОСЕМЬ');
+    result = result.replaceAll('ДЕ ВЯТЬ', 'ДЕВЯТЬ');
+    result = result.replaceAll('ДЕ СЯТЬ', 'ДЕСЯТЬ');
+    result = result.replaceAll('ОДИН НАДЦАТЬ', 'ОДИННАДЦАТЬ');
+
+    // Fix split/misspelled minutes
+    result = result.replaceAll('ПЯТНАД ЦАТЬ', 'ПЯТНАДЦАТЬ');
+    result = result.replaceAll('ДВАД ЦАТЬ', 'ДВАДЦАТЬ');
+    result = result.replaceAll('ТРИД ЦАТЬ', 'ТРИДЦАТЬ');
+    result = result.replaceAll('ПЯТЬ ДЕСЯТ', 'ПЯТЬДЕСЯТ');
+
+    return result.replaceAll('  ', ' ').trim();
+  }
+}

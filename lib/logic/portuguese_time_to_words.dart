@@ -149,3 +149,35 @@ class ReferencePortugueseTimeToWords implements TimeToWords {
     return words.replaceAll('  ', ' ').trim();
   }
 }
+
+/// Portuguese implementation that differs from [ReferencePortugueseTimeToWords] by:
+/// - Fixing the incorrect "É MEIA HORA" for 12:30 to "É MEIO-DIA E MEIA".
+/// - Using proper hyphens for "MEIO-DIA" and "MEIA-NOITE".
+/// - Using "E QUARTO" instead of "E UM QUARTO" for better compactness.
+class PortugueseTimeToWords extends ReferencePortugueseTimeToWords {
+  const PortugueseTimeToWords();
+
+  @override
+  String convert(DateTime time) {
+    int m = time.minute;
+    int h = time.hour;
+    m = m - (m % 5);
+
+    // 12:30 check (Fixing Reference error)
+    if (h % 24 == 12 && m == 30) {
+      return 'É MEIO-DIA E MEIA';
+    }
+
+    String result = super.convert(time);
+
+    // Fix hyphens
+    result = result.replaceAll('MEIO DIA', 'MEIO-DIA');
+    result = result.replaceAll('MEIA NOITE', 'MEIA-NOITE');
+
+    // Compact "QUARTO"
+    result = result.replaceAll('E UM QUARTO', 'E QUARTO');
+    result = result.replaceAll('MENOS UM QUARTO', 'MENOS QUARTO');
+
+    return result;
+  }
+}

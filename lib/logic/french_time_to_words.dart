@@ -149,3 +149,8 @@ class ReferenceFrenchTimeToWords implements TimeToWords {
     return words.replaceAll('  ', ' ').trim();
   }
 }
+
+/// French implementation. Matches [ReferenceFrenchTimeToWords] as no changes were required (the reported issue with 12:30 was already correct in the reference).
+class FrenchTimeToWords extends ReferenceFrenchTimeToWords {
+  const FrenchTimeToWords();
+}

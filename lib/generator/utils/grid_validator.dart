@@ -14,6 +14,7 @@ class GridValidator {
     int? expectedWidth,
     int? expectedHeight,
     TimeToWords? timeToWords,
+    List<String> Function(String phrase)? customTokenizer,
   }) {
     final issues = <String>{};
     final cells = grid.cells;
@@ -40,7 +41,9 @@ class GridValidator {
     final reportedPaddingIssues = <String>{};
 
     WordClockUtils.forEachTime(language, (time, phrase) {
-      final units = language.tokenize(phrase);
+      final units = customTokenizer != null
+          ? customTokenizer(phrase)
+          : language.tokenize(phrase);
 
       // Use the official algorithm to find word sequences, enabling padding check if required
       final sequences = grid.getWordSequences(
@@ -79,7 +82,7 @@ class GridValidator {
               final timeStr =
                   '${time.hour.toString().padLeft(2, '0')}:${time.minute.toString().padLeft(2, '0')}';
               issues.add(
-                'Word "$unit" appears before or overlaps "${units[i - 1]}" in grid (at $timeStr). Strict reading order required.',
+                'Word "$unit" appears before or overlaps "${units[i - 1]}" in grid (for $phrase ($timeStr)). Strict reading order required.',
               );
             }
           }
@@ -97,7 +100,7 @@ class GridValidator {
                 final timeStr =
                     '${time.hour.toString().padLeft(2, '0')}:${time.minute.toString().padLeft(2, '0')}';
                 issues.add(
-                  'No padding/newline between "${units[i - 1]}" and "$unit" in grid (at $timeStr).',
+                  'No padding/newline between "${units[i - 1]}" and "$unit" in grid (at $timeStr). Phrase: "$phrase".',
                 );
               }
             }

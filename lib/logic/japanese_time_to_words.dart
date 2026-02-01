@@ -132,3 +132,67 @@ class ReferenceJapaneseTimeToWords implements TimeToWords {
     return words.replaceAll('  ', ' ').trim();
   }
 }
+
+/// Japanese implementation that differs from [ReferenceJapaneseTimeToWords] by:
+/// - Using "ただいま" (Tadaima) as a more natural and compact intro.
+/// - Using "零時" (Reiji) for midnight (0:xx) instead of "十二時".
+/// - Omiting the intro for relative "until" phrases (35-55 minutes).
+class JapaneseTimeToWords extends ReferenceJapaneseTimeToWords {
+  const JapaneseTimeToWords();
+
+  @override
+  String convert(DateTime time) {
+    int m = time.minute;
+    int h = time.hour;
+    m = m - (m % 5);
+
+    if (m >= 35) h++;
+
+    final displayHour = h % 12;
+    final isMidnight = (h % 24 == 0);
+
+    String hourStr = switch (displayHour) {
+      0 => isMidnight ? '零時' : '十二時',
+      1 => '一時',
+      2 => '二時',
+      3 => '三時',
+      4 => '四時',
+      5 => '五時',
+      6 => '六時',
+      7 => '七時',
+      8 => '八時',
+      9 => '九時',
+      10 => '十時',
+      11 => '十一時',
+      _ => '',
+    };
+
+    if (m >= 35) {
+      // Relative phrasing: "[Hour] まで あと [Minutes] です"
+      String delta = switch (m) {
+        35 => 'まで あと 二十五分 です',
+        40 => 'まで あと 二十分 です',
+        45 => 'まで あと 十五分 です',
+        50 => 'まで あと 十分 です',
+        55 => 'まで あと 五分 です',
+        _ => '',
+      };
+      return '$hourStr $delta';
+    }
+
+    // Normal phrasing: "ただいま [Hour] [Minutes] です"
+    String intro = 'ただいま';
+    String delta = switch (m) {
+      0 => 'です',
+      5 => '五分 です',
+      10 => '十分 です',
+      15 => '十五分 です',
+      20 => '二十分 です',
+      25 => '二十五分 です',
+      30 => '半 です',
+      _ => '',
+    };
+
+    return '$intro $hourStr $delta'.replaceAll('  ', ' ').trim();
+  }
+}

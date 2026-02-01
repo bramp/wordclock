@@ -113,3 +113,9 @@ class ReferenceDutchTimeToWords implements TimeToWords {
     return words.replaceAll('  ', ' ').trim();
   }
 }
+
+/// Dutch implementation that differs from [ReferenceDutchTimeToWords] by:
+/// - (Currently no differences, but kept for future customizations).
+class DutchTimeToWords extends ReferenceDutchTimeToWords {
+  const DutchTimeToWords();
+}

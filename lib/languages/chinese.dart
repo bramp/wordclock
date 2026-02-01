@@ -10,27 +10,27 @@ final chineseSimplifiedLanguage = WordClockLanguage(
   description: 'Simplified',
   grids: [
     // @generated begin - do not edit manually
-    // Generated: 2026-01-31T16:35:27.440393
+    // Generated: 2026-01-31T21:41:17.280224
     // Algorithm: Backtracking
     // Seed: 0
-    // Iterations: 37, Duration: 13ms
+    // Iterations: 32, Duration: 6ms
     WordClockGrid(
       isDefault: true,
-      timeToWords: ReferenceChineseSimplifiedTimeToWords(),
+      timeToWords: ChineseSimplifiedTimeToWords(),
       paddingAlphabet: '一七三二五八六分十整是昼点',
       grid: WordGrid.fromLetters(
         width: 11,
         letters:
-            '现在时间点整分七七整一' // 现在 时间
-            '五五是六一五五分整下午' // 下午
-            '昼一分上午夜分五八一点' // 上午 午夜 一点
-            '八点三十分十一点半六点' // 八点三十分 八点 十一点半 十一点 一点半 六点
-            '十十二点半九点半七点半' // 十二点半 十二点 二点 九点半 九点 七点半 七点
-            '整点一五点半七五三点半' // 五点半 五点 三点半 三点
-            '一昼八整十点六三三四点' // 十点 四点
-            '四十五分五十五分五十分' // 四十五分 十五分 五十五分 五十分 十分
-            '二十五分三十五分四十分' // 二十五分 三十五分 四十分
-            '二点零五分二十分三十分', // 零五分 二十分 三十分
+            '现在是零点上午点整分七' // 现在是 零点 上午
+            '七整一五晚上五是六凌晨' // 晚上 凌晨
+            '一下午中午十一点十二点' // 下午 中午 十一点 一点 十二点
+            '五五十点分整六点昼九点' // 十点 六点 九点
+            '一分分五两点八十整八点' // 两点 八点
+            '点一七点七五三点一五点' // 七点 三点 五点
+            '昼八整四点六三三零五分' // 四点 零五分
+            '三十五分五十五分二十分' // 三十五分 十五分 五十五分 二十分 十分
+            '四十五分二十五分四十分' // 四十五分 二十五分 四十分
+            '二点一一六八五十分整半', // 五十分 整 半
       ),
     ),
     // @generated end,
@@ -67,27 +67,27 @@ final chineseTraditionalLanguage = WordClockLanguage(
   description: 'Traditional',
   grids: [
     // @generated begin - do not edit manually
-    // Generated: 2026-01-31T16:35:28.002368
+    // Generated: 2026-01-31T21:41:17.583998
     // Algorithm: Backtracking
     // Seed: 0
-    // Iterations: 37, Duration: 12ms
+    // Iterations: 32, Duration: 5ms
     WordClockGrid(
       isDefault: true,
-      timeToWords: ReferenceChineseTraditionalTimeToWords(),
+      timeToWords: ChineseTraditionalTimeToWords(),
       paddingAlphabet: '一七三二五八六分十整是晝點',
       grid: WordGrid.fromLetters(
         width: 11,
         letters:
-            '現在時間點整分七七整一' // 現在 時間
-            '五五是六一五五分整下午' // 下午
-            '晝一分上午夜分五八一點' // 上午 午夜 一點
-            '八點三十分十一點半六點' // 八點三十分 八點 十一點半 十一點 一點半 六點
-            '十十二點半九點半七點半' // 十二點半 十二點 二點 九點半 九點 七點半 七點
-            '整點一五點半七五三點半' // 五點半 五點 三點半 三點
-            '一晝八整十點六三三四點' // 十點 四點
-            '四十五分五十五分五十分' // 四十五分 十五分 五十五分 五十分 十分
-            '二十五分三十五分四十分' // 二十五分 三十五分 四十分
-            '二點零五分二十分三十分', // 零五分 二十分 三十分
+            '現在是零點上午點整分七' // 現在是 零點 上午
+            '七整一五晚上五是六凌晨' // 晚上 凌晨
+            '一下午中午十一點十二點' // 下午 中午 十一點 一點 十二點
+            '五五十點分整六點晝九點' // 十點 六點 九點
+            '一分分五兩點八十整八點' // 兩點 八點
+            '點一七點七五三點一五點' // 七點 三點 五點
+            '晝八整四點六三三零五分' // 四點 零五分
+            '三十五分五十五分二十分' // 三十五分 十五分 五十五分 二十分 十分
+            '四十五分二十五分四十分' // 四十五分 二十五分 四十分
+            '二點一一六八五十分整半', // 五十分 整 半
       ),
     ),
     // @generated end,

@@ -10,27 +10,27 @@ final danishLanguage = WordClockLanguage(
   description: null,
   grids: [
     // @generated begin - do not edit manually
-    // Generated: 2026-01-25T09:42:52.180856
+    // Generated: 2026-01-31T21:41:18.188879
     // Algorithm: Backtracking
     // Seed: 0
-    // Iterations: 24, Duration: 3ms
+    // Iterations: 23, Duration: 5ms
     WordClockGrid(
       isDefault: true,
-      timeToWords: ReferenceDanishTimeToWords(),
+      timeToWords: DanishTimeToWords(),
       paddingAlphabet: 'AEIJKLMNOPRSTV',
       grid: WordGrid.fromLetters(
         width: 11,
         letters:
             'KLOKKENPERL' // KLOKKEN ER
-            'MSIKVARTYVE' // KVART TYVE
-            'HALVJFEMITI' // HALV FEM TI
-            'PMINUTTEREI' // MINUTTER I
-            'JOVERPRHALV' // OVER HALV
-            'MELLEVETOLV' // ELLEVE ET TOLV TO
-            'FIRESEKSFEM' // FIRE SEKS FEM
-            'OTTETRESYVI' // OTTE TRE SYV
-            'NONSIETISNI' // TI NI
-            'LMSTIVAIIKA',
+            'MKVARTSHALV' // KVART HALV
+            'IJTYVEIPFEM' // TYVE FEM
+            'EJPRTIMINOI' // TI I
+            'NOVERSIHALV' // OVER HALV
+            'ELLEVEOTTET' // ELLEVE OTTE ET
+            'ETOLVSLFIRE' // TOLV TO FIRE
+            'MSTIVAIIFEM' // FEM
+            'SEKSTRESYVK' // SEKS TRE SYV
+            'AKKRRRTIMNI', // TI NI
       ),
     ),
     // @generated end,

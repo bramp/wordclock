@@ -57,3 +57,59 @@ class ReferenceRomanianTimeToWords implements TimeToWords {
     return words.replaceAll('  ', ' ').trim();
   }
 }
+
+/// Romanian implementation that differs from [ReferenceRomanianTimeToWords] by:
+/// - Fixing the split word "DOUĂ SPRE ZECE" to "DOUĂSPREZECE" (12).
+/// - Using "ŞI JUMĂTATE" instead of "ŞI TREIZECI" for naturalness.
+class RomanianTimeToWords extends ReferenceRomanianTimeToWords {
+  const RomanianTimeToWords();
+
+  @override
+  String convert(DateTime time) {
+    int m = time.minute;
+    int h = time.hour;
+    m = m - (m % 5);
+
+    if (m >= 40) h++;
+
+    final displayHour = h % 12;
+
+    String words = 'ESTE ORA';
+
+    words +=
+        " ${switch (displayHour) {
+          0 => 'DOUĂSPREZECE',
+          1 => 'UNU',
+          2 => 'DOUĂ',
+          3 => 'TREI',
+          4 => 'PATRU',
+          5 => 'CINCI',
+          6 => 'ŞASE',
+          7 => 'ŞAPTE',
+          8 => 'OPT',
+          9 => 'NOUĂ',
+          10 => 'ZECE',
+          11 => 'UNSPREZECE',
+          _ => '',
+        }}";
+
+    words += switch (m) {
+      0 => '',
+      5 => ' ŞI CINCI',
+      10 => ' ŞI ZECE',
+      15 => ' ŞI UN SFERT',
+      20 => ' ŞI DOUĂZECI',
+      25 => ' ŞI DOUĂZECI ŞI CINCI',
+      30 => ' ŞI JUMĂTATE',
+      35 =>
+        ' ŞI TREIZECI ŞI CINCI', // Expert didn't mention this, but I'll keep it consistent or use "FĂRĂ"? 35 is usually "şi treizeci şi cinci" or "fără douăzeci şi cinci"? Reference said "ŞI TREIZECI ŞI CINCI".
+      40 => ' FĂRĂ DOUĂZECI',
+      45 => ' FĂRĂ UN SFERT',
+      50 => ' FĂRĂ ZECE',
+      55 => ' FĂRĂ CINCI',
+      _ => '',
+    };
+
+    return words.replaceAll('  ', ' ').trim();
+  }
+}

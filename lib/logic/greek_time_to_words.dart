@@ -53,3 +53,65 @@ class ReferenceGreekTimeToWords implements TimeToWords {
     return words.replaceAll('  ', ' ').trim();
   }
 }
+
+/// Greek implementation that differs from [ReferenceGreekTimeToWords] by:
+/// - Fixing orthography (using Greek letters instead of mixed Latin/Greek).
+/// - Correcting number spellings (e.g., "ΟΚΤΩ" instead of "ΟΧΤΩ", "ΕΝΝΕΑ" instead of "ΕΝΝΙΑ").
+/// - Flipping the word order for times after 30 minutes (e.g., "ΔΕΚΑ ΠΑΡΑ ΜΙΑ" instead of "ΜΙΑ ΠΑΡΑ ΔΕΚΑ").
+/// - Using "ΕΙΝΑΙ" as a more compact intro instead of "Η ΩΡΑ ΕΙΝΑΙ".
+class GreekTimeToWords extends ReferenceGreekTimeToWords {
+  const GreekTimeToWords();
+
+  @override
+  String convert(DateTime time) {
+    int m = time.minute;
+    int h = time.hour;
+    m = m - (m % 5);
+
+    if (m >= 35) h++;
+
+    final displayHour = h % 12;
+
+    const hourWords = [
+      'ΔΩΔΕΚΑ', // 12
+      'ΜΙΑ', // 1
+      'ΔΥΟ', // 2
+      'ΤΡΕΙΣ', // 3
+      'ΤΕΣΣΕΡΙΣ', // 4
+      'ΠΕΝΤΕ', // 5
+      'ΕΞΙ', // 6
+      'ΕΦΤΑ', // 7
+      'ΟΚΤΩ', // 8
+      'ΕΝΝΕΑ', // 9
+      'ΔΕΚΑ', // 10
+      'ΕΝΤΕΚΑ', // 11
+    ];
+
+    const intro = 'ΕΙΝΑΙ'; // It is
+
+    if (m == 0) return '$intro ${hourWords[displayHour]}';
+
+    if (m <= 30) {
+      final delta = switch (m) {
+        5 => 'ΚΑΙ ΠΕΝΤΕ', // and five
+        10 => 'ΚΑΙ ΔΕΚΑ', // and ten
+        15 => 'ΚΑΙ ΤΕΤΑΡΤΟ', // and a quarter
+        20 => 'ΚΑΙ ΕΙΚΟΣΙ', // and twenty
+        25 => 'ΚΑΙ ΕΙΚΟΣΙ ΠΕΝΤΕ', // and twenty-five
+        30 => 'ΚΑΙ ΜΙΣΗ', // and half
+        _ => '',
+      };
+      return '$intro ${hourWords[displayHour]} $delta';
+    } else {
+      final delta = switch (m) {
+        35 => 'ΕΙΚΟΣΙ ΠΕΝΤΕ ΠΑΡΑ', // twenty-five until
+        40 => 'ΕΙΚΟΣΙ ΠΑΡΑ', // twenty until
+        45 => 'ΤΕΤΑΡΤΟ ΠΑΡΑ', // a quarter until
+        50 => 'ΔΕΚΑ ΠΑΡΑ', // ten until
+        55 => 'ΠΕΝΤΕ ΠΑΡΑ', // five until
+        _ => '',
+      };
+      return '$intro $delta ${hourWords[displayHour]}';
+    }
+  }
+}

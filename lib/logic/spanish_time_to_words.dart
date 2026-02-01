@@ -110,3 +110,8 @@ class ReferenceSpanishTimeToWords implements TimeToWords {
     return words.replaceAll('  ', ' ').trim();
   }
 }
+
+/// Spanish implementation. Matches [ReferenceSpanishTimeToWords] as no changes were requested by the expert.
+class SpanishTimeToWords extends ReferenceSpanishTimeToWords {
+  const SpanishTimeToWords();
+}

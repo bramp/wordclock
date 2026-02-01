@@ -10,27 +10,27 @@ final catalanLanguage = WordClockLanguage(
   description: null,
   grids: [
     // @generated begin - do not edit manually
-    // Generated: 2026-01-25T09:42:49.110142
+    // Generated: 2026-01-31T21:41:16.976076
     // Algorithm: Backtracking
     // Seed: 0
-    // Iterations: 29, Duration: 4ms
+    // Iterations: 83, Duration: 6ms
     WordClockGrid(
       isDefault: true,
-      timeToWords: ReferenceCatalanTimeToWords(),
+      timeToWords: CatalanTimeToWords(),
       paddingAlphabet: 'ADEMNOPRUZ',
       grid: WordGrid.fromLetters(
         width: 11,
         letters:
             'SÓNÉSDOSLES' // SÓN ÉS DOS LES
             'UNOLAZQUART' // UN LA QUART
-            'TRESNQUARTS' // TRES QUARTS
-            'MENYSIZCINC' // MENYS I CINC
-            'DED\'QUATRESP' // DE D' QUATRE TRES
-            'DDOTZENVUIT' // DOTZE VUIT
-            'DUESONZENOU' // DUES ONZE NOU
-            'UNADSETDSIS' // UNA SET SIS
-            'DEUZMENYSZI' // DEU MENYS I
-            'UEEDNROCINC', // CINC
+            'TRESONZEUNA' // TRES ONZE UNA
+            'NZQUARTSPDI' // QUARTS I
+            'NMENYSDCINC' // MENYS CINC
+            'D\'ONZED\'UNADE' // D'ONZE D'UNA DE
+            'QUATREDOTZE' // QUATRE DOTZE
+            'TRESVUITDEU' // TRES VUIT DEU
+            'DUESISETNOU' // DUES SIS SET NOU
+            'MENYSIDCINC', // MENYS I CINC
       ),
     ),
     // @generated end,

@@ -10,27 +10,27 @@ final norwegianLanguage = WordClockLanguage(
   description: null,
   grids: [
     // @generated begin - do not edit manually
-    // Generated: 2026-01-25T09:42:53.210299
+    // Generated: 2026-01-31T21:41:22.434446
     // Algorithm: Backtracking
     // Seed: 0
-    // Iterations: 21, Duration: 2ms
+    // Iterations: 21, Duration: 3ms
     WordClockGrid(
       isDefault: true,
-      timeToWords: ReferenceNorwegianTimeToWords(),
+      timeToWords: NorwegianTimeToWords(),
       paddingAlphabet: 'ABDEFGHILMNOPSUVXZl',
       grid: WordGrid.fromLetters(
         width: 11,
         letters:
             'KLOKKENEERZ' // KLOKKEN ER
-            'KVARTFEMTlU' // KVART FEM Tl
-            'OVERPÅUHALV' // OVER PÅ HALV
-            'ELLEVEBTOLV' // ELLEVE TOLV TO
-            'FlRESEKSFEM' // FlRE SEKS FEM
+            'UKVARTUBFEM' // KVART FEM
+            'VZLFllVVMTI' // TI
+            'VNOVERUMAPÅ' // OVER PÅ
+            'IFGZHHFHALV' // HALV
+            'ELLEVEGTOLV' // ELLEVE TOLV TO
+            'AFIREPNSEKS' // FIRE SEKS
+            'FIGSlNBLFEM' // FEM
             'ÅTTETTRESYV' // ÅTTE ETT TRE SYV
-            'VZLFllTlVNI' // Tl NI
-            'VMVNUMAIFGZ'
-            'HHFGAPNFIGS'
-            'lNBLMAEOAMN',
+            'MAEOAMTINNI', // TI NI
       ),
     ),
     // @generated end,

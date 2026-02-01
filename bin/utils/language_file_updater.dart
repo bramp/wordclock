@@ -59,10 +59,8 @@ String generateGridCode(
   // For now, we hack it by getting the class name.
   final strategyName = strategy.runtimeType.toString();
 
-  // Handle English space flag
-  final strategyParams = strategyName.contains('English')
-      ? '(useSpaceInTwentyFive: true)'
-      : '()';
+  // TODO Remove this feature
+  final strategyParams = '()';
 
   // Group words by row for comments
   final rowWords = <int, List<String>>{};

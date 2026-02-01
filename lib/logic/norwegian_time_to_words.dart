@@ -57,3 +57,17 @@ class ReferenceNorwegianTimeToWords implements TimeToWords {
     return words.replaceAll('  ', ' ').trim();
   }
 }
+
+/// Norwegian implementation that differs from [ReferenceNorwegianTimeToWords] by:
+/// - Fixing typos "Tl" -> "TI" and "FlRE" -> "FIRE" found in the reference data.
+class NorwegianTimeToWords extends ReferenceNorwegianTimeToWords {
+  const NorwegianTimeToWords();
+
+  @override
+  String convert(DateTime time) {
+    return super
+        .convert(time)
+        .replaceAll('Tl', 'TI')
+        .replaceAll('FlRE', 'FIRE');
+  }
+}

@@ -10,27 +10,27 @@ final japaneseLanguage = WordClockLanguage(
   description: null,
   grids: [
     // @generated begin - do not edit manually
-    // Generated: 2026-01-31T16:35:42.587600
+    // Generated: 2026-01-31T21:41:22.139756
     // Algorithm: Backtracking
     // Seed: 0
-    // Iterations: 34, Duration: 12ms
+    // Iterations: 24, Duration: 4ms
     WordClockGrid(
       isDefault: true,
-      timeToWords: ReferenceJapaneseTimeToWords(),
+      timeToWords: JapaneseTimeToWords(),
       paddingAlphabet: '一七三九二五八六分前十午四後時',
       grid: WordGrid.fromLetters(
         width: 11,
         letters:
-            '現在の時刻は一時二二八' // 現在の時刻は
-            '八時七七時前後十二時半' // 十二時半 十二時 二時半 二時
-            '三四十一時半八時六時半' // 十一時半 十一時 一時半 一時 六時半 六時
-            '六五分後分十一八七時半' // 七時半 七時
-            '八五六八時半七二十時半' // 八時半 八時 十時半 十時
-            '四十一三時半分七三四時' // 三時半 三時 四時
-            '分午二四時半六時五時半' // 四時半 五時半 五時
-            '分七八九時半前時分まで' // 九時半 九時 まで
-            '九十後あと後十二十五分' // あと 二十五分 十五分 五分
-            '三四六六二時二十分です', // 二十分 十分 です
+            'ただいま十一時一時二二' // ただいま 十一時 一時
+            '八八時七七時前後十二時' // 十二時 二時
+            '三四八時三時六五分四時' // 三時 四時
+            '後分十一八八五六七零時' // 零時
+            '二四十一五時分七三六時' // 五時 六時
+            '分午二六七時時分七八時' // 七時 八時
+            '八前時分九十後後十九時' // 九時
+            '三四十時六六まで二時半' // 十時 まで 半
+            '後九後あと二時二十五分' // あと 二十五分 十五分 五分
+            '一七七八前四二十分です', // 二十分 十分 です
       ),
     ),
     // @generated end,

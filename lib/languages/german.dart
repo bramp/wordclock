@@ -10,10 +10,10 @@ final berneseGermanLanguage = WordClockLanguage(
   description: 'Bernese German',
   grids: [
     // @generated begin - do not edit manually
-    // Generated: 2026-01-31T17:11:19.192610
+    // Generated: 2026-01-31T21:41:16.631456
     // Algorithm: Backtracking
     // Seed: 0
-    // Iterations: 23, Duration: 14ms
+    // Iterations: 22, Duration: 14ms
     WordClockGrid(
       isDefault: true,
       timeToWords: BerneseGermanTimeToWords(),
@@ -23,14 +23,14 @@ final berneseGermanLanguage = WordClockLanguage(
         letters:
             'ESUISCHBRFT' // ES ISCH
             'LTOOOLEMFÜF' // FÜF
-            'VIERTUHAUBI' // VIERTU HAUBI
-            'MZWÄNZGFZÄÄ' // ZWÄNZG ZÄÄ
-            'VORABTHAUBI' // VOR AB HAUBI
-            'ZWÖUFISIBNI' // ZWÖUFI SIBNI
-            'SÄCHSIACHTI' // SÄCHSI ACHTI
-            'ZWÖIVIERZÄÄ' // ZWÖI VIER ZÄÄ
-            'FÜFINÜNIEIS' // FÜFI NÜNI EIS
-            'BSAEUFISDRÜ', // EUFI DRÜ
+            'MVIERTUFZÄÄ' // VIERTU ZÄÄ
+            'TZWÄNZGBVOR' // ZWÄNZG VOR
+            'SAABSQHAUBI' // AB HAUBI
+            'SÄCHSIVIERI' // SÄCHSI VIERI
+            'ZWÖUFIACHTI' // ZWÖUFI ACHTI
+            'USIBNITFÜFI' // SIBNI FÜFI
+            'EUFIZÄNIDRÜ' // EUFI ZÄNI DRÜ
+            'ZWÖINÜNIEIS', // ZWÖI NÜNI EIS
       ),
     ),
     // @generated end,
@@ -65,27 +65,27 @@ final germanAlternativeLanguage = WordClockLanguage(
   description: 'Alternative',
   grids: [
     // @generated begin - do not edit manually
-    // Generated: 2026-01-25T09:42:53.137221
+    // Generated: 2026-01-31T21:41:20.920587
     // Algorithm: Backtracking
     // Seed: 0
-    // Iterations: 248, Duration: 4ms
+    // Iterations: 23, Duration: 12ms
     WordClockGrid(
       isDefault: true,
-      timeToWords: ReferenceGermanAlternativeTimeToWords(),
+      timeToWords: GermanAlternativeTimeToWords(),
       paddingAlphabet: 'AFGIJKLMNPUWXZ',
       grid: WordGrid.fromLetters(
         width: 11,
         letters:
-            'ESPISTKEINL' // ES IST EIN
-            'DREIVIERTEL' // DREIVIERTEL VIERTEL
-            'WZEHNGIFÜNF' // ZEHN FÜNF
-            'GPNACHFIVOR' // NACH VOR
-            'HALBPSIEBEN' // HALB SIEBEN
-            'ZWÖLFUSECHS' // ZWÖLF SECHS
+            'ESPISTKZEHN' // ES IST ZEHN
+            'VIERTELFÜNF' // VIERTEL FÜNF
+            'LEINACHWVOR' // EIN NACH VOR
+            'HALBGSIEBEN' // HALB SIEBEN
+            'ZWÖLFISECHS' // ZWÖLF SECHS
             'ZEHNFÜNFELF' // ZEHN FÜNF ELF
-            'ACHTLDREINS' // ACHT DREI EINS
-            'GZWEIMNNEUN' // ZWEI NEUN
-            'MWGVIERFUHR', // VIER UHR
+            'GACHTPFEINS' // ACHT EINS
+            'IDREIPUZWEI' // DREI ZWEI
+            'LNEUNGMVIER' // NEUN VIER
+            'NMWGFWKLUHR', // UHR
       ),
     ),
     // @generated end,
@@ -120,27 +120,27 @@ final swabianGermanLanguage = WordClockLanguage(
   description: 'Alternative 2',
   grids: [
     // @generated begin - do not edit manually
-    // Generated: 2026-01-25T09:45:53.302029
+    // Generated: 2026-01-31T21:42:23.354203
     // Algorithm: Backtracking
     // Seed: 0
-    // Iterations: 5377, Duration: 6ms
+    // Iterations: 22, Duration: 3ms
     WordClockGrid(
       isDefault: true,
-      timeToWords: ReferenceSwabianGermanTimeToWords(),
+      timeToWords: SwabianGermanTimeToWords(),
       paddingAlphabet: 'ABDEFGHIKLNRTUVXÜ',
       grid: WordGrid.fromLetters(
         width: 11,
         letters:
             'ESÜISCHAAHV' // ES ISCH
             'UDREIVIERTL' // DREIVIERTL VIERTL
-            'DFÜNFÜAZEHN' // FÜNF ZEHN
+            'DZEHNÜAFÜNF' // ZEHN FÜNF
             'AVNACHINVOR' // NACH VOR
-            'HALBEZWÖLFE' // HALB ZWÖLFE
-            'SIEBNEDREIE' // SIEBNE DREIE
-            'SECHSEVIERE' // SECHSE VIERE
-            'ZEHNEUNELFE' // ZEHNE NEUNE ELFE
-            'ZWOIEEFÜNFE' // ZWOIE FÜNFE
-            'XOISEGACHTE', // OISE ACHTE
+            'EHALBEZWÖLF' // HALB ZWÖLF
+            'XSECHSGZEHN' // SECHS ZEHN
+            'FÜNFNEUNOIS' // FÜNF NEUN OIS
+            'ZWOIDREIELF' // ZWOI DREI ELF
+            'IVIERGHSIBE' // VIER SIBE
+            'ÜFHXDBAACHT', // ACHT
       ),
     ),
     // @generated end,
@@ -175,10 +175,10 @@ final eastGermanLanguage = WordClockLanguage(
   description: 'Alternative 3',
   grids: [
     // @generated begin - do not edit manually
-    // Generated: 2026-01-25T09:42:52.213769
+    // Generated: 2026-01-31T21:41:18.780424
     // Algorithm: Backtracking
     // Seed: 0
-    // Iterations: 248, Duration: 4ms
+    // Iterations: 248, Duration: 5ms
     WordClockGrid(
       isDefault: true,
       timeToWords: ReferenceEastGermanTimeToWords(),
@@ -230,27 +230,27 @@ final germanLanguage = WordClockLanguage(
   description: null,
   grids: [
     // @generated begin - do not edit manually
-    // Generated: 2026-01-25T09:42:53.157910
+    // Generated: 2026-01-31T21:41:21.239754
     // Algorithm: Backtracking
     // Seed: 0
-    // Iterations: 27, Duration: 4ms
+    // Iterations: 23, Duration: 4ms
     WordClockGrid(
       isDefault: true,
-      timeToWords: ReferenceGermanTimeToWords(),
+      timeToWords: GermanTimeToWords(),
       paddingAlphabet: 'AFJKLMNPUX',
       grid: WordGrid.fromLetters(
         width: 11,
         letters:
             'ESMISTXHALB' // ES IST HALB
-            'VIERTELLEIN' // VIERTEL EIN
-            'ZWANZIGZEHN' // ZWANZIG ZEHN
-            'XFÜNFNFNACH' // FÜNF NACH
-            'LFVORFXHALB' // VOR HALB
-            'SIEBENSECHS' // SIEBEN SECHS
-            'XZWÖLFUZEHN' // ZWÖLF ZEHN
-            'NEUNACHTELF' // NEUN ACHT ELF
-            'ZWEIJDREINS' // ZWEI DREI EINS
-            'VIERFÜNFUHR', // VIER FÜNF UHR
+            'VIERTELZEHN' // VIERTEL ZEHN
+            'ZWANZIGFÜNF' // ZWANZIG FÜNF
+            'LXNACHNFVOR' // NACH VOR
+            'HALBLSIEBEN' // HALB SIEBEN
+            'SECHSFZWÖLF' // SECHS ZWÖLF
+            'ZEHNEINSELF' // ZEHN EINS ELF
+            'FNEUNXXACHT' // NEUN ACHT
+            'UZWEIJJFÜNF' // ZWEI FÜNF
+            'FLDREIPVIER', // DREI VIER
       ),
     ),
     // @generated end,

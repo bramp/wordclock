@@ -157,6 +157,22 @@ class ReferenceGermanTimeToWords extends _BaseGermanTimeToWords {
   };
 }
 
+/// Standard German (DE) implementation that differs from [ReferenceGermanTimeToWords] by:
+/// - Omiting "UHR" for whole hours.
+/// - Using "EINS" instead of "EIN UHR" for 1 o'clock.
+class GermanTimeToWords extends ReferenceGermanTimeToWords {
+  const GermanTimeToWords();
+
+  @override
+  bool get usesEinUhrLogic => false; // Use "EINS" instead of "EIN UHR"
+
+  @override
+  String getDelta(int minute) {
+    if (minute == 0) return ''; // Omit "UHR"
+    return super.getDelta(minute);
+  }
+}
+
 /// Original Reference Bernese German (CH) implementation (TimeClock).
 /// Should not be modified. Matches the reference implementation.
 class ReferenceBerneseGermanTimeToWords extends _BaseGermanTimeToWords {
@@ -206,51 +222,17 @@ class ReferenceBerneseGermanTimeToWords extends _BaseGermanTimeToWords {
   };
 }
 
-/// Bernese German (CH) implementation.
-class BerneseGermanTimeToWords extends _BaseGermanTimeToWords {
+/// Bernese German (CH) implementation that differs from [ReferenceBerneseGermanTimeToWords] by:
+/// - Using "VIERI" instead of "VIER" for 4 o'clock.
+/// - Using "ZÄNI" instead of "ZÄÄ" for 10 o'clock.
+class BerneseGermanTimeToWords extends ReferenceBerneseGermanTimeToWords {
   const BerneseGermanTimeToWords();
 
   @override
-  String get intro => 'ES ISCH'; // It is
-
-  @override
-  int get hourDisplayLimit => 25;
-
-  @override
-  bool get usesEinUhrLogic => false;
-
-  @override
   String getHour(int hour) => switch (hour) {
-    0 => 'ZWÖUFI', // Twelve
-    1 => 'EIS', // One
-    2 => 'ZWÖI', // Two
-    3 => 'DRÜ', // Three
-    4 => 'VIER', // Four
-    5 => 'FÜFI', // Five
-    6 => 'SÄCHSI', // Six
-    7 => 'SIBNI', // Seven
-    8 => 'ACHTI', // Eight
-    9 => 'NÜNI', // Nine
-    10 => 'ZÄÄ', // Ten
-    11 => 'EUFI', // Eleven
-    _ => '',
-  };
-
-  @override
-  String getDelta(int minute) => switch (minute) {
-    0 => '',
-    5 => ' FÜF AB', // Five after
-    10 => ' ZÄÄ AB', // Ten after
-    15 => ' VIERTU AB', // Quarter after
-    20 => ' ZWÄNZG AB', // Twenty after
-    25 => ' FÜF VOR HAUBI', // Five before half
-    30 => ' HAUBI', // Half
-    35 => ' FÜF AB HAUBI', // Five after half
-    40 => ' ZWÄNZG VOR', // Twenty before
-    45 => ' VIERTU VOR', // Quarter before
-    50 => ' ZÄÄ VOR', // Ten before
-    55 => ' FÜF VOR', // Five before
-    _ => '',
+    4 => 'VIERI', // Expert suggested VIERI over VIER
+    10 => 'ZÄNI', // Expert suggested ZÄNI over ZÄÄ for the hour
+    _ => super.getHour(hour),
   };
 }
 
@@ -266,6 +248,21 @@ class ReferenceGermanAlternativeTimeToWords extends ReferenceGermanTimeToWords {
     if (minute == 20) return ' ZEHN VOR HALB'; // Ten before half
     if (minute == 40) return ' ZEHN NACH HALB'; // Ten after half
     if (minute == 45) return ' DREIVIERTEL'; // Three-quarters
+    return super.getDelta(minute);
+  }
+}
+
+/// German Alternative (D2) implementation that differs from [ReferenceGermanAlternativeTimeToWords] by:
+/// - Using "VIERTEL VOR" instead of "DREIVIERTEL" for 45 minutes.
+class GermanAlternativeTimeToWords
+    extends ReferenceGermanAlternativeTimeToWords {
+  const GermanAlternativeTimeToWords();
+
+  @override
+  String getDelta(int minute) {
+    if (minute == 45) {
+      return ' VIERTEL VOR'; // Use VIERTEL VOR instead of DREIVIERTEL
+    }
     return super.getDelta(minute);
   }
 }
@@ -314,6 +311,29 @@ class ReferenceSwabianGermanTimeToWords extends _BaseGermanTimeToWords {
     45 => ' DREIVIERTL', // Three-quarters
     50 => ' ZEHN VOR', // Ten before
     55 => ' FÜNF VOR', // Five before
+    _ => '',
+  };
+}
+
+/// Swabian/Bavarian (D3) implementation that differs from [ReferenceSwabianGermanTimeToWords] by:
+/// - Standardizing hour names by removing trailing "-E". This increases consistency and grid optimization (e.g., "ZWÖLF" instead of "ZWÖLFE").
+class SwabianGermanTimeToWords extends ReferenceSwabianGermanTimeToWords {
+  const SwabianGermanTimeToWords();
+
+  @override
+  String getHour(int hour) => switch (hour) {
+    0 => 'ZWÖLF', // Twelve
+    1 => 'OIS', // One
+    2 => 'ZWOI', // Two
+    3 => 'DREI', // Three
+    4 => 'VIER', // Four
+    5 => 'FÜNF', // Five
+    6 => 'SECHS', // Six
+    7 => 'SIBE', // Seven
+    8 => 'ACHT', // Eight
+    9 => 'NEUN', // Nine
+    10 => 'ZEHN', // Ten
+    11 => 'ELF', // Eleven
     _ => '',
   };
 }

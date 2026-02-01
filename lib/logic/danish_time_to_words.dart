@@ -57,3 +57,16 @@ class ReferenceDanishTimeToWords implements TimeToWords {
     return words.replaceAll('  ', ' ').trim();
   }
 }
+
+/// Danish implementation that differs from [ReferenceDanishTimeToWords] by:
+/// - Removing the redundant word "MINUTTER" from time phrases.
+class DanishTimeToWords extends ReferenceDanishTimeToWords {
+  const DanishTimeToWords();
+
+  @override
+  String convert(DateTime time) {
+    // Recommendation: Drop the redundant word "MINUTTER" to improve naturalness and compactness.
+    final result = super.convert(time);
+    return result.replaceAll(' MINUTTER', '');
+  }
+}

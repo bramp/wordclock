@@ -1,7 +1,7 @@
 import 'package:wordclock/logic/time_to_words.dart';
 
-class PolishTimeToWords implements TimeToWords {
-  const PolishTimeToWords();
+class ReferencePolishTimeToWords implements TimeToWords {
+  const ReferencePolishTimeToWords();
 
   @override
   String convert(DateTime time) {
@@ -48,6 +48,55 @@ class PolishTimeToWords implements TimeToWords {
       45 => 'CZTER DZIEŚCI PIĘĆ', // Forty-five
       50 => 'PIĘĆ DZIESI ĄT', // Fifty
       55 => 'PIĘĆ DZIESI ĄT PIĘĆ', // Fifty-five
+      _ => '',
+    };
+
+    return '$hStr $mStr';
+  }
+}
+
+/// Polish implementation that differs from [ReferencePolishTimeToWords] by:
+/// - Fixing orthography (removing internal spaces and correcting diacritics).
+/// - Using the "terse" format (HOUR + MINUTE) with grammatically correct Polish words.
+class PolishTimeToWords extends ReferencePolishTimeToWords {
+  const PolishTimeToWords();
+
+  @override
+  String convert(DateTime time) {
+    int h = time.hour;
+    int m = (time.minute ~/ 5) * 5;
+    int displayHour = h % 12;
+
+    String hStr = switch (displayHour) {
+      0 => 'DWUNASTA',
+      1 => 'PIERWSZA',
+      2 => 'DRUGA',
+      3 => 'TRZECIA',
+      4 => 'CZWARTA',
+      5 => 'PIĄTA',
+      6 => 'SZÓSTA',
+      7 => 'SIÓDMA',
+      8 => 'ÓSMA',
+      9 => 'DZIEWIĄTA',
+      10 => 'DZIESIĄTA',
+      11 => 'JEDENASTA',
+      _ => '',
+    };
+
+    if (m == 0) return hStr;
+
+    String mStr = switch (m) {
+      5 => 'PIĘĆ',
+      10 => 'DZIESIĘĆ',
+      15 => 'PIĘTNAŚCIE',
+      20 => 'DWADZIEŚCIA',
+      25 => 'DWADZIEŚCIA PIĘĆ',
+      30 => 'TRZYDZIEŚCIE',
+      35 => 'TRZYDZIEŚCIE PIĘĆ',
+      40 => 'CZTERDZIEŚCIE',
+      45 => 'CZTERDZIEŚCIE PIĘĆ',
+      50 => 'PIĘĆDZIESIĄT',
+      55 => 'PIĘĆDZIESIĄT PIĘĆ',
       _ => '',
     };
 

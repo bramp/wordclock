@@ -10,27 +10,27 @@ final portugueseLanguage = WordClockLanguage(
   description: null,
   grids: [
     // @generated begin - do not edit manually
-    // Generated: 2026-01-25T09:43:53.245965
+    // Generated: 2026-01-31T21:41:22.735228
     // Algorithm: Backtracking
     // Seed: 0
-    // Iterations: 29, Duration: 5ms
+    // Iterations: 26, Duration: 5ms
     WordClockGrid(
       isDefault: true,
-      timeToWords: ReferencePortugueseTimeToWords(),
+      timeToWords: PortugueseTimeToWords(),
       paddingAlphabet: 'ACEHLMOPVYZ',
       grid: WordGrid.fromLetters(
         width: 11,
         letters:
             'SÃOÉQUATROE' // SÃO É QUATRO
-            'ECINCOLMEIA' // CINCO MEIA
-            'MEIODUASEIS' // MEIO DUAS SEIS
-            'TRÊSETEOITO' // TRÊS SETE OITO
-            'NOVEONZEUMA' // NOVE ONZE UMA
-            'DEZNOITEDIA' // DEZ NOITE DIA
-            'HORASPMENOS' // HORAS HORA MENOS E
-            'VINTEMEIAUM' // VINTE MEIA E UM
-            'ODEZZQUARTO' // DEZ QUARTO
-            'YMHAHHCINCO', // CINCO
+            'EMEIA-NOITE' // MEIA-NOITE
+            'MEIO-DIAUMA' // MEIO-DIA UMA
+            'LCINCOPDUAS' // CINCO DUAS
+            'OTRÊSEISETE' // TRÊS SEIS SETE
+            'OITONOVEDEZ' // OITO NOVE DEZ
+            'ZONZEYMENOS' // ONZE MENOS E
+            'HORASQUARTO' // HORAS HORA QUARTO
+            'MVINTEHMEIA' // VINTE MEIA E
+            'AHDEZHCINCO', // DEZ CINCO
       ),
     ),
     // @generated end,
