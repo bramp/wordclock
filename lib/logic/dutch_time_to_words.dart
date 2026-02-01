@@ -47,8 +47,8 @@ class NativeDutchTimeToWords implements TimeToWords {
   }
 }
 
-class DutchTimeToWords implements TimeToWords {
-  const DutchTimeToWords();
+class ReferenceDutchTimeToWords implements TimeToWords {
+  const ReferenceDutchTimeToWords();
   @override
   String convert(DateTime time) {
     int m = time.minute;

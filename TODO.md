@@ -37,6 +37,7 @@
 - [ ] Allow for wordclock.me/$lang/ routing
 - [ ] Replace the word "atom" with "word"
 - [ ] Add additional visual modes to the clock. Such as displaying the time in seconds. Or a audio visualizer.
+- [ ] We no longer need `atomizePhrases`, it produces poor grids. So we should just remove that feature.
 
 ## Language Grid Status
 
@@ -68,5 +69,6 @@ The following languages have successfully generated optimal grids:
 
 The following languages currently timeout and need optimization or a different approach:
 
-- [ ] PL (Polish)
+- [ ] PL (Polish) - We need to fix TimeToWords - it generates far too many
 - [ ] RU (Russian)
+- [ ] Hebrew - We need to support right to left.

@@ -1,7 +1,7 @@
 import 'package:wordclock/logic/time_to_words.dart';
 
-class SwedishTimeToWords implements TimeToWords {
-  const SwedishTimeToWords();
+class ReferenceSwedishTimeToWords implements TimeToWords {
+  const ReferenceSwedishTimeToWords();
   @override
   String convert(DateTime time) {
     int m = time.minute;

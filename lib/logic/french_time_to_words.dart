@@ -59,8 +59,8 @@ class NativeFrenchTimeToWords implements TimeToWords {
   }
 }
 
-class FrenchTimeToWords implements TimeToWords {
-  const FrenchTimeToWords();
+class ReferenceFrenchTimeToWords implements TimeToWords {
+  const ReferenceFrenchTimeToWords();
   @override
   String convert(DateTime time) {
     int m = time.minute;

@@ -1,7 +1,7 @@
 import 'package:wordclock/logic/time_to_words.dart';
 
-class ChineseSimplifiedTimeToWords implements TimeToWords {
-  const ChineseSimplifiedTimeToWords();
+class ReferenceChineseSimplifiedTimeToWords implements TimeToWords {
+  const ReferenceChineseSimplifiedTimeToWords();
   @override
   String convert(DateTime time) {
     int m = (time.minute ~/ 5) * 5;
@@ -74,8 +74,8 @@ class ChineseSimplifiedTimeToWords implements TimeToWords {
   }
 }
 
-class ChineseTraditionalTimeToWords implements TimeToWords {
-  const ChineseTraditionalTimeToWords();
+class ReferenceChineseTraditionalTimeToWords implements TimeToWords {
+  const ReferenceChineseTraditionalTimeToWords();
   @override
   String convert(DateTime time) {
     int m = (time.minute ~/ 5) * 5;

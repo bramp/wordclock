@@ -16,7 +16,7 @@ final portugueseLanguage = WordClockLanguage(
     // Iterations: 29, Duration: 5ms
     WordClockGrid(
       isDefault: true,
-      timeToWords: PortugueseTimeToWords(),
+      timeToWords: ReferencePortugueseTimeToWords(),
       paddingAlphabet: 'ACEHLMOPVYZ',
       grid: WordGrid.fromLetters(
         width: 11,
@@ -35,8 +35,8 @@ final portugueseLanguage = WordClockLanguage(
     ),
     // @generated end,
     WordClockGrid(
-      isTimeCheck: true,
-      timeToWords: PortugueseTimeToWords(),
+      isReference: true,
+      timeToWords: ReferencePortugueseTimeToWords(),
       paddingAlphabet: 'ACEHLMOPVYZ',
       grid: WordGrid.fromLetters(
         width: 11,

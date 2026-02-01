@@ -10,10 +10,10 @@ final berneseGermanLanguage = WordClockLanguage(
   description: 'Bernese German',
   grids: [
     // @generated begin - do not edit manually
-    // Generated: 2026-01-25T09:42:49.073523
+    // Generated: 2026-01-31T17:11:19.192610
     // Algorithm: Backtracking
     // Seed: 0
-    // Iterations: 22, Duration: 11ms
+    // Iterations: 23, Duration: 14ms
     WordClockGrid(
       isDefault: true,
       timeToWords: BerneseGermanTimeToWords(),
@@ -21,22 +21,22 @@ final berneseGermanLanguage = WordClockLanguage(
       grid: WordGrid.fromLetters(
         width: 11,
         letters:
-            'ESUISCHBFÜF' // ES ISCH FÜF
-            'RVIERTUFZÄÄ' // VIERTU ZÄÄ
-            'TZWÄNZGLVOR' // ZWÄNZG VOR
-            'TOABOOHAUBI' // AB HAUBI
-            'SÄCHSIVIERI' // SÄCHSI VIERI
-            'ZWÖUFIACHTI' // ZWÖUFI ACHTI
-            'LSIBNIEFÜFI' // SIBNI FÜFI
-            'EUFIZÄNIDRÜ' // EUFI ZÄNI DRÜ
-            'ZWÖINÜNIEIS' // ZWÖI NÜNI EIS
-            'MMFTBSASQUT',
+            'ESUISCHBRFT' // ES ISCH
+            'LTOOOLEMFÜF' // FÜF
+            'VIERTUHAUBI' // VIERTU HAUBI
+            'MZWÄNZGFZÄÄ' // ZWÄNZG ZÄÄ
+            'VORABTHAUBI' // VOR AB HAUBI
+            'ZWÖUFISIBNI' // ZWÖUFI SIBNI
+            'SÄCHSIACHTI' // SÄCHSI ACHTI
+            'ZWÖIVIERZÄÄ' // ZWÖI VIER ZÄÄ
+            'FÜFINÜNIEIS' // FÜFI NÜNI EIS
+            'BSAEUFISDRÜ', // EUFI DRÜ
       ),
     ),
     // @generated end,
     WordClockGrid(
-      isTimeCheck: true,
-      timeToWords: BerneseGermanTimeToWords(),
+      isReference: true,
+      timeToWords: ReferenceBerneseGermanTimeToWords(),
       paddingAlphabet: 'ABEFHIKLMOPQRSTU',
       grid: WordGrid.fromLetters(
         width: 11,
@@ -71,7 +71,7 @@ final germanAlternativeLanguage = WordClockLanguage(
     // Iterations: 248, Duration: 4ms
     WordClockGrid(
       isDefault: true,
-      timeToWords: GermanAlternativeTimeToWords(),
+      timeToWords: ReferenceGermanAlternativeTimeToWords(),
       paddingAlphabet: 'AFGIJKLMNPUWXZ',
       grid: WordGrid.fromLetters(
         width: 11,
@@ -90,8 +90,8 @@ final germanAlternativeLanguage = WordClockLanguage(
     ),
     // @generated end,
     WordClockGrid(
-      isTimeCheck: true,
-      timeToWords: GermanAlternativeTimeToWords(),
+      isReference: true,
+      timeToWords: ReferenceGermanAlternativeTimeToWords(),
       paddingAlphabet: 'AFGIJKLMNPUWXZ',
       grid: WordGrid.fromLetters(
         width: 11,
@@ -126,7 +126,7 @@ final swabianGermanLanguage = WordClockLanguage(
     // Iterations: 5377, Duration: 6ms
     WordClockGrid(
       isDefault: true,
-      timeToWords: SwabianGermanTimeToWords(),
+      timeToWords: ReferenceSwabianGermanTimeToWords(),
       paddingAlphabet: 'ABDEFGHIKLNRTUVXÜ',
       grid: WordGrid.fromLetters(
         width: 11,
@@ -145,8 +145,8 @@ final swabianGermanLanguage = WordClockLanguage(
     ),
     // @generated end,
     WordClockGrid(
-      isTimeCheck: true,
-      timeToWords: SwabianGermanTimeToWords(),
+      isReference: true,
+      timeToWords: ReferenceSwabianGermanTimeToWords(),
       paddingAlphabet: 'ABDEFGHIKLNRTUVXÜ',
       grid: WordGrid.fromLetters(
         width: 11,
@@ -181,7 +181,7 @@ final eastGermanLanguage = WordClockLanguage(
     // Iterations: 248, Duration: 4ms
     WordClockGrid(
       isDefault: true,
-      timeToWords: EastGermanTimeToWords(),
+      timeToWords: ReferenceEastGermanTimeToWords(),
       paddingAlphabet: 'AFGIJKLMNPUWXZ',
       grid: WordGrid.fromLetters(
         width: 11,
@@ -200,8 +200,8 @@ final eastGermanLanguage = WordClockLanguage(
     ),
     // @generated end,
     WordClockGrid(
-      isTimeCheck: true,
-      timeToWords: EastGermanTimeToWords(),
+      isReference: true,
+      timeToWords: ReferenceEastGermanTimeToWords(),
       paddingAlphabet: 'AFGIJKLMNPUWXZ',
       grid: WordGrid.fromLetters(
         width: 11,
@@ -236,7 +236,7 @@ final germanLanguage = WordClockLanguage(
     // Iterations: 27, Duration: 4ms
     WordClockGrid(
       isDefault: true,
-      timeToWords: GermanTimeToWords(),
+      timeToWords: ReferenceGermanTimeToWords(),
       paddingAlphabet: 'AFJKLMNPUX',
       grid: WordGrid.fromLetters(
         width: 11,
@@ -255,8 +255,8 @@ final germanLanguage = WordClockLanguage(
     ),
     // @generated end,
     WordClockGrid(
-      isTimeCheck: true,
-      timeToWords: GermanTimeToWords(),
+      isReference: true,
+      timeToWords: ReferenceGermanTimeToWords(),
       paddingAlphabet: 'AFJKLMNPUX',
       grid: WordGrid.fromLetters(
         width: 11,

@@ -16,7 +16,7 @@ final dutchLanguage = WordClockLanguage(
     // Iterations: 22, Duration: 4ms
     WordClockGrid(
       isDefault: true,
-      timeToWords: DutchTimeToWords(),
+      timeToWords: ReferenceDutchTimeToWords(),
       paddingAlphabet: 'ACEGHKMOPSTZ',
       grid: WordGrid.fromLetters(
         width: 11,
@@ -35,8 +35,8 @@ final dutchLanguage = WordClockLanguage(
     ),
     // @generated end,
     WordClockGrid(
-      isTimeCheck: true,
-      timeToWords: DutchTimeToWords(),
+      isReference: true,
+      timeToWords: ReferenceDutchTimeToWords(),
       paddingAlphabet: 'ACEGHKMOPSTZ',
       grid: WordGrid.fromLetters(
         width: 11,

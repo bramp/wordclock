@@ -16,7 +16,7 @@ final catalanLanguage = WordClockLanguage(
     // Iterations: 29, Duration: 4ms
     WordClockGrid(
       isDefault: true,
-      timeToWords: CatalanTimeToWords(),
+      timeToWords: ReferenceCatalanTimeToWords(),
       paddingAlphabet: 'ADEMNOPRUZ',
       grid: WordGrid.fromLetters(
         width: 11,
@@ -35,8 +35,8 @@ final catalanLanguage = WordClockLanguage(
     ),
     // @generated end,
     WordClockGrid(
-      isTimeCheck: true,
-      timeToWords: CatalanTimeToWords(),
+      isReference: true,
+      timeToWords: ReferenceCatalanTimeToWords(),
       paddingAlphabet: 'ADEMNOPRUZ',
       grid: WordGrid.fromLetters(
         width: 11,

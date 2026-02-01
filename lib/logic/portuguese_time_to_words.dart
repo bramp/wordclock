@@ -56,8 +56,8 @@ class NativePortugueseTimeToWords implements TimeToWords {
   }
 }
 
-class PortugueseTimeToWords implements TimeToWords {
-  const PortugueseTimeToWords();
+class ReferencePortugueseTimeToWords implements TimeToWords {
+  const ReferencePortugueseTimeToWords();
   @override
   String convert(DateTime time) {
     int m = time.minute;

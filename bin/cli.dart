@@ -114,7 +114,7 @@ void _processLanguage(String lang, DateTime now, String gridType) {
 WordGrid _getGrid(WordClockLanguage language, String gridType) {
   final WordGrid? grid;
   if (gridType == 'timecheck') {
-    grid = language.timeCheckGridRef?.grid;
+    grid = language.referenceGridRef?.grid;
   } else {
     grid = language.defaultGridRef?.grid;
   }

@@ -69,8 +69,8 @@ class NativeRussianTimeToWords implements TimeToWords {
   }
 }
 
-class RussianTimeToWords implements TimeToWords {
-  const RussianTimeToWords();
+class ReferenceRussianTimeToWords implements TimeToWords {
+  const ReferenceRussianTimeToWords();
   @override
   String convert(DateTime time) {
     int m = time.minute;

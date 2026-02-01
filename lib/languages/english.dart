@@ -16,7 +16,7 @@ final englishAlternativeLanguage = WordClockLanguage(
     // Iterations: 24, Duration: 4ms
     WordClockGrid(
       isDefault: true,
-      timeToWords: EnglishAlternativeTimeToWords(useSpaceInTwentyFive: true),
+      timeToWords: ReferenceEnglishAlternativeTimeToWords(useSpaceInTwentyFive: true),
       paddingAlphabet: 'ACDEFLMPRSUX',
       grid: WordGrid.fromLetters(
         width: 11,
@@ -35,8 +35,8 @@ final englishAlternativeLanguage = WordClockLanguage(
     ),
     // @generated end,
     WordClockGrid(
-      isTimeCheck: true,
-      timeToWords: EnglishAlternativeTimeToWords(),
+      isReference: true,
+      timeToWords: ReferenceEnglishAlternativeTimeToWords(),
       paddingAlphabet: 'ACDEFLMPRSUX',
       grid: WordGrid.fromLetters(
         width: 11,
@@ -71,7 +71,7 @@ final englishLanguage = WordClockLanguage(
     // Iterations: 23, Duration: 3ms
     WordClockGrid(
       isDefault: true,
-      timeToWords: EnglishTimeToWords(useSpaceInTwentyFive: true),
+      timeToWords: ReferenceEnglishTimeToWords(useSpaceInTwentyFive: true),
       paddingAlphabet: 'ACDEFLMPRSUX',
       grid: WordGrid.fromLetters(
         width: 11,
@@ -90,8 +90,8 @@ final englishLanguage = WordClockLanguage(
     ),
     // @generated end,
     WordClockGrid(
-      isTimeCheck: true,
-      timeToWords: EnglishTimeToWords(),
+      isReference: true,
+      timeToWords: ReferenceEnglishTimeToWords(),
       paddingAlphabet: 'ACDEFLMPRSUX',
       grid: WordGrid.fromLetters(
         width: 11,

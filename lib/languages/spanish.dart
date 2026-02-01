@@ -16,7 +16,7 @@ final spanishLanguage = WordClockLanguage(
     // Iterations: 25, Duration: 4ms
     WordClockGrid(
       isDefault: true,
-      timeToWords: SpanishTimeToWords(),
+      timeToWords: ReferenceSpanishTimeToWords(),
       paddingAlphabet: 'AEILMNOPS',
       grid: WordGrid.fromLetters(
         width: 11,
@@ -35,8 +35,8 @@ final spanishLanguage = WordClockLanguage(
     ),
     // @generated end,
     WordClockGrid(
-      isTimeCheck: true,
-      timeToWords: SpanishTimeToWords(),
+      isReference: true,
+      timeToWords: ReferenceSpanishTimeToWords(),
       paddingAlphabet: 'AEILMNOPS',
       grid: WordGrid.fromLetters(
         width: 11,

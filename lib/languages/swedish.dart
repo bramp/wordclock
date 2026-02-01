@@ -16,7 +16,7 @@ final swedishLanguage = WordClockLanguage(
     // Iterations: 23, Duration: 2ms
     WordClockGrid(
       isDefault: true,
-      timeToWords: SwedishTimeToWords(),
+      timeToWords: ReferenceSwedishTimeToWords(),
       paddingAlphabet: 'AEFIKLMNOPQRSTUVXYZ',
       grid: WordGrid.fromLetters(
         width: 11,
@@ -35,8 +35,8 @@ final swedishLanguage = WordClockLanguage(
     ),
     // @generated end,
     WordClockGrid(
-      isTimeCheck: true,
-      timeToWords: SwedishTimeToWords(),
+      isReference: true,
+      timeToWords: ReferenceSwedishTimeToWords(),
       paddingAlphabet: 'AEFIKLMNOPQRSTUVXYZ',
       grid: WordGrid.fromLetters(
         width: 11,

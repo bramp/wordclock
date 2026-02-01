@@ -1,7 +1,7 @@
 import 'package:wordclock/logic/time_to_words.dart';
 
-class TurkishTimeToWords implements TimeToWords {
-  const TurkishTimeToWords();
+class ReferenceTurkishTimeToWords implements TimeToWords {
+  const ReferenceTurkishTimeToWords();
   @override
   String convert(DateTime time) {
     int m = time.minute;

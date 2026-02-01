@@ -16,7 +16,7 @@ final japaneseLanguage = WordClockLanguage(
     // Iterations: 34, Duration: 12ms
     WordClockGrid(
       isDefault: true,
-      timeToWords: JapaneseTimeToWords(),
+      timeToWords: ReferenceJapaneseTimeToWords(),
       paddingAlphabet: '一七三九二五八六分前十午四後時',
       grid: WordGrid.fromLetters(
         width: 11,
@@ -35,8 +35,8 @@ final japaneseLanguage = WordClockLanguage(
     ),
     // @generated end,
     WordClockGrid(
-      isTimeCheck: true,
-      timeToWords: JapaneseTimeToWords(),
+      isReference: true,
+      timeToWords: ReferenceJapaneseTimeToWords(),
       paddingAlphabet: '一七三九二五八六分前十午四後時',
       grid: WordGrid.fromLetters(
         width: 11,

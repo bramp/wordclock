@@ -13,6 +13,7 @@ void main() {
       expect(converter.convert(DateTime(2023, 1, 1, 1, 0)), "ES IST EIN UHR");
     });
 
+    // ... (keep existing individual tests if desired, or rely on fixtures)
     test('10:05 is ES IST FÜNF NACH ZEHN', () {
       expect(
         converter.convert(DateTime(2023, 1, 1, 10, 5)),

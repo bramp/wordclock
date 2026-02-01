@@ -110,8 +110,8 @@ class NativeGermanTimeToWords implements TimeToWords {
 }
 
 /// Standard German (DE) implementation (Qlocktwo Logic).
-class GermanTimeToWords extends _BaseGermanTimeToWords {
-  const GermanTimeToWords();
+class ReferenceGermanTimeToWords extends _BaseGermanTimeToWords {
+  const ReferenceGermanTimeToWords();
 
   @override
   String get intro => 'ES IST';
@@ -157,9 +157,10 @@ class GermanTimeToWords extends _BaseGermanTimeToWords {
   };
 }
 
-/// Bernese German (CH) implementation.
-class BerneseGermanTimeToWords extends _BaseGermanTimeToWords {
-  const BerneseGermanTimeToWords();
+/// Original Reference Bernese German (CH) implementation (TimeClock).
+/// Should not be modified. Matches the reference implementation.
+class ReferenceBerneseGermanTimeToWords extends _BaseGermanTimeToWords {
+  const ReferenceBerneseGermanTimeToWords();
 
   @override
   String get intro => 'ES ISCH'; // It is
@@ -205,9 +206,57 @@ class BerneseGermanTimeToWords extends _BaseGermanTimeToWords {
   };
 }
 
+/// Bernese German (CH) implementation.
+class BerneseGermanTimeToWords extends _BaseGermanTimeToWords {
+  const BerneseGermanTimeToWords();
+
+  @override
+  String get intro => 'ES ISCH'; // It is
+
+  @override
+  int get hourDisplayLimit => 25;
+
+  @override
+  bool get usesEinUhrLogic => false;
+
+  @override
+  String getHour(int hour) => switch (hour) {
+    0 => 'ZWÖUFI', // Twelve
+    1 => 'EIS', // One
+    2 => 'ZWÖI', // Two
+    3 => 'DRÜ', // Three
+    4 => 'VIER', // Four
+    5 => 'FÜFI', // Five
+    6 => 'SÄCHSI', // Six
+    7 => 'SIBNI', // Seven
+    8 => 'ACHTI', // Eight
+    9 => 'NÜNI', // Nine
+    10 => 'ZÄÄ', // Ten
+    11 => 'EUFI', // Eleven
+    _ => '',
+  };
+
+  @override
+  String getDelta(int minute) => switch (minute) {
+    0 => '',
+    5 => ' FÜF AB', // Five after
+    10 => ' ZÄÄ AB', // Ten after
+    15 => ' VIERTU AB', // Quarter after
+    20 => ' ZWÄNZG AB', // Twenty after
+    25 => ' FÜF VOR HAUBI', // Five before half
+    30 => ' HAUBI', // Half
+    35 => ' FÜF AB HAUBI', // Five after half
+    40 => ' ZWÄNZG VOR', // Twenty before
+    45 => ' VIERTU VOR', // Quarter before
+    50 => ' ZÄÄ VOR', // Ten before
+    55 => ' FÜF VOR', // Five before
+    _ => '',
+  };
+}
+
 /// Alternative German (D2) implementation.
-class GermanAlternativeTimeToWords extends GermanTimeToWords {
-  const GermanAlternativeTimeToWords();
+class ReferenceGermanAlternativeTimeToWords extends ReferenceGermanTimeToWords {
+  const ReferenceGermanAlternativeTimeToWords();
 
   @override
   int get hourDisplayLimit => 20;
@@ -222,8 +271,8 @@ class GermanAlternativeTimeToWords extends GermanTimeToWords {
 }
 
 /// Swabian/Bavarian (D3) implementation.
-class SwabianGermanTimeToWords extends _BaseGermanTimeToWords {
-  const SwabianGermanTimeToWords();
+class ReferenceSwabianGermanTimeToWords extends _BaseGermanTimeToWords {
+  const ReferenceSwabianGermanTimeToWords();
 
   @override
   String get intro => 'ES ISCH'; // It is
@@ -270,8 +319,8 @@ class SwabianGermanTimeToWords extends _BaseGermanTimeToWords {
 }
 
 /// East German (D4) implementation.
-class EastGermanTimeToWords extends GermanTimeToWords {
-  const EastGermanTimeToWords();
+class ReferenceEastGermanTimeToWords extends ReferenceGermanTimeToWords {
+  const ReferenceEastGermanTimeToWords();
 
   @override
   int get hourDisplayLimit => 15;

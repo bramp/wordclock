@@ -1,8 +1,8 @@
 import 'package:wordclock/logic/time_to_words.dart';
 
 // TODO Come back and check how Right-to-Left works here.
-class HebrewTimeToWords implements TimeToWords {
-  const HebrewTimeToWords();
+class ReferenceHebrewTimeToWords implements TimeToWords {
+  const ReferenceHebrewTimeToWords();
   @override
   String convert(DateTime time) {
     int m = time.minute;

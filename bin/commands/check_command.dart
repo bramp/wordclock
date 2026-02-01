@@ -74,14 +74,14 @@ class CheckCommand extends Command<void> {
       }
 
       // Check TimeCheck Grid
-      final timeCheckGrid = lang.timeCheckGridRef?.grid;
+      final timeCheckGrid = lang.referenceGridRef?.grid;
       if (timeCheckGrid != null) {
         final gridIssues = GridValidator.validate(
           timeCheckGrid,
           lang,
           expectedWidth: config.gridWidth,
           expectedHeight: cliHeight ?? timeCheckGrid.height,
-          timeToWords: lang.timeCheckGridRef?.timeToWords,
+          timeToWords: lang.referenceGridRef?.timeToWords,
         );
         for (final issue in gridIssues) {
           issues.add('TimeCheckGrid: $issue');

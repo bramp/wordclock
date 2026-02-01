@@ -11,7 +11,7 @@ final russianLanguage = WordClockLanguage(
   grids: [
     WordClockGrid(
       isDefault: true,
-      timeToWords: RussianTimeToWords(),
+      timeToWords: ReferenceRussianTimeToWords(),
       paddingAlphabet: 'АДМРЯ',
       grid: WordGrid.fromLetters(
         width: 11,
@@ -30,8 +30,8 @@ final russianLanguage = WordClockLanguage(
       ),
     ),
     WordClockGrid(
-      isTimeCheck: true,
-      timeToWords: RussianTimeToWords(),
+      isReference: true,
+      timeToWords: ReferenceRussianTimeToWords(),
       paddingAlphabet: 'АДМРЯ',
       grid: WordGrid.fromLetters(
         width: 11,

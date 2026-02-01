@@ -16,7 +16,7 @@ final italianLanguage = WordClockLanguage(
     // Iterations: 25, Duration: 4ms
     WordClockGrid(
       isDefault: true,
-      timeToWords: ItalianTimeToWords(),
+      timeToWords: ReferenceItalianTimeToWords(),
       paddingAlphabet: 'ABCEKLORSZ',
       grid: WordGrid.fromLetters(
         width: 11,
@@ -35,8 +35,8 @@ final italianLanguage = WordClockLanguage(
     ),
     // @generated end,
     WordClockGrid(
-      isTimeCheck: true,
-      timeToWords: ItalianTimeToWords(),
+      isReference: true,
+      timeToWords: ReferenceItalianTimeToWords(),
       paddingAlphabet: 'ABCEKLORSZ',
       grid: WordGrid.fromLetters(
         width: 11,

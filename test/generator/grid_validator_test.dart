@@ -68,7 +68,9 @@ void main() {
         id: 'TEST',
         languageCode: 'en-test',
         displayName: 'Test',
-        grids: [GridValidatorTestHelper.createMockGrid(EnglishTimeToWords())],
+        grids: [
+          GridValidatorTestHelper.createMockGrid(ReferenceEnglishTimeToWords()),
+        ],
         requiresPadding: true,
       );
 

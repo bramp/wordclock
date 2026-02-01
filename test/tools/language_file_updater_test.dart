@@ -132,7 +132,7 @@ final testLanguage = WordClockLanguage(
       ),
     ),
     WordClockGrid(
-      isTimeCheck: true,
+      isReference: true,
       timeToWords: TestTimeToWords(),
       paddingAlphabet: 'X',
       grid: WordGrid.fromLetters(
@@ -160,7 +160,7 @@ final testLanguage = WordClockLanguage(
       expect(result, isNot(contains('"OLD"')));
       // The time check grid should still be there
       expect(result, contains('"CHK"'));
-      expect(result, contains('isTimeCheck: true'));
+      expect(result, contains('isReference: true'));
     });
 
     test('replaces WordClockGrid in a complex list structure', () {
@@ -173,7 +173,7 @@ final lang = WordClockLanguage(
       grid: WordGrid.fromLetters(width: 3, letters: "OLD"),
     ),
     WordClockGrid(
-      isTimeCheck: true,
+      isReference: true,
       grid: WordGrid.fromLetters(width: 3, letters: "CHK"),
     ),
   ],
@@ -191,7 +191,7 @@ final lang = WordClockLanguage(
       expect(result, contains("'NEWGD'"));
       // Check that the second grid is preserved and properly separated
       expect(result, contains('// @generated end,'));
-      expect(result, contains('WordClockGrid(\n      isTimeCheck: true'));
+      expect(result, contains('WordClockGrid(\n      isReference: true'));
     });
 
     test('replaces existing @generated block', () {

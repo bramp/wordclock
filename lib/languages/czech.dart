@@ -16,7 +16,7 @@ final czechLanguage = WordClockLanguage(
     // Iterations: 13375078, Duration: 3006ms
     WordClockGrid(
       isDefault: true,
-      timeToWords: CzechTimeToWords(),
+      timeToWords: ReferenceCzechTimeToWords(),
       paddingAlphabet: 'ADEN',
       grid: WordGrid.fromLetters(
         width: 11,
@@ -35,8 +35,8 @@ final czechLanguage = WordClockLanguage(
     ),
     // @generated end,
     WordClockGrid(
-      isTimeCheck: true,
-      timeToWords: CzechTimeToWords(),
+      isReference: true,
+      timeToWords: ReferenceCzechTimeToWords(),
       paddingAlphabet: 'ADEN',
       grid: WordGrid.fromLetters(
         width: 11,

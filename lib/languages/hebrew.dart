@@ -11,7 +11,7 @@ final hebrewLanguage = WordClockLanguage(
   grids: [
     WordClockGrid(
       isDefault: true,
-      timeToWords: HebrewTimeToWords(),
+      timeToWords: ReferenceHebrewTimeToWords(),
       paddingAlphabet: 'mאבוחיםמעצרשתحروब',
       grid: WordGrid.fromLetters(
         width: 11,
@@ -32,8 +32,8 @@ final hebrewLanguage = WordClockLanguage(
       ),
     ),
     WordClockGrid(
-      isTimeCheck: true,
-      timeToWords: HebrewTimeToWords(),
+      isReference: true,
+      timeToWords: ReferenceHebrewTimeToWords(),
       paddingAlphabet: 'mאבוחיםמעצרשתحروब',
       grid: WordGrid.fromLetters(
         width: 11,

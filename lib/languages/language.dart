@@ -3,7 +3,7 @@ import 'package:wordclock/model/word_grid.dart';
 
 final class WordClockGrid {
   final bool isDefault;
-  final bool isTimeCheck;
+  final bool isReference;
 
   final TimeToWords timeToWords;
   final String paddingAlphabet;
@@ -11,7 +11,7 @@ final class WordClockGrid {
 
   const WordClockGrid({
     this.isDefault = false,
-    this.isTimeCheck = false,
+    this.isReference = false,
     required this.timeToWords,
     this.paddingAlphabet = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ',
     required this.grid,
@@ -41,14 +41,14 @@ final class WordClockLanguage {
   WordClockGrid? get defaultGridRef => grids.cast<WordClockGrid?>().firstWhere(
     (g) => g!.isDefault,
     orElse: () => grids.cast<WordClockGrid?>().firstWhere(
-      (g) => g!.isTimeCheck,
+      (g) => g!.isReference,
       orElse: () => grids.isNotEmpty ? grids.first : null,
     ),
   );
 
-  WordClockGrid? get timeCheckGridRef => grids
+  WordClockGrid? get referenceGridRef => grids
       .cast<WordClockGrid?>()
-      .firstWhere((g) => g!.isTimeCheck, orElse: () => null);
+      .firstWhere((g) => g!.isReference, orElse: () => null);
 
   /// Convenience getter for the default time-to-words strategy.
   TimeToWords get timeToWords => defaultGridRef!.timeToWords;

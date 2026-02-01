@@ -1,7 +1,7 @@
 import 'package:wordclock/logic/time_to_words.dart';
 
-class CzechTimeToWords implements TimeToWords {
-  const CzechTimeToWords();
+class ReferenceCzechTimeToWords implements TimeToWords {
+  const ReferenceCzechTimeToWords();
   @override
   String convert(DateTime time) {
     int m = (time.minute ~/ 5) * 5;

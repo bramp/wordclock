@@ -70,29 +70,31 @@ void main() {
     });
   });
 
-  group('EnglishTimeToWords', () {
+  group('ReferenceEnglishTimeToWords', () {
     test('standard behavior (TWENTYFIVE)', () {
-      const converter = EnglishTimeToWords(useSpaceInTwentyFive: false);
+      const converter = ReferenceEnglishTimeToWords(
+        useSpaceInTwentyFive: false,
+      );
       final time = DateTime(2024, 1, 1, 12, 25);
       expect(converter.convert(time), equals('IT IS TWENTYFIVE PAST TWELVE'));
     });
 
     test('new behavior (TWENTY FIVE)', () {
-      const converter = EnglishTimeToWords(useSpaceInTwentyFive: true);
+      const converter = ReferenceEnglishTimeToWords(useSpaceInTwentyFive: true);
       final time = DateTime(2024, 1, 1, 12, 25);
       expect(converter.convert(time), equals('IT IS TWENTY FIVE PAST TWELVE'));
     });
 
     test('twenty five to (new behavior)', () {
-      const converter = EnglishTimeToWords(useSpaceInTwentyFive: true);
+      const converter = ReferenceEnglishTimeToWords(useSpaceInTwentyFive: true);
       final time = DateTime(2024, 1, 1, 12, 35);
       expect(converter.convert(time), equals('IT IS TWENTY FIVE TO ONE'));
     });
   });
 
-  group('EnglishAlternativeTimeToWords', () {
+  group('ReferenceEnglishAlternativeTimeToWords', () {
     test('new behavior (TWENTY FIVE)', () {
-      const converter = EnglishAlternativeTimeToWords(
+      const converter = ReferenceEnglishAlternativeTimeToWords(
         useSpaceInTwentyFive: true,
       );
       final time = DateTime(2024, 1, 1, 12, 25);

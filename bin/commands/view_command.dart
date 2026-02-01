@@ -50,7 +50,7 @@ class ViewCommand extends Command<void> {
     );
 
     if (gridName == 'timecheck') {
-      _printExistingGrid(config, lang.timeCheckGridRef?.grid, 'timeCheckGrid');
+      _printExistingGrid(config, lang.referenceGridRef?.grid, 'timeCheckGrid');
     } else {
       _printExistingGrid(config, lang.defaultGridRef?.grid, 'defaultGrid');
     }

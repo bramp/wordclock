@@ -25,7 +25,10 @@ jobs:
       - name: Analyze
         run: flutter analyze
 
-      - name: Run tests
+      - name: Run tests (human-readable)
+        run: flutter test
+
+      - name: Run tests (machine-readable with coverage)
         run: flutter test --machine --coverage > test_report.json
 
       - name: Convert tests to JUnit

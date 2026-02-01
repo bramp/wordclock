@@ -16,7 +16,7 @@ final greekLanguage = WordClockLanguage(
     // Iterations: 23, Duration: 5ms
     WordClockGrid(
       isDefault: true,
-      timeToWords: GreekTimeToWords(),
+      timeToWords: ReferenceGreekTimeToWords(),
       paddingAlphabet: 'AEHKPTXΔΧ',
       grid: WordGrid.fromLetters(
         width: 11,
@@ -35,8 +35,8 @@ final greekLanguage = WordClockLanguage(
     ),
     // @generated end,
     WordClockGrid(
-      isTimeCheck: true,
-      timeToWords: GreekTimeToWords(),
+      isReference: true,
+      timeToWords: ReferenceGreekTimeToWords(),
       paddingAlphabet: 'AEHKPTXΔΧ',
       grid: WordGrid.fromLetters(
         width: 11,

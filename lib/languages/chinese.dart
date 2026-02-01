@@ -16,7 +16,7 @@ final chineseSimplifiedLanguage = WordClockLanguage(
     // Iterations: 37, Duration: 13ms
     WordClockGrid(
       isDefault: true,
-      timeToWords: ChineseSimplifiedTimeToWords(),
+      timeToWords: ReferenceChineseSimplifiedTimeToWords(),
       paddingAlphabet: '一七三二五八六分十整是昼点',
       grid: WordGrid.fromLetters(
         width: 11,
@@ -35,8 +35,8 @@ final chineseSimplifiedLanguage = WordClockLanguage(
     ),
     // @generated end,
     WordClockGrid(
-      isTimeCheck: true,
-      timeToWords: ChineseSimplifiedTimeToWords(),
+      isReference: true,
+      timeToWords: ReferenceChineseSimplifiedTimeToWords(),
       paddingAlphabet: '一七三二五八六分十整是昼点',
       grid: WordGrid.fromLetters(
         width: 11,
@@ -73,7 +73,7 @@ final chineseTraditionalLanguage = WordClockLanguage(
     // Iterations: 37, Duration: 12ms
     WordClockGrid(
       isDefault: true,
-      timeToWords: ChineseTraditionalTimeToWords(),
+      timeToWords: ReferenceChineseTraditionalTimeToWords(),
       paddingAlphabet: '一七三二五八六分十整是晝點',
       grid: WordGrid.fromLetters(
         width: 11,
@@ -92,8 +92,8 @@ final chineseTraditionalLanguage = WordClockLanguage(
     ),
     // @generated end,
     WordClockGrid(
-      isTimeCheck: true,
-      timeToWords: ChineseTraditionalTimeToWords(),
+      isReference: true,
+      timeToWords: ReferenceChineseTraditionalTimeToWords(),
       paddingAlphabet: '一七三二五八六分十整是晝點',
       grid: WordGrid.fromLetters(
         width: 11,

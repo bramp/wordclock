@@ -16,7 +16,7 @@ final danishLanguage = WordClockLanguage(
     // Iterations: 24, Duration: 3ms
     WordClockGrid(
       isDefault: true,
-      timeToWords: DanishTimeToWords(),
+      timeToWords: ReferenceDanishTimeToWords(),
       paddingAlphabet: 'AEIJKLMNOPRSTV',
       grid: WordGrid.fromLetters(
         width: 11,
@@ -35,8 +35,8 @@ final danishLanguage = WordClockLanguage(
     ),
     // @generated end,
     WordClockGrid(
-      isTimeCheck: true,
-      timeToWords: DanishTimeToWords(),
+      isReference: true,
+      timeToWords: ReferenceDanishTimeToWords(),
       paddingAlphabet: 'AEIJKLMNOPRSTV',
       grid: WordGrid.fromLetters(
         width: 11,

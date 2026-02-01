@@ -16,7 +16,7 @@ final frenchLanguage = WordClockLanguage(
     // Iterations: 3675519, Duration: 877ms
     WordClockGrid(
       isDefault: true,
-      timeToWords: FrenchTimeToWords(),
+      timeToWords: ReferenceFrenchTimeToWords(),
       paddingAlphabet: 'ADEMNOPRSTU',
       grid: WordGrid.fromLetters(
         width: 11,
@@ -35,8 +35,8 @@ final frenchLanguage = WordClockLanguage(
     ),
     // @generated end,
     WordClockGrid(
-      isTimeCheck: true,
-      timeToWords: FrenchTimeToWords(),
+      isReference: true,
+      timeToWords: ReferenceFrenchTimeToWords(),
       paddingAlphabet: 'ADEMNOPRSTU',
       grid: WordGrid.fromLetters(
         width: 11,

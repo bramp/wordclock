@@ -26,7 +26,7 @@ void main() {
           });
         }
 
-        final timeCheckGrid = lang.timeCheckGridRef;
+        final timeCheckGrid = lang.referenceGridRef;
         if (timeCheckGrid != null) {
           test('timeCheckGrid valid', () {
             _validateGrid(

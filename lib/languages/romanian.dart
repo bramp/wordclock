@@ -16,7 +16,7 @@ final romanianLanguage = WordClockLanguage(
     // Iterations: 166517, Duration: 2201ms
     WordClockGrid(
       isDefault: true,
-      timeToWords: RomanianTimeToWords(),
+      timeToWords: ReferenceRomanianTimeToWords(),
       paddingAlphabet: 'ABLMNOPUVZ',
       grid: WordGrid.fromLetters(
         width: 11,
@@ -35,8 +35,8 @@ final romanianLanguage = WordClockLanguage(
     ),
     // @generated end,
     WordClockGrid(
-      isTimeCheck: true,
-      timeToWords: RomanianTimeToWords(),
+      isReference: true,
+      timeToWords: ReferenceRomanianTimeToWords(),
       paddingAlphabet: 'ABLMNOPUVZ',
       grid: WordGrid.fromLetters(
         width: 11,

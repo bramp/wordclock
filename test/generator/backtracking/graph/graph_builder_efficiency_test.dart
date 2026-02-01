@@ -55,6 +55,7 @@ void main() {
       'CA': 2, // Improved from 13 to 2 with multi-strategy
       'DE': 1,
       'SE': 1,
+      'CH': 1,
       // All others default to 0
     };
 

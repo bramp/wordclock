@@ -16,7 +16,7 @@ final norwegianLanguage = WordClockLanguage(
     // Iterations: 21, Duration: 2ms
     WordClockGrid(
       isDefault: true,
-      timeToWords: NorwegianTimeToWords(),
+      timeToWords: ReferenceNorwegianTimeToWords(),
       paddingAlphabet: 'ABDEFGHILMNOPSUVXZl',
       grid: WordGrid.fromLetters(
         width: 11,
@@ -35,8 +35,8 @@ final norwegianLanguage = WordClockLanguage(
     ),
     // @generated end,
     WordClockGrid(
-      isTimeCheck: true,
-      timeToWords: NorwegianTimeToWords(),
+      isReference: true,
+      timeToWords: ReferenceNorwegianTimeToWords(),
       paddingAlphabet: 'ABDEFGHILMNOPSUVXZ',
       grid: WordGrid.fromLetters(
         width: 11,

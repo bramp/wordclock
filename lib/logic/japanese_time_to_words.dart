@@ -48,8 +48,8 @@ class NativeJapaneseTimeToWords implements TimeToWords {
   };
 }
 
-class JapaneseTimeToWords implements TimeToWords {
-  const JapaneseTimeToWords();
+class ReferenceJapaneseTimeToWords implements TimeToWords {
+  const ReferenceJapaneseTimeToWords();
   @override
   String convert(DateTime time) {
     int m = time.minute;

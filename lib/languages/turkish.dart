@@ -16,7 +16,7 @@ final turkishLanguage = WordClockLanguage(
     // Iterations: 191404284, Duration: 36349ms
     WordClockGrid(
       isDefault: true,
-      timeToWords: TurkishTimeToWords(),
+      timeToWords: ReferenceTurkishTimeToWords(),
       paddingAlphabet: 'ADIKMPRSY',
       grid: WordGrid.fromLetters(
         width: 11,
@@ -35,8 +35,8 @@ final turkishLanguage = WordClockLanguage(
     ),
     // @generated end,
     WordClockGrid(
-      isTimeCheck: true,
-      timeToWords: TurkishTimeToWords(),
+      isReference: true,
+      timeToWords: ReferenceTurkishTimeToWords(),
       paddingAlphabet: 'ADIKMPRSY',
       grid: WordGrid.fromLetters(
         width: 11,
