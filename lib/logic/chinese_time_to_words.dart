@@ -167,15 +167,17 @@ class ChineseSimplifiedTimeToWords
     } else if (h == 12) {
       period = '中午';
     } else if (h < 12) {
-      if (h < 6)
+      if (h < 6) {
         period = '凌晨';
-      else
+      } else {
         period = '上午';
+      }
     } else {
-      if (h < 18)
+      if (h < 18) {
         period = '下午';
-      else
+      } else {
         period = '晚上';
+      }
     }
 
     String hStr = _hours(h % 12 == 0 ? 12 : h % 12);
@@ -246,15 +248,17 @@ class ChineseTraditionalTimeToWords
     } else if (h == 12) {
       period = '中午';
     } else if (h < 12) {
-      if (h < 6)
+      if (h < 6) {
         period = '凌晨';
-      else
+      } else {
         period = '上午';
+      }
     } else {
-      if (h < 18)
+      if (h < 18) {
         period = '下午';
-      else
+      } else {
         period = '晚上';
+      }
     }
 
     String hStr = _hours(h % 12 == 0 ? 12 : h % 12);

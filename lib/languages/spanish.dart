@@ -10,13 +10,13 @@ final spanishLanguage = WordClockLanguage(
   description: null,
   grids: [
     // @generated begin - do not edit manually
-    // Generated: 2026-01-31T21:42:23.045100
+    // Generated: 2026-01-31T21:52:13.781637
     // Algorithm: Backtracking
     // Seed: 0
     // Iterations: 25, Duration: 4ms
     WordClockGrid(
       isDefault: true,
-      timeToWords: SpanishTimeToWords(),
+      timeToWords: ReferenceSpanishTimeToWords(),
       paddingAlphabet: 'AEILMNOPS',
       grid: WordGrid.fromLetters(
         width: 11,

@@ -10,7 +10,7 @@ final norwegianLanguage = WordClockLanguage(
   description: null,
   grids: [
     // @generated begin - do not edit manually
-    // Generated: 2026-01-31T21:41:22.434446
+    // Generated: 2026-01-31T21:51:13.154501
     // Algorithm: Backtracking
     // Seed: 0
     // Iterations: 21, Duration: 3ms

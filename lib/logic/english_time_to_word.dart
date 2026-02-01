@@ -111,7 +111,7 @@ class NativeEnglishTimeToWords implements TimeToWords {
 
 /// Standard English (EN).
 class ReferenceEnglishTimeToWords extends _BaseEnglishTimeToWords {
-  const ReferenceEnglishTimeToWords({super.useSpaceInTwentyFive});
+  const ReferenceEnglishTimeToWords({super.useSpaceInTwentyFive = false});
 
   @override
   int get hourDisplayLimit => 35;
@@ -137,7 +137,9 @@ class ReferenceEnglishTimeToWords extends _BaseEnglishTimeToWords {
 /// English Alternative (E2).
 /// Uses "A QUARTER" instead of "QUARTER".
 class ReferenceEnglishAlternativeTimeToWords extends _BaseEnglishTimeToWords {
-  const ReferenceEnglishAlternativeTimeToWords({super.useSpaceInTwentyFive});
+  const ReferenceEnglishAlternativeTimeToWords({
+    super.useSpaceInTwentyFive = true,
+  });
 
   @override
   int get hourDisplayLimit => 35;

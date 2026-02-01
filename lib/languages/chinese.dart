@@ -10,10 +10,10 @@ final chineseSimplifiedLanguage = WordClockLanguage(
   description: 'Simplified',
   grids: [
     // @generated begin - do not edit manually
-    // Generated: 2026-01-31T21:41:17.280224
+    // Generated: 2026-01-31T21:51:07.923522
     // Algorithm: Backtracking
     // Seed: 0
-    // Iterations: 32, Duration: 6ms
+    // Iterations: 32, Duration: 7ms
     WordClockGrid(
       isDefault: true,
       timeToWords: ChineseSimplifiedTimeToWords(),
@@ -67,10 +67,10 @@ final chineseTraditionalLanguage = WordClockLanguage(
   description: 'Traditional',
   grids: [
     // @generated begin - do not edit manually
-    // Generated: 2026-01-31T21:41:17.583998
+    // Generated: 2026-01-31T21:51:08.243023
     // Algorithm: Backtracking
     // Seed: 0
-    // Iterations: 32, Duration: 5ms
+    // Iterations: 32, Duration: 4ms
     WordClockGrid(
       isDefault: true,
       timeToWords: ChineseTraditionalTimeToWords(),

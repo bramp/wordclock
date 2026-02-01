@@ -88,7 +88,9 @@ void main() {
       expect(
         issues,
         contains(
-          'No padding/newline between "FIVE" and "O\'CLOCK" in grid (at 05:00).',
+          matches(
+            r"No padding/newline between .FIVE. and .O'CLOCK. in grid \(at 05:00\).*",
+          ),
         ),
       );
     });

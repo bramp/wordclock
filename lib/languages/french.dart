@@ -10,10 +10,10 @@ final frenchLanguage = WordClockLanguage(
   description: null,
   grids: [
     // @generated begin - do not edit manually
-    // Generated: 2026-01-31T21:41:20.603473
+    // Generated: 2026-01-31T21:51:11.300759
     // Algorithm: Backtracking
     // Seed: 0
-    // Iterations: 3675519, Duration: 930ms
+    // Iterations: 3675519, Duration: 920ms
     WordClockGrid(
       isDefault: true,
       timeToWords: FrenchTimeToWords(),

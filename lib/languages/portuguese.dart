@@ -10,10 +10,10 @@ final portugueseLanguage = WordClockLanguage(
   description: null,
   grids: [
     // @generated begin - do not edit manually
-    // Generated: 2026-01-31T21:41:22.735228
+    // Generated: 2026-01-31T21:51:13.456252
     // Algorithm: Backtracking
     // Seed: 0
-    // Iterations: 26, Duration: 5ms
+    // Iterations: 26, Duration: 6ms
     WordClockGrid(
       isDefault: true,
       timeToWords: PortugueseTimeToWords(),

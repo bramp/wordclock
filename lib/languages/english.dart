@@ -10,10 +10,10 @@ final englishAlternativeLanguage = WordClockLanguage(
   description: 'Alternative',
   grids: [
     // @generated begin - do not edit manually
-    // Generated: 2026-01-31T21:41:19.078532
+    // Generated: 2026-01-31T22:03:12.756432
     // Algorithm: Backtracking
     // Seed: 0
-    // Iterations: 23, Duration: 5ms
+    // Iterations: 23, Duration: 13ms
     WordClockGrid(
       isDefault: true,
       timeToWords: EnglishAlternativeTimeToWords(),
@@ -36,7 +36,9 @@ final englishAlternativeLanguage = WordClockLanguage(
     // @generated end,
     WordClockGrid(
       isReference: true,
-      timeToWords: ReferenceEnglishAlternativeTimeToWords(),
+      timeToWords: ReferenceEnglishAlternativeTimeToWords(
+        useSpaceInTwentyFive: false,
+      ),
       paddingAlphabet: 'ACDEFLMPRSUX',
       grid: WordGrid.fromLetters(
         width: 11,
@@ -52,12 +54,6 @@ final englishAlternativeLanguage = WordClockLanguage(
             'SEVENTWELVE'
             'TENSEO\'CLOCK',
       ),
-      customTokenizer: (phrase) {
-        if (phrase.contains('TWENTY FIVE')) {
-          phrase = phrase.replaceAll('TWENTY FIVE', 'TWENTYFIVE');
-        }
-        return phrase.split(' ').where((w) => w.isNotEmpty).toList();
-      },
     ),
   ],
   minuteIncrement: 5,
@@ -71,7 +67,7 @@ final englishLanguage = WordClockLanguage(
   description: null,
   grids: [
     // @generated begin - do not edit manually
-    // Generated: 2026-01-31T21:41:19.379080
+    // Generated: 2026-01-31T21:51:10.082228
     // Algorithm: Backtracking
     // Seed: 0
     // Iterations: 23, Duration: 4ms
@@ -97,28 +93,22 @@ final englishLanguage = WordClockLanguage(
     // @generated end,
     WordClockGrid(
       isReference: true,
-      timeToWords: ReferenceEnglishTimeToWords(),
+      timeToWords: ReferenceEnglishTimeToWords(useSpaceInTwentyFive: true),
       paddingAlphabet: 'ACDEFLMPRSUX',
       grid: WordGrid.fromLetters(
         width: 11,
         letters:
-            'ITLISASAMPM'
-            'ACQUARTERDC'
-            'TWENTYFIVEX'
-            'HALFSTENFTO'
-            'PASTERUNINE'
-            'ONESIXTHREE'
-            'FOURFIVETWO'
-            'EIGHTELEVEN'
-            'SEVENTWELVE'
-            'TENSEO\'CLOCK',
+            'ITEISLFPMED' // IT IS
+            'CCLEURAHALF' // HALF
+            'QUARTERETEN' // QUARTER TEN
+            'TWENTYDFIVE' // TWENTY FIVE
+            'PASTOCEIGHT' // PAST TO EIGHT
+            'TWELVELEVEN' // TWELVE ELEVEN
+            'SEVENLTHREE' // SEVEN THREE
+            'FIVENINETEN' // FIVE NINE TEN
+            'RFOURCTWONE' // FOUR TWO ONE
+            'XSIXPO\'CLOCK', // SIX O'CLOCK
       ),
-      customTokenizer: (phrase) {
-        if (phrase.contains('TWENTY FIVE')) {
-          phrase = phrase.replaceAll('TWENTY FIVE', 'TWENTYFIVE');
-        }
-        return phrase.split(' ').where((w) => w.isNotEmpty).toList();
-      },
     ),
   ],
   minuteIncrement: 5,

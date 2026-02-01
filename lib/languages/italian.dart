@@ -10,7 +10,7 @@ final italianLanguage = WordClockLanguage(
   description: null,
   grids: [
     // @generated begin - do not edit manually
-    // Generated: 2026-01-31T21:41:21.847684
+    // Generated: 2026-01-31T21:51:12.548686
     // Algorithm: Backtracking
     // Seed: 0
     // Iterations: 25, Duration: 5ms

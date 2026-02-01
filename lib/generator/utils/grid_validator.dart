@@ -41,9 +41,7 @@ class GridValidator {
     final reportedPaddingIssues = <String>{};
 
     WordClockUtils.forEachTime(language, (time, phrase) {
-      final units = customTokenizer != null
-          ? customTokenizer(phrase)
-          : language.tokenize(phrase);
+      final units = language.tokenize(phrase);
 
       // Use the official algorithm to find word sequences, enabling padding check if required
       final sequences = grid.getWordSequences(

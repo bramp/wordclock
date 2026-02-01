@@ -17,7 +17,6 @@ void main() {
               lang,
               defaultGrid.grid,
               timeToWords: defaultGrid.timeToWords,
-              customTokenizer: defaultGrid.customTokenizer,
             );
           });
 
@@ -34,7 +33,6 @@ void main() {
               lang,
               timeCheckGrid.grid,
               timeToWords: timeCheckGrid.timeToWords,
-              customTokenizer: timeCheckGrid.customTokenizer,
             );
           });
         }
@@ -47,14 +45,8 @@ void _validateGrid(
   WordClockLanguage lang,
   WordGrid grid, {
   TimeToWords? timeToWords,
-  List<String> Function(String phrase)? customTokenizer,
 }) {
-  final issues = GridValidator.validate(
-    grid,
-    lang,
-    timeToWords: timeToWords,
-    customTokenizer: customTokenizer,
-  );
+  final issues = GridValidator.validate(grid, lang, timeToWords: timeToWords);
   if (issues.isNotEmpty) {
     fail(
       'Grid validation failed for ${lang.id}:\n${formatGrid(grid)}\n${issues.join('\n')}',

@@ -10,10 +10,10 @@ final turkishLanguage = WordClockLanguage(
   description: null,
   grids: [
     // @generated begin - do not edit manually
-    // Generated: 2026-01-31T21:43:03.360546
+    // Generated: 2026-01-31T21:52:54.474365
     // Algorithm: Backtracking
     // Seed: 0
-    // Iterations: 191404284, Duration: 39418ms
+    // Iterations: 191404284, Duration: 39772ms
     WordClockGrid(
       isDefault: true,
       timeToWords: ReferenceTurkishTimeToWords(),

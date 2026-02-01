@@ -8,7 +8,6 @@ final class WordClockGrid {
   final TimeToWords timeToWords;
   final String paddingAlphabet;
   final WordGrid grid;
-  final List<String> Function(String phrase)? customTokenizer;
 
   const WordClockGrid({
     this.isDefault = false,
@@ -16,7 +15,6 @@ final class WordClockGrid {
     required this.timeToWords,
     this.paddingAlphabet = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ',
     required this.grid,
-    this.customTokenizer,
   });
 }
 

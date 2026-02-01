@@ -10,10 +10,10 @@ final catalanLanguage = WordClockLanguage(
   description: null,
   grids: [
     // @generated begin - do not edit manually
-    // Generated: 2026-01-31T21:41:16.976076
+    // Generated: 2026-01-31T21:51:07.610928
     // Algorithm: Backtracking
     // Seed: 0
-    // Iterations: 83, Duration: 6ms
+    // Iterations: 83, Duration: 7ms
     WordClockGrid(
       isDefault: true,
       timeToWords: CatalanTimeToWords(),

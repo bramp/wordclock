@@ -10,7 +10,7 @@ final berneseGermanLanguage = WordClockLanguage(
   description: 'Bernese German',
   grids: [
     // @generated begin - do not edit manually
-    // Generated: 2026-01-31T21:41:16.631456
+    // Generated: 2026-01-31T21:51:07.271042
     // Algorithm: Backtracking
     // Seed: 0
     // Iterations: 22, Duration: 14ms
@@ -65,10 +65,10 @@ final germanAlternativeLanguage = WordClockLanguage(
   description: 'Alternative',
   grids: [
     // @generated begin - do not edit manually
-    // Generated: 2026-01-31T21:41:20.920587
+    // Generated: 2026-01-31T21:51:11.605973
     // Algorithm: Backtracking
     // Seed: 0
-    // Iterations: 23, Duration: 12ms
+    // Iterations: 23, Duration: 4ms
     WordClockGrid(
       isDefault: true,
       timeToWords: GermanAlternativeTimeToWords(),
@@ -120,10 +120,10 @@ final swabianGermanLanguage = WordClockLanguage(
   description: 'Alternative 2',
   grids: [
     // @generated begin - do not edit manually
-    // Generated: 2026-01-31T21:42:23.354203
+    // Generated: 2026-01-31T21:52:14.085825
     // Algorithm: Backtracking
     // Seed: 0
-    // Iterations: 22, Duration: 3ms
+    // Iterations: 22, Duration: 4ms
     WordClockGrid(
       isDefault: true,
       timeToWords: SwabianGermanTimeToWords(),
@@ -175,7 +175,7 @@ final eastGermanLanguage = WordClockLanguage(
   description: 'Alternative 3',
   grids: [
     // @generated begin - do not edit manually
-    // Generated: 2026-01-31T21:41:18.780424
+    // Generated: 2026-01-31T21:51:09.474692
     // Algorithm: Backtracking
     // Seed: 0
     // Iterations: 248, Duration: 5ms
@@ -230,10 +230,10 @@ final germanLanguage = WordClockLanguage(
   description: null,
   grids: [
     // @generated begin - do not edit manually
-    // Generated: 2026-01-31T21:41:21.239754
+    // Generated: 2026-01-31T21:51:11.910679
     // Algorithm: Backtracking
     // Seed: 0
-    // Iterations: 23, Duration: 4ms
+    // Iterations: 23, Duration: 5ms
     WordClockGrid(
       isDefault: true,
       timeToWords: GermanTimeToWords(),
