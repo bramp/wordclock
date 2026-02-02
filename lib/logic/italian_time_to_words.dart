@@ -115,28 +115,9 @@ class ReferenceItalianTimeToWords implements TimeToWords {
   }
 }
 
-/// Italian implementation that differs from [ReferenceItalianTimeToWords] by:
-/// - Using "È MEZZANOTTE" (midnight) and "È MEZZOGIORNO" (noon) for more idiomatic phrasing.
-/// - Ensuring correct gender agreement ("E MEZZO") when used with mezzogiorno/mezzanotte.
+/// Italian implementation.
+/// Currently identical to ReferenceItalianTimeToWords as "SONO LE DODICI" fits better
+/// in the 11x10 grid than "È MEZZOGIORNO"/"È MEZZANOTTE".
 class ItalianTimeToWords extends ReferenceItalianTimeToWords {
   const ItalianTimeToWords();
-
-  @override
-  String convert(DateTime time) {
-    int m = time.minute;
-    int h = time.hour;
-    m = m - (m % 5);
-
-    // Midnight / Noon idiomatic phrasing
-    if (m == 0 || m == 30) {
-      if (h % 24 == 0) {
-        return m == 0 ? 'È MEZZANOTTE' : 'È MEZZANOTTE E MEZZO';
-      }
-      if (h % 24 == 12) {
-        return m == 0 ? 'È MEZZOGIORNO' : 'È MEZZOGIORNO E MEZZO';
-      }
-    }
-
-    return super.convert(time);
-  }
 }

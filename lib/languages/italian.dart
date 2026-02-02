@@ -10,13 +10,13 @@ final italianLanguage = WordClockLanguage(
   description: null,
   grids: [
     // @generated begin - do not edit manually
-    // Generated: 2026-01-31T21:51:12.548686
+    // Generated: 2026-02-02T16:22:55.157633
     // Algorithm: Backtracking
     // Seed: 0
-    // Iterations: 25, Duration: 5ms
+    // Iterations: 25, Duration: 14ms
     WordClockGrid(
       isDefault: true,
-      timeToWords: ReferenceItalianTimeToWords(),
+      timeToWords: ItalianTimeToWords(),
       paddingAlphabet: 'ABCEKLORSZ',
       grid: WordGrid.fromLetters(
         width: 11,
