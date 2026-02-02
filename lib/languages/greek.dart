@@ -10,27 +10,27 @@ final greekLanguage = WordClockLanguage(
   description: null,
   grids: [
     // @generated begin - do not edit manually
-    // Generated: 2026-01-31T21:51:12.244701
+    // Generated: 2026-02-01T17:01:56.356869
     // Algorithm: Backtracking
     // Seed: 0
-    // Iterations: 23, Duration: 5ms
+    // Iterations: 23, Duration: 14ms
     WordClockGrid(
       isDefault: true,
-      timeToWords: ReferenceGreekTimeToWords(),
-      paddingAlphabet: 'AEHKPTXΔΧ',
+      timeToWords: GreekTimeToWords(),
+      paddingAlphabet: 'ΑΔΕΗΙΚΜΝΞΟΠΡΣΤΥΦΩ',
       grid: WordGrid.fromLetters(
         width: 11,
         letters:
-            'HKΩPATEINAI' // H ΩPA EINAI
-            'TEΣΣEPIΣMIA' // TEΣΣEPIΣ MIA
-            'ΔΩΔEKATPEIΣ' // ΔΩΔEKA ΔEKA TPEIΣ
-            'ENTEKAΠENTE' // ENTEKA ΠENTE
-            'EENNIAΔEΦTA' // ENNIA EΦTA
-            'OΧTΩΔYOEΞIX' // OΧTΩ ΔYO EΞI
-            'XTΠAPAPPKAI' // ΠAPA KAI
-            'TETAPTOΔEKA' // TETAPTO ΔEKA
-            'EIKOΣIΧMIΣH' // EIKOΣI MIΣH
-            'XPHXKHΠENTE', // ΠENTE
+            'ΗΩΩΡΑΑΕΙΝΑΙ' // Η ΩΡΑ ΕΙΝΑΙ
+            'ΤΕΣΣΕΡΙΣΜΙΑ' // ΤΕΣΣΕΡΙΣ ΜΙΑ
+            'ΔΩΔΕΚΑΤΡΕΙΣ' // ΔΩΔΕΚΑ ΔΕΚΑ ΤΡΕΙΣ
+            'ΕΝΤΕΚΑΠΕΝΤΕ' // ΕΝΤΕΚΑ ΠΕΝΤΕ
+            'ΑΕΝΝΕΑΜΕΦΤΑ' // ΕΝΝΕΑ ΕΦΤΑ
+            'ΟΚΤΩΔΥΟΕΞΙΥ' // ΟΚΤΩ ΔΥΟ ΕΞΙ
+            'ΤΕΠΑΡΑΩΑΚΑΙ' // ΠΑΡΑ ΚΑΙ
+            'ΤΕΤΑΡΤΟΔΕΚΑ' // ΤΕΤΑΡΤΟ ΔΕΚΑ
+            'ΕΙΚΟΣΙΑΜΙΣΗ' // ΕΙΚΟΣΙ ΜΙΣΗ
+            'ΥΝΠΗΗΦΠΕΝΤΕ', // ΠΕΝΤΕ
       ),
     ),
     // @generated end,

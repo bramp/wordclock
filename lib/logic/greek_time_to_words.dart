@@ -56,9 +56,8 @@ class ReferenceGreekTimeToWords implements TimeToWords {
 
 /// Greek implementation that differs from [ReferenceGreekTimeToWords] by:
 /// - Fixing orthography (using Greek letters instead of mixed Latin/Greek).
-/// - Correcting number spellings (e.g., "ΟΚΤΩ" instead of "ΟΧΤΩ", "ΕΝΝΕΑ" instead of "ΕΝΝΙΑ").
-/// - Flipping the word order for times after 30 minutes (e.g., "ΔΕΚΑ ΠΑΡΑ ΜΙΑ" instead of "ΜΙΑ ΠΑΡΑ ΔΕΚΑ").
-/// - Using "ΕΙΝΑΙ" as a more compact intro instead of "Η ΩΡΑ ΕΙΝΑΙ".
+/// - Correcting number spellings.
+/// - Using "ΕΙΝΑΙ" to save grid space.
 class GreekTimeToWords extends ReferenceGreekTimeToWords {
   const GreekTimeToWords();
 
@@ -87,31 +86,40 @@ class GreekTimeToWords extends ReferenceGreekTimeToWords {
       'ΕΝΤΕΚΑ', // 11
     ];
 
-    const intro = 'ΕΙΝΑΙ'; // It is
+    const intro = 'Η ΩΡΑ ΕΙΝΑΙ'; // The time is
 
     if (m == 0) return '$intro ${hourWords[displayHour]}';
 
+    // Logic: Intro -> Hour -> [Connector] -> Minute
+    // This order (Hour first) avoids cycles in the grid graph.
+    // Example: "Five (Hour) minus Ten (Minute)" -> Hour->PARA->Minute.
+
+    String delta = '';
+
     if (m <= 30) {
-      final delta = switch (m) {
-        5 => 'ΚΑΙ ΠΕΝΤΕ', // and five
-        10 => 'ΚΑΙ ΔΕΚΑ', // and ten
-        15 => 'ΚΑΙ ΤΕΤΑΡΤΟ', // and a quarter
-        20 => 'ΚΑΙ ΕΙΚΟΣΙ', // and twenty
-        25 => 'ΚΑΙ ΕΙΚΟΣΙ ΠΕΝΤΕ', // and twenty-five
-        30 => 'ΚΑΙ ΜΙΣΗ', // and half
+      // Past: Hour KAI Minute
+      delta = switch (m) {
+        5 => ' ΚΑΙ ΠΕΝΤΕ',
+        10 => ' ΚΑΙ ΔΕΚΑ',
+        15 => ' ΚΑΙ ΤΕΤΑΡΤΟ',
+        20 => ' ΚΑΙ ΕΙΚΟΣΙ',
+        25 => ' ΚΑΙ ΕΙΚΟΣΙ ΠΕΝΤΕ',
+        30 => ' ΚΑΙ ΜΙΣΗ',
         _ => '',
       };
-      return '$intro ${hourWords[displayHour]} $delta';
     } else {
-      final delta = switch (m) {
-        35 => 'ΕΙΚΟΣΙ ΠΕΝΤΕ ΠΑΡΑ', // twenty-five until
-        40 => 'ΕΙΚΟΣΙ ΠΑΡΑ', // twenty until
-        45 => 'ΤΕΤΑΡΤΟ ΠΑΡΑ', // a quarter until
-        50 => 'ΔΕΚΑ ΠΑΡΑ', // ten until
-        55 => 'ΠΕΝΤΕ ΠΑΡΑ', // five until
+      // To: Hour PARA Minute
+      // (Reverted to Reference order to solve grid cycle issues)
+      delta = switch (m) {
+        35 => ' ΠΑΡΑ ΕΙΚΟΣΙ ΠΕΝΤΕ',
+        40 => ' ΠΑΡΑ ΕΙΚΟΣΙ',
+        45 => ' ΠΑΡΑ ΤΕΤΑΡΤΟ',
+        50 => ' ΠΑΡΑ ΔΕΚΑ',
+        55 => ' ΠΑΡΑ ΠΕΝΤΕ',
         _ => '',
       };
-      return '$intro $delta ${hourWords[displayHour]}';
     }
+
+    return '$intro ${hourWords[displayHour]}$delta';
   }
 }
