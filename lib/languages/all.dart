@@ -18,6 +18,7 @@ import 'package:wordclock/languages/romanian.dart';
 // import 'package:wordclock/languages/russian.dart';
 import 'package:wordclock/languages/spanish.dart';
 import 'package:wordclock/languages/swedish.dart';
+import 'package:wordclock/languages/tamil.dart';
 import 'package:wordclock/languages/turkish.dart';
 
 class WordClockLanguages {
@@ -48,6 +49,7 @@ class WordClockLanguages {
     spanishLanguage,
     swabianGermanLanguage,
     swedishLanguage,
+    tamilLanguage,
     turkishLanguage,
     // keep-sorted end
   ];

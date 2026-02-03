@@ -1,3 +1,4 @@
+import 'package:characters/characters.dart';
 import 'package:wordclock/model/types.dart';
 
 class WordGrid {
@@ -39,8 +40,7 @@ class WordGrid {
     bool mergeApostrophes = true,
   }) {
     final List<Cell> result = [];
-    for (int i = 0; i < letters.length; i++) {
-      final char = letters[i];
+    for (final char in letters.characters) {
       // Merge ' or ’ with the previous character if applicable
       if (mergeApostrophes &&
           (char == "'" || char == "’") &&
