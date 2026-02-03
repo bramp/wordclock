@@ -10,20 +10,20 @@ final turkishLanguage = WordClockLanguage(
   description: null,
   grids: [
     // @generated begin - do not edit manually
-    // Generated: 2026-01-31T21:52:54.474365
+    // Generated: 2026-02-02T20:30:08.074202
     // Algorithm: Backtracking
     // Seed: 0
-    // Iterations: 191404284, Duration: 39772ms
+    // Iterations: 191404284, Duration: 38053ms
     WordClockGrid(
       isDefault: true,
-      timeToWords: ReferenceTurkishTimeToWords(),
+      timeToWords: TurkishTimeToWords(),
       paddingAlphabet: 'ADIKMPRSY',
       grid: WordGrid.fromLetters(
         width: 11,
         letters:
             'SAATKALTIYI' // SAAT ALTIYI ALTI
             'DOKUZUDÖRDÜ' // DOKUZU DOKUZ DÖRDÜ
-            'SEKIZİPBEŞİ' // SEKIZİ SEKIZ BEŞİ
+            'SEKİZİPBEŞİ' // SEKİZİ SEKİZ BEŞİ
             'DYEDİYİSÜÇÜ' // YEDİYİ YEDİ ÜÇÜ ÜÇ
             'ONURONRBİRİ' // ONU ON BİRİ BİR
             'İKİYİPYİRMİ' // İKİYİ İKİ YİRMİ

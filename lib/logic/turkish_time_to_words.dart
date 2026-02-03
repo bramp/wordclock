@@ -82,3 +82,87 @@ class ReferenceTurkishTimeToWords implements TimeToWords {
     return words.replaceAll('  ', ' ').trim();
   }
 }
+
+/// Implements the Turkish time-to-words logic with improvements over the reference implementation.
+///
+/// Differences from [ReferenceTurkishTimeToWords]:
+/// 1. **Formal Grammar**: Uses the accusative case for hour words in "geçiyor" (past) phrases
+///    (e.g., "SAAT BİRİ BEŞ GEÇİYOR"), similar to the reference but consistent with formal usage.
+///    This provides more visual variety on the grid compared to the colloquial nominative form.
+/// 2. **Spelling Validations**: Corrects the spelling of "SEKİZ" (was "SEKIZ" in reference) and
+///    ensures "ELLİ" uses the dotted 'İ'. Also ensures "SEKİZİ" and "DÖRDÜ" are spelled correctly
+///    in their accusative forms.
+class TurkishTimeToWords implements TimeToWords {
+  const TurkishTimeToWords();
+  @override
+  String convert(DateTime time) {
+    int m = time.minute;
+    int h = time.hour;
+
+    // Round down to nearest 5 minutes
+    m = m - (m % 5);
+
+    final displayHour = h % 12;
+
+    // Nominative forms for exact hours and half hours
+    String hourNominative = switch (displayHour) {
+      0 => 'ON İKİ',
+      1 => 'BİR',
+      2 => 'İKİ',
+      3 => 'ÜÇ',
+      4 => 'DÖRT',
+      5 => 'BEŞ',
+      6 => 'ALTI',
+      7 => 'YEDİ',
+      8 => 'SEKİZ', // Fixed spelling (was SEKIZ)
+      9 => 'DOKUZ',
+      10 => 'ON',
+      11 => 'ON BİR',
+      _ => '',
+    };
+
+    if (m == 0) {
+      return 'SAAT $hourNominative';
+    }
+
+    if (m == 30) {
+      return 'SAAT $hourNominative BUÇUK';
+    }
+
+    // Accusative forms for "passing" (geçiyor) phrases
+    // These must define the object of the verb "geçiyor" (passing [the hour])
+    String hourAccusative = switch (displayHour) {
+      0 => 'ON İKİYİ',
+      1 => 'BİRİ',
+      2 => 'İKİYİ',
+      3 => 'ÜÇÜ',
+      4 => 'DÖRDÜ', // T softens to D
+      5 => 'BEŞİ',
+      6 => 'ALTIYI',
+      7 => 'YEDİYİ',
+      8 => 'SEKİZİ', // Fixed spelling (dotted İ)
+      9 => 'DOKUZU',
+      10 => 'ONU',
+      11 => 'ON BİRİ',
+      _ => '',
+    };
+
+    // Minutes > 0 and != 30
+    String minuteWord = switch (m) {
+      5 => 'BEŞ',
+      10 => 'ON',
+      15 => 'ÇEYREK',
+      20 => 'YİRMİ',
+      25 => 'YİRMİ BEŞ',
+      35 => 'OTUZ BEŞ',
+      40 => 'KIRK',
+      45 => 'KIRK BEŞ',
+      50 => 'ELLİ', // Ensure dotted İ
+      55 => 'ELLİ BEŞ',
+      _ => '',
+    };
+
+    // Formal: SAAT + HOUR(Accusative) + MINUTE + GEÇİYOR
+    return 'SAAT $hourAccusative $minuteWord GEÇİYOR';
+  }
+}
