@@ -31,10 +31,13 @@ class ClockLetter extends StatelessWidget {
           opacity: isActive ? 1.0 : 0.0,
           duration: duration,
           curve: curve,
-          child: Text(
-            char,
-            // For opacity fade, we always render the "Active" look and just fade its visibility
-            style: activeStyle.copyWith(fontSize: fontSize),
+          child: FittedBox(
+            fit: BoxFit.scaleDown,
+            child: Text(
+              char,
+              // For opacity fade, we always render the "Active" look and just fade its visibility
+              style: activeStyle.copyWith(fontSize: fontSize),
+            ),
           ),
         ),
       );
@@ -45,7 +48,10 @@ class ClockLetter extends StatelessWidget {
         duration: duration,
         curve: curve,
         style: isActive ? activeStyle : inactiveStyle,
-        child: Text(char, style: TextStyle(fontSize: fontSize)),
+        child: FittedBox(
+          fit: BoxFit.scaleDown,
+          child: Text(char, style: TextStyle(fontSize: fontSize)),
+        ),
       ),
     );
   }
