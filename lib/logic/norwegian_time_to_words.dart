@@ -1,7 +1,44 @@
 import 'package:wordclock/logic/time_to_words.dart';
 
-class ReferenceNorwegianTimeToWords implements TimeToWords {
-  const ReferenceNorwegianTimeToWords();
+/// Base implementation for Norwegian language.
+abstract class _BaseNorwegianTimeToWords implements TimeToWords {
+  final String ten;
+  final String four;
+
+  const _BaseNorwegianTimeToWords({required this.ten, required this.four});
+
+  String getHour(int hour) => switch (hour) {
+    0 => 'TOLV',
+    1 => 'ETT',
+    2 => 'TO',
+    3 => 'TRE',
+    4 => four,
+    5 => 'FEM',
+    6 => 'SEKS',
+    7 => 'SYV',
+    8 => 'ÅTTE',
+    9 => 'NI',
+    10 => ten,
+    11 => 'ELLEVE',
+    _ => '',
+  };
+
+  String getDelta(int minute) => switch (minute) {
+    0 => '',
+    5 => ' FEM OVER',
+    10 => ' $ten OVER',
+    15 => ' KVART OVER',
+    20 => ' $ten PÅ HALV',
+    25 => ' FEM PÅ HALV',
+    30 => ' HALV',
+    35 => ' FEM OVER HALV',
+    40 => ' $ten OVER HALV',
+    45 => ' KVART PÅ',
+    50 => ' $ten PÅ',
+    55 => ' FEM PÅ',
+    _ => '',
+  };
+
   @override
   String convert(DateTime time) {
     int m = time.minute;
@@ -16,58 +53,24 @@ class ReferenceNorwegianTimeToWords implements TimeToWords {
     }
 
     final displayHour = h % 12;
+    final exact = getHour(displayHour);
+    final delta = getDelta(m);
 
-    String words = 'KLOKKEN ER'; // The clock is
-
-    // 5. Delta (Intro + Delta + Exact)
-    words += switch (m) {
-      0 => '',
-      5 => ' FEM OVER', // Five over
-      10 => ' Tl OVER', // Ten over (Scriptable data uses lowercase L)
-      15 => ' KVART OVER', // Quarter over
-      20 => ' Tl PÅ HALV', // Ten before half
-      25 => ' FEM PÅ HALV', // Five before half
-      30 => ' HALV', // Half (to)
-      35 => ' FEM OVER HALV', // Five after half
-      40 => ' Tl OVER HALV', // Ten after half
-      45 => ' KVART PÅ', // Quarter to
-      50 => ' Tl PÅ', // Ten to
-      55 => ' FEM PÅ', // Five to
-      _ => '',
-    };
-
-    // 6. Exact hour
-    words +=
-        " ${switch (displayHour) {
-          0 => 'TOLV', // 12
-          1 => 'ETT', // 1
-          2 => 'TO', // 2
-          3 => 'TRE', // 3
-          4 => 'FlRE', // 4 (Wait, is it FlRE?)
-          5 => 'FEM', // 5
-          6 => 'SEKS', // 6
-          7 => 'SYV', // 7
-          8 => 'ÅTTE', // 8
-          9 => 'NI', // 9
-          10 => 'Tl', // 10 (lowercase L)
-          11 => 'ELLEVE', // 11
-          _ => '',
-        }}";
-
-    return words.replaceAll('  ', ' ').trim();
+    return 'KLOKKEN ER$delta $exact'.replaceAll('  ', ' ').trim();
   }
 }
 
-/// Norwegian implementation that differs from [ReferenceNorwegianTimeToWords] by:
-/// - Fixing typos "Tl" -> "TI" and "FlRE" -> "FIRE" found in the reference data.
-class NorwegianTimeToWords extends ReferenceNorwegianTimeToWords {
-  const NorwegianTimeToWords();
+/// Norwegian (NO) Reference implementation.
+class ReferenceNorwegianTimeToWords extends _BaseNorwegianTimeToWords {
+  const ReferenceNorwegianTimeToWords()
+    : super(
+        ten: 'Tl', // Note: Scriptable data used lowercase L
+        four: 'FlRE',
+      );
+}
 
-  @override
-  String convert(DateTime time) {
-    return super
-        .convert(time)
-        .replaceAll('Tl', 'TI')
-        .replaceAll('FlRE', 'FIRE');
-  }
+/// Norwegian implementation.
+/// Fixes typos in the reference data.
+class NorwegianTimeToWords extends _BaseNorwegianTimeToWords {
+  const NorwegianTimeToWords() : super(ten: 'TI', four: 'FIRE');
 }

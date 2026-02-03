@@ -1,14 +1,14 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:wordclock/logic/english_time_to_word.dart';
+import 'package:wordclock/logic/english_time_to_words.dart';
 
 void main() {
-  group('NativeEnglishTimeToWords', () {
-    const converter = NativeEnglishTimeToWords();
+  group('EnglishTimeToWords', () {
+    const converter = EnglishTimeToWords();
 
-    test('10:00 is IT IS TEN OCLOCK', () {
+    test("10:00 is IT IS TEN O’CLOCK", () {
       expect(
         converter.convert(DateTime(2023, 1, 1, 10, 0)),
-        "IT IS TEN OCLOCK",
+        "IT IS TEN O’CLOCK",
       );
     });
 
@@ -48,17 +48,17 @@ void main() {
       );
     });
 
-    test('12:00 is IT IS TWELVE OCLOCK', () {
+    test("12:00 is IT IS TWELVE O’CLOCK", () {
       expect(
         converter.convert(DateTime(2023, 1, 1, 12, 0)),
-        "IT IS TWELVE OCLOCK",
+        "IT IS TWELVE O’CLOCK",
       );
     });
 
-    test('Rounding: 10:02 -> 10:00 (TEN OCLOCK)', () {
+    test("Rounding: 10:02 -> 10:00 (TEN O’CLOCK)", () {
       expect(
         converter.convert(DateTime(2023, 1, 1, 10, 2)),
-        "IT IS TEN OCLOCK",
+        "IT IS TEN O’CLOCK",
       );
     });
 

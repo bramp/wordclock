@@ -2,7 +2,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:wordclock/generator/utils/grid_validator.dart';
 import 'package:wordclock/languages/language.dart';
 import 'package:wordclock/languages/english.dart';
-import 'package:wordclock/logic/english_time_to_word.dart';
+import 'package:wordclock/logic/english_time_to_words.dart';
 import 'package:wordclock/model/word_grid.dart';
 import 'package:wordclock/logic/time_to_words.dart';
 

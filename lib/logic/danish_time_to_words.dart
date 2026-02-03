@@ -1,7 +1,46 @@
 import 'package:wordclock/logic/time_to_words.dart';
 
-class ReferenceDanishTimeToWords implements TimeToWords {
-  const ReferenceDanishTimeToWords();
+/// Base implementation for Danish language.
+abstract class _BaseDanishTimeToWords implements TimeToWords {
+  final bool includeMinutter;
+
+  const _BaseDanishTimeToWords({required this.includeMinutter});
+
+  String getHour(int hour) => switch (hour) {
+    0 => 'TOLV',
+    1 => 'ET',
+    2 => 'TO',
+    3 => 'TRE',
+    4 => 'FIRE',
+    5 => 'FEM',
+    6 => 'SEKS',
+    7 => 'SYV',
+    8 => 'OTTE',
+    9 => 'NI',
+    10 => 'TI',
+    11 => 'ELLEVE',
+    _ => '',
+  };
+
+  String getDelta(int minute) {
+    final m = includeMinutter ? ' MINUTTER' : '';
+    return switch (minute) {
+      0 => '',
+      5 => ' FEM$m OVER',
+      10 => ' TI$m OVER',
+      15 => ' KVART OVER',
+      20 => ' TYVE$m OVER',
+      25 => ' FEM$m I HALV',
+      30 => ' HALV',
+      35 => ' FEM$m OVER HALV',
+      40 => ' TYVE$m I',
+      45 => ' KVART I',
+      50 => ' TI$m I',
+      55 => ' FEM$m I',
+      _ => '',
+    };
+  }
+
   @override
   String convert(DateTime time) {
     int m = time.minute;
@@ -16,57 +55,20 @@ class ReferenceDanishTimeToWords implements TimeToWords {
     }
 
     final displayHour = h % 12;
+    final exact = getHour(displayHour);
+    final delta = getDelta(m);
 
-    String words = 'KLOKKEN ER'; // The clock is
-
-    // 5. Delta
-    words += switch (m) {
-      0 => '',
-      5 => ' FEM MINUTTER OVER', // Five minutes over
-      10 => ' TI MINUTTER OVER', // Ten minutes over
-      15 => ' KVART OVER', // Quarter over
-      20 => ' TYVE MINUTTER OVER', // Twenty minutes over
-      25 => ' FEM MINUTTER I HALV', // Five minutes before half
-      30 => ' HALV', // Half (to)
-      35 => ' FEM MINUTTER OVER HALV', // Five minutes after half
-      40 => ' TYVE MINUTTER I', // Twenty minutes before
-      45 => ' KVART I', // Quarter before
-      50 => ' TI MINUTTER I', // Ten minutes before
-      55 => ' FEM MINUTTER I', // Five minutes before
-      _ => '',
-    };
-
-    // 6. Exact hour
-    words +=
-        " ${switch (displayHour) {
-          0 => 'TOLV', // 12
-          1 => 'ET', // 1
-          2 => 'TO', // 2
-          3 => 'TRE', // 3
-          4 => 'FIRE', // 4
-          5 => 'FEM', // 5
-          6 => 'SEKS', // 6
-          7 => 'SYV', // 7
-          8 => 'OTTE', // 8
-          9 => 'NI', // 9
-          10 => 'TI', // 10
-          11 => 'ELLEVE', // 11
-          _ => '',
-        }}";
-
-    return words.replaceAll('  ', ' ').trim();
+    return 'KLOKKEN ER$delta $exact'.replaceAll('  ', ' ').trim();
   }
 }
 
-/// Danish implementation that differs from [ReferenceDanishTimeToWords] by:
-/// - Removing the redundant word "MINUTTER" from time phrases.
-class DanishTimeToWords extends ReferenceDanishTimeToWords {
-  const DanishTimeToWords();
+/// Danish (DK) Reference implementation.
+class ReferenceDanishTimeToWords extends _BaseDanishTimeToWords {
+  const ReferenceDanishTimeToWords() : super(includeMinutter: true);
+}
 
-  @override
-  String convert(DateTime time) {
-    // Recommendation: Drop the redundant word "MINUTTER" to improve naturalness and compactness.
-    final result = super.convert(time);
-    return result.replaceAll(' MINUTTER', '');
-  }
+/// Danish implementation.
+/// Removes the redundant word "MINUTTER".
+class DanishTimeToWords extends _BaseDanishTimeToWords {
+  const DanishTimeToWords() : super(includeMinutter: false);
 }

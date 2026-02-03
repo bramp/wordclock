@@ -1,16 +1,16 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:wordclock/logic/german_time_to_word.dart';
+import 'package:wordclock/logic/german_time_to_words.dart';
 
 void main() {
-  group('NativeGermanTimeToWords', () {
-    const converter = NativeGermanTimeToWords();
+  group('GermanTimeToWords', () {
+    const converter = GermanTimeToWords();
 
-    test('10:00 is ES IST ZEHN UHR', () {
-      expect(converter.convert(DateTime(2023, 1, 1, 10, 0)), "ES IST ZEHN UHR");
+    test('10:00 is ES IST ZEHN', () {
+      expect(converter.convert(DateTime(2023, 1, 1, 10, 0)), "ES IST ZEHN");
     });
 
-    test('01:00 is ES IST EIN UHR', () {
-      expect(converter.convert(DateTime(2023, 1, 1, 1, 0)), "ES IST EIN UHR");
+    test('01:00 is ES IST EINS', () {
+      expect(converter.convert(DateTime(2023, 1, 1, 1, 0)), "ES IST EINS");
     });
 
     test('10:05 is ES IST FÜNF NACH ZEHN', () {
@@ -19,47 +19,25 @@ void main() {
         "ES IST FÜNF NACH ZEHN",
       );
     });
+  });
 
-    test('10:15 is ES IST VIERTEL NACH ZEHN', () {
-      expect(
-        converter.convert(DateTime(2023, 1, 1, 10, 15)),
-        "ES IST VIERTEL NACH ZEHN",
-      );
+  group('ReferenceGermanTimeToWords', () {
+    const converter = ReferenceGermanTimeToWords();
+
+    test('10:00 is ES IST ZEHN UHR', () {
+      expect(converter.convert(DateTime(2023, 1, 1, 10, 0)), "ES IST ZEHN UHR");
     });
 
-    test('10:25 is ES IST FÜNF VOR HALB ELF', () {
-      expect(
-        converter.convert(DateTime(2023, 1, 1, 10, 25)),
-        "ES IST FÜNF VOR HALB ELF",
-      );
+    test('01:00 is ES IST EIN UHR', () {
+      expect(converter.convert(DateTime(2023, 1, 1, 1, 0)), "ES IST EIN UHR");
     });
+  });
 
-    test('10:30 is ES IST HALB ELF', () {
-      expect(
-        converter.convert(DateTime(2023, 1, 1, 10, 30)),
-        "ES IST HALB ELF",
-      );
-    });
+  group('BerneseGermanTimeToWords', () {
+    const converter = BerneseGermanTimeToWords();
 
-    test('10:35 is ES IST FÜNF NACH HALB ELF', () {
-      expect(
-        converter.convert(DateTime(2023, 1, 1, 10, 35)),
-        "ES IST FÜNF NACH HALB ELF",
-      );
-    });
-
-    test('10:45 is ES IST VIERTEL VOR ELF', () {
-      expect(
-        converter.convert(DateTime(2023, 1, 1, 10, 45)),
-        "ES IST VIERTEL VOR ELF",
-      );
-    });
-
-    test('10:55 is ES IST FÜNF VOR ELF', () {
-      expect(
-        converter.convert(DateTime(2023, 1, 1, 10, 55)),
-        "ES IST FÜNF VOR ELF",
-      );
+    test('10:00 is ES ISCH ZÄNI', () {
+      expect(converter.convert(DateTime(2023, 1, 1, 10, 0)), "ES ISCH ZÄNI");
     });
   });
 }

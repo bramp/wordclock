@@ -1,101 +1,75 @@
 import 'package:wordclock/logic/time_to_words.dart';
 
-class ReferenceCzechTimeToWords implements TimeToWords {
-  const ReferenceCzechTimeToWords();
+/// Base implementation for Czech language.
+abstract class _BaseCzechTimeToWords implements TimeToWords {
+  final bool useJsou;
+  final String fiveMinutePhrase;
+
+  const _BaseCzechTimeToWords({
+    required this.useJsou,
+    required this.fiveMinutePhrase,
+  });
+
+  String getHour(int hour) => switch (hour % 12) {
+    0 => 'DVANÁCT',
+    1 => 'JEDNA',
+    2 => 'DVĚ',
+    3 => 'TŘI',
+    4 => 'ČTYŘI',
+    5 => 'PĚT',
+    6 => 'ŠEST',
+    7 => 'SEDM',
+    8 => 'OSM',
+    9 => 'DEVĚT',
+    10 => 'DESET',
+    11 => 'JEDENÁCT',
+    _ => '',
+  };
+
+  String getIntro(int hour) {
+    if (!useJsou) return 'JE';
+    return switch (hour % 12) {
+      2 || 3 || 4 => 'JSOU',
+      _ => 'JE',
+    };
+  }
+
+  String getDelta(int minute) => switch (minute) {
+    0 => '',
+    5 => fiveMinutePhrase,
+    10 => 'DESET',
+    15 => 'PATNÁCT',
+    20 => 'DVACET',
+    25 => 'DVACET PĚT',
+    30 => 'TŘICET',
+    35 => 'TŘICET PĚT',
+    40 => 'ČTYŘICET',
+    45 => 'ČTYŘICET PĚT',
+    50 => 'PADESÁT',
+    55 => 'PADESÁT PĚT',
+    _ => '',
+  };
+
   @override
   String convert(DateTime time) {
     int m = (time.minute ~/ 5) * 5;
-    int h = time.hour % 12;
+    int h = time.hour;
 
-    String exact = switch (h) {
-      0 => 'DVANÁCT', // 12
-      1 => 'JEDNA', // 1
-      2 => 'DVĚ', // 2
-      3 => 'TŘI', // 3
-      4 => 'ČTYŘI', // 4
-      5 => 'PĚT', // 5
-      6 => 'ŠEST', // 6
-      7 => 'SEDM', // 7
-      8 => 'OSM', // 8
-      9 => 'DEVĚT', // 9
-      10 => 'DESET', // 10
-      11 => 'JEDENÁCT', // 11
-      _ => '',
-    };
-
-    String intro = switch (h) {
-      0 || 5 || 6 || 7 || 8 || 9 || 10 || 11 => 'JE', // It is (singular-ish)
-      1 => 'JE', // It is
-      2 || 3 || 4 => 'JSOU', // They are
-      _ => '',
-    };
-
-    String delta = switch (m) {
-      0 => '',
-      5 => 'NULA PĚT', // Zero five
-      10 => 'DESET', // Ten
-      15 => 'PATNÁCT', // Fifteen
-      20 => 'DVACET', // Twenty
-      25 => 'DVACET PĚT', // Twenty-five
-      30 => 'TŘICET', // Thirty
-      35 => 'TŘICET PĚT', // Thirty-five
-      40 => 'ČTYŘICET', // Forty
-      45 => 'ČTYŘICET PĚT', // Forty-five
-      50 => 'PADESÁT', // Fifty
-      55 => 'PADESÁT PĚT', // Fifty-five
-      _ => '',
-    };
+    final intro = getIntro(h);
+    final exact = getHour(h);
+    final delta = getDelta(m);
 
     return '$intro $exact $delta'.replaceAll('  ', ' ').trim();
   }
 }
 
-/// Czech implementation that differs from [ReferenceCzechTimeToWords] by:
-/// - Using "JE" consistently for all hours (avoiding "JSOU").
-/// - Using "PĚT" instead of "NULA PĚT" for 5 minutes.
-class CzechTimeToWords extends ReferenceCzechTimeToWords {
-  const CzechTimeToWords();
+/// Czech (CZ) Reference implementation.
+class ReferenceCzechTimeToWords extends _BaseCzechTimeToWords {
+  const ReferenceCzechTimeToWords()
+    : super(useJsou: true, fiveMinutePhrase: 'NULA PĚT');
+}
 
-  @override
-  String convert(DateTime time) {
-    int m = (time.minute ~/ 5) * 5;
-    int h = time.hour % 12;
-
-    String exact = switch (h) {
-      0 => 'DVANÁCT', // 12
-      1 => 'JEDNA', // 1
-      2 => 'DVĚ', // 2
-      3 => 'TŘI', // 3
-      4 => 'ČTYŘI', // 4
-      5 => 'PĚT', // 5
-      6 => 'ŠEST', // 6
-      7 => 'SEDM', // 7
-      8 => 'OSM', // 8
-      9 => 'DEVĚT', // 9
-      10 => 'DESET', // 10
-      11 => 'JEDENÁCT', // 11
-      _ => '',
-    };
-
-    // Use "JE" consistently for all hours as recommended for compactness.
-    String intro = 'JE';
-
-    String delta = switch (m) {
-      0 => '',
-      5 => 'PĚT', // Use "PĚT" instead of "NULA PĚT" for naturalness.
-      10 => 'DESET', // Ten
-      15 => 'PATNÁCT', // Fifteen
-      20 => 'DVACET', // Twenty
-      25 => 'DVACET PĚT', // Twenty-five
-      30 => 'TŘICET', // Thirty
-      35 => 'TŘICET PĚT', // Thirty-five
-      40 => 'ČTYŘICET', // Forty
-      45 => 'ČTYŘICET PĚT', // Forty-five
-      50 => 'PADESÁT', // Fifty
-      55 => 'PADESÁT PĚT', // Fifty-five
-      _ => '',
-    };
-
-    return '$intro $exact $delta'.replaceAll('  ', ' ').trim();
-  }
+/// Czech implementation.
+class CzechTimeToWords extends _BaseCzechTimeToWords {
+  const CzechTimeToWords() : super(useJsou: false, fiveMinutePhrase: 'PĚT');
 }

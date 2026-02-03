@@ -1,7 +1,43 @@
 import 'package:wordclock/logic/time_to_words.dart';
 
-class ReferenceSwedishTimeToWords implements TimeToWords {
-  const ReferenceSwedishTimeToWords();
+/// Base implementation for Swedish language.
+abstract class _BaseSwedishTimeToWords implements TimeToWords {
+  final String eight;
+
+  const _BaseSwedishTimeToWords({required this.eight});
+
+  String getHour(int hour) => switch (hour) {
+    0 => 'TOLV',
+    1 => 'ETT',
+    2 => 'TVÅ',
+    3 => 'TRE',
+    4 => 'FYRA',
+    5 => 'FEM',
+    6 => 'SEX',
+    7 => 'SJU',
+    8 => eight,
+    9 => 'NIO',
+    10 => 'TIO',
+    11 => 'ELVA',
+    _ => '',
+  };
+
+  String getDelta(int minute) => switch (minute) {
+    0 => '',
+    5 => ' FEM ÖVER',
+    10 => ' TIO ÖVER',
+    15 => ' KVART ÖVER',
+    20 => ' TJUGO ÖVER',
+    25 => ' FEM I HALV',
+    30 => ' HALV',
+    35 => ' FEM ÖVER HALV',
+    40 => ' TJUGO I',
+    45 => ' KVART I',
+    50 => ' TIO I',
+    55 => ' FEM I',
+    _ => '',
+  };
+
   @override
   String convert(DateTime time) {
     int m = time.minute;
@@ -16,107 +52,20 @@ class ReferenceSwedishTimeToWords implements TimeToWords {
     }
 
     final displayHour = h % 12;
+    final exact = getHour(displayHour);
+    final delta = getDelta(m);
 
-    String words = 'KLOCKAN ÄR'; // The clock is
-
-    // 5. Delta (Intro + Delta + Exact)
-    words += switch (m) {
-      0 => '',
-      5 => ' FEM ÖVER', // Five after
-      10 => ' TIO ÖVER', // Ten after
-      15 => ' KVART ÖVER', // Quarter after
-      20 => ' TJUGO ÖVER', // Twenty after
-      25 => ' FEM I HALV', // Five before half
-      30 => ' HALV', // Half (to)
-      35 => ' FEM ÖVER HALV', // Five after half
-      40 => ' TJUGO I', // Twenty before
-      45 => ' KVART I', // Quarter before
-      50 => ' TIO I', // Ten before
-      55 => ' FEM I', // Five before
-      _ => '',
-    };
-
-    // 6. Exact hour
-    words +=
-        " ${switch (displayHour) {
-          0 => 'TOLV', // 12
-          1 => 'ETT', // 1
-          2 => 'TVÅ', // 2
-          3 => 'TRE', // 3
-          4 => 'FYRA', // 4
-          5 => 'FEM', // 5
-          6 => 'SEX', // 6
-          7 => 'SJU', // 7
-          8 => 'ÄTTA', // 8 (Scriptable data uses ÄTTA)
-          9 => 'NIO', // 9
-          10 => 'TIO', // 10
-          11 => 'ELVA', // 11
-          _ => '',
-        }}";
-
-    return words.replaceAll('  ', ' ').trim();
+    return 'KLOCKAN ÄR$delta $exact'.replaceAll('  ', ' ').trim();
   }
 }
 
-/// Implements standard Swedish time-to-words.
-///
-/// Differences from [ReferenceSwedishTimeToWords]:
-/// 1. **Spelling Correction**: Uses "ÅTTA" instead of "ÄTTA" for the number 8, fixing a typo
-///    present in the reference implementation.
-class SwedishTimeToWords implements TimeToWords {
-  const SwedishTimeToWords();
-  @override
-  String convert(DateTime time) {
-    int m = time.minute;
-    int h = time.hour;
+/// Swedish (SE) Reference implementation.
+class ReferenceSwedishTimeToWords extends _BaseSwedishTimeToWords {
+  const ReferenceSwedishTimeToWords() : super(eight: 'ÄTTA');
+}
 
-    // Round down to nearest 5 minutes
-    m = m - (m % 5);
-
-    // hourDisplayLimit: 25
-    if (m >= 25) {
-      h++;
-    }
-
-    final displayHour = h % 12;
-
-    String words = 'KLOCKAN ÄR'; // The clock is
-
-    // 5. Delta (Intro + Delta + Exact)
-    words += switch (m) {
-      0 => '',
-      5 => ' FEM ÖVER', // Five after
-      10 => ' TIO ÖVER', // Ten after
-      15 => ' KVART ÖVER', // Quarter after
-      20 => ' TJUGO ÖVER', // Twenty after
-      25 => ' FEM I HALV', // Five before half
-      30 => ' HALV', // Half (to)
-      35 => ' FEM ÖVER HALV', // Five after half
-      40 => ' TJUGO I', // Twenty before
-      45 => ' KVART I', // Quarter before
-      50 => ' TIO I', // Ten before
-      55 => ' FEM I', // Five before
-      _ => '',
-    };
-
-    // 6. Exact hour
-    words +=
-        " ${switch (displayHour) {
-          0 => 'TOLV', // 12
-          1 => 'ETT', // 1
-          2 => 'TVÅ', // 2
-          3 => 'TRE', // 3
-          4 => 'FYRA', // 4
-          5 => 'FEM', // 5
-          6 => 'SEX', // 6
-          7 => 'SJU', // 7
-          8 => 'ÅTTA', // 8 (Fixed typo: ÄTTA -> ÅTTA)
-          9 => 'NIO', // 9
-          10 => 'TIO', // 10
-          11 => 'ELVA', // 11
-          _ => '',
-        }}";
-
-    return words.replaceAll('  ', ' ').trim();
-  }
+/// Swedish implementation.
+/// Fixes the spelling of 8 (ÅTTA).
+class SwedishTimeToWords extends _BaseSwedishTimeToWords {
+  const SwedishTimeToWords() : super(eight: 'ÅTTA');
 }

@@ -2,37 +2,34 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:wordclock/logic/russian_time_to_words.dart';
 
 void main() {
-  group('NativeRussianTimeToWords', () {
-    final converter = NativeRussianTimeToWords();
+  group('ReferenceRussianTimeToWords', () {
+    const converter = ReferenceRussianTimeToWords();
 
-    test('10:00 is ДЕСЯТЬ', () {
-      final time = DateTime(2023, 1, 1, 10, 0);
-      expect(converter.convert(time), "ДЕСЯТЬ");
+    test('10:00 is ДЕ СЯТЬ ЧАСОВ', () {
+      expect(converter.convert(DateTime(2023, 1, 1, 10, 0)), "ДЕ СЯТЬ ЧАСОВ");
     });
 
-    test('01:00 is ЧАС', () {
-      final time = DateTime(2023, 1, 1, 1, 0);
-      expect(converter.convert(time), "ЧАС");
+    test('04:00 is ЧЕ ТЫ РЕ ЧАСА', () {
+      expect(converter.convert(DateTime(2023, 1, 1, 4, 0)), "ЧЕ ТЫ РЕ ЧАСА");
+    });
+  });
+
+  group('RussianTimeToWords', () {
+    const converter = RussianTimeToWords();
+
+    test('10:00 is ДЕСЯТЬ ЧАСОВ', () {
+      expect(converter.convert(DateTime(2023, 1, 1, 10, 0)), "ДЕСЯТЬ ЧАСОВ");
     });
 
-    test('02:00 is ДВА', () {
-      final time = DateTime(2023, 1, 1, 2, 0);
-      expect(converter.convert(time), "ДВА");
+    test('04:00 is ЧЕТЫРЕ ЧАСА', () {
+      expect(converter.convert(DateTime(2023, 1, 1, 4, 0)), "ЧЕТЫРЕ ЧАСА");
     });
 
-    test('10:05 is ПЯТЬ ОДИННАДЦАТОГО', () {
-      final time = DateTime(2023, 1, 1, 10, 5);
-      expect(converter.convert(time), "ПЯТЬ ОДИННАДЦАТОГО");
-    });
-
-    test('10:30 is ПОЛ ОДИННАДЦАТОГО', () {
-      final time = DateTime(2023, 1, 1, 10, 30);
-      expect(converter.convert(time), "ПОЛ ОДИННАДЦАТОГО");
-    });
-
-    test('10:45 is БЕЗ ЧЕТВЕРТИ ОДИННАДЦАТЬ', () {
-      final time = DateTime(2023, 1, 1, 10, 45);
-      expect(converter.convert(time), "БЕЗ ЧЕТВЕРТИ ОДИННАДЦАТЬ");
+    test('12:15 is ДВЕНАДЦАТЬ ЧАСОВ ПЯТНАДЦАТЬ МИНУТ', () {
+      expect(
+        converter.convert(DateTime(2023, 1, 1, 12, 15)),
+        "ДВЕНАДЦАТЬ ЧАСОВ ПЯТНАДЦАТЬ МИНУТ",
+      );
     });
   });
 }
