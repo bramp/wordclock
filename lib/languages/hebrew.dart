@@ -9,6 +9,11 @@ final hebrewLanguage = WordClockLanguage(
   englishName: 'Hebrew',
   description: null,
   grids: [
+    // @generated begin - do not edit manually
+    // Generated: 2026-02-02T21:48:14.688834
+    // Algorithm: Trie
+    // Seed: 0
+    // Iterations: 26, Duration: 16ms
     WordClockGrid(
       isDefault: true,
       timeToWords: ReferenceHebrewTimeToWords(),
@@ -16,21 +21,19 @@ final hebrewLanguage = WordClockLanguage(
       grid: WordGrid.fromLetters(
         width: 11,
         letters:
-            "רשעתחאबהעשה"
-            "םהנ׀משהרשעm"
-            "םײתשעבראעבש"
-            "ש׀לשבשמחששر"
-            "השימח׀बעשתm"
-            "מהרשעויצחור"
-            "יםםיעבראबחם"
-            "יתםיעבראורو"
-            "םירשעםירשעו"
-            "עותबצםישימח"
-            "תיתצםישימחו"
-            "םישןלשרשמחו"
-            "בmबאबובעברו",
+            'תחארשעबהעשה' // תחא רשע העשה
+            'הרשעmש׀לשמח' // הרשע ש׀לש שמח
+            'עבראmששםעבש' // עברא שש עבש
+            'رהנ׀משحםײתש' // הנ׀מש םײתש
+            'בהשימח׀बעשת' // השימח׀ עשת
+            'mהרשעוmעברו' // הרשעו עברו
+            'םירשעוرיצחו' // םירשעו םירשע יצחו
+            'מרווوםישןלש' // םישןלש
+            'ימיםםיעבראו' // םיעבראו םיעברא
+            'םישימחושמחו', // םישימח םישימחו שמחו
       ),
     ),
+    // @generated end,
     WordClockGrid(
       isReference: true,
       timeToWords: ReferenceHebrewTimeToWords(),

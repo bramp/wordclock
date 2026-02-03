@@ -1,5 +1,7 @@
+import 'dart:ui' show PlatformDispatcher;
 import 'package:clock/clock.dart';
 import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:wordclock/model/adjustable_clock.dart';
 import 'package:wordclock/generator/utils/word_clock_utils.dart';
 import 'package:wordclock/services/analytics_service.dart';
@@ -11,6 +13,8 @@ import 'package:wordclock/languages/all.dart';
 enum ClockSpeed { normal, fast, hyper }
 
 class SettingsController extends ChangeNotifier {
+  static const String _kLanguageIdKey = 'preferred_language_id';
+
   static List<WordClockLanguage> get supportedLanguages =>
       WordClockLanguages.all;
 
@@ -27,16 +31,97 @@ class SettingsController extends ChangeNotifier {
   // Dynamic Grid State
   int? _gridSeed; // null = use default static grid
 
-  // The default language is English ('en').
+  // Shared preferences instance
+  SharedPreferences? _prefs;
+
+  // The default language is English ('EN').
   // Note: supportedLanguages is sorted by ID, so we look it up.
-  WordClockLanguage _currentLanguage = WordClockLanguages.byId['EN']!;
+  late WordClockLanguage _currentLanguage;
   late WordClockGrid _currentGrid;
 
   bool _highlightAll = false;
   Set<int>? _allActiveIndices;
 
   SettingsController() {
+    // We initialize with a safe default.
+    // Call loadSettings() to override this with persisted or detected language.
+    _currentLanguage = WordClockLanguages.byId['EN']!;
     _regenerateGrid();
+  }
+
+  /// Initializes the controller by loading persisted settings.
+  Future<void> loadSettings() async {
+    _prefs = await SharedPreferences.getInstance();
+    final String? savedLangId = _prefs?.getString(_kLanguageIdKey);
+
+    if (savedLangId != null &&
+        WordClockLanguages.byId.containsKey(savedLangId)) {
+      _currentLanguage = WordClockLanguages.byId[savedLangId]!;
+    } else {
+      // No saved preference, try to match system locale.
+      _currentLanguage = _detectBestLanguage();
+    }
+    _regenerateGrid();
+    notifyListeners();
+  }
+
+  /// Parses a BCP47 language tag (e.g., 'en-US', 'zh-Hans-CN') into a Flutter Locale.
+  Locale _parseLocale(String languageCode) {
+    final parts = languageCode.split('-');
+    if (parts.length == 1) {
+      return Locale(parts[0]);
+    }
+    if (parts.length == 2) {
+      // Could be language-country or language-script
+      if (parts[1].length == 4) {
+        return Locale.fromSubtags(languageCode: parts[0], scriptCode: parts[1]);
+      }
+      return Locale(parts[0], parts[1]);
+    }
+    if (parts.length == 3) {
+      return Locale.fromSubtags(
+        languageCode: parts[0],
+        scriptCode: parts[1],
+        countryCode: parts[2],
+      );
+    }
+    return Locale(parts[0]);
+  }
+
+  WordClockLanguage _detectBestLanguage() {
+    final userLocales = PlatformDispatcher.instance.locales;
+
+    // Map supported languages to Flutter Locales for resolution
+    final List<Locale> supportedLocales = [];
+    final Map<Locale, WordClockLanguage> localeToLang = {};
+
+    for (final lang in supportedLanguages) {
+      if (lang.isAlternative) {
+        continue;
+      }
+
+      final locale = _parseLocale(lang.languageCode);
+
+      // Record the mapping. If multiple non-alternative languages share a
+      // locale, we prioritize the one without a description.
+      if (!localeToLang.containsKey(locale) ||
+          (lang.description == null || lang.description!.isEmpty)) {
+        localeToLang[locale] = lang;
+        if (!supportedLocales.contains(locale)) {
+          supportedLocales.add(locale);
+        }
+      }
+    }
+
+    // Use Flutter's built-in resolution algorithm
+    final resolvedLocale = basicLocaleListResolution(
+      userLocales,
+      supportedLocales,
+    );
+
+    return localeToLang[resolvedLocale] ??
+        WordClockLanguages.byId['EN'] ??
+        supportedLanguages.first;
   }
 
   ThemeSettings get settings => _currentSettings;
@@ -85,6 +170,9 @@ class SettingsController extends ChangeNotifier {
     _currentLanguage = language;
     _allActiveIndices = null;
     _regenerateGrid();
+
+    // Persist the selection
+    _prefs?.setString(_kLanguageIdKey, language.id);
 
     // Track language change in analytics
     AnalyticsService.logLanguageChange(language.id);

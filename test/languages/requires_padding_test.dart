@@ -4,10 +4,8 @@ import 'package:wordclock/languages/all.dart';
 /// Determines if a language traditionally uses spaces between words.
 /// Accepts ISO 639-1 language codes (e.g., 'en', 'zh', 'th').
 bool requiresSpaces(String languageCode) {
-  // Normalize the input to lowercase and take the first 2 characters
-  // to handle locale strings like 'en_US' or 'zh_Hans'.
-  if (languageCode.length < 2) return true; // Fallback for safety
-  final code = languageCode.toLowerCase().substring(0, 2);
+  // Normalize the input to lowercase and take the language part (before the first dash)
+  final code = languageCode.split('-').first.toLowerCase();
 
   const nonSpacedLanguages = {
     'zh', // Chinese (Mandarin, Cantonese, etc.)

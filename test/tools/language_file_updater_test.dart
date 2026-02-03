@@ -83,7 +83,7 @@ import 'package:wordclock/languages/language.dart';
 
 final testLanguage = WordClockLanguage(
   id: 'TE',
-  languageCode: 'te-ST',
+  locale: const Locale('te', 'ST'),
   displayName: 'Test',
   defaultGrid: WordGrid.fromLetters(
     width: 5,
@@ -119,7 +119,7 @@ final testLanguage = WordClockLanguage(
       const originalContent = '''
 final testLanguage = WordClockLanguage(
   id: 'TE',
-  languageCode: 'te-ST',
+  locale: const Locale('te', 'ST'),
   displayName: 'Test',
   grids: [
     WordClockGrid(

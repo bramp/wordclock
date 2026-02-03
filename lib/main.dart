@@ -10,6 +10,8 @@ void main() async {
   await AnalyticsService.initialize();
 
   final settingsController = SettingsController();
+  await settingsController.loadSettings();
+
   runApp(WordClockApp(settingsController: settingsController));
 }
 

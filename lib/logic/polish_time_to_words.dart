@@ -64,7 +64,7 @@ abstract class _BasePolishTimeToWords implements TimeToWords {
       0 => '',
       5 => 'PIĘĆ',
       10 => 'DZIESIĘĆ',
-      15 => 'PIĘТNAŚCIE', // Avoid using the T from Cyrilics by accident
+      15 => 'PIĘTNAŚCIE', // Fixed Cyrillic T
       20 => 'DWADZIEŚCIA',
       25 => 'DWADZIEŚCIA PIĘĆ',
       30 => 'TRZYDZIEŚCIE',

@@ -21,7 +21,7 @@
 - [x] Can we add a padding field to ScriptableLanguageData, which is the list of all the characters discovered in the grid that are never mapped to by the time. That data should end up in the WordClockLanguage children.
 - [x] In lib/generator some languages (such as Japnese) don't require padding. Can we annotate that on the WordClockLanguage, then tweak the generator to not require it.
 - [x] Can we review all the TimeToWord implementations in lib/logic. Many of the language variants (e.g English and German) share the same words. Can we dedup and make common functions where nessacary. For all TimeToWord implementations can we review the code, and refactor into the concise, easy to read, and maintain style. Comments for translations are important, but make sure all the other comments are useful. We don't need to refer back to the Scritable origins of the code. Just focus on making clean, modern dart code.
-- [ ] Default to the language the user natively speaks
+- [x] Default to the language the user natively speaks
 - [ ] Translate the app
 - [ ] Fix the issue where foreign characters take a while to load. We should pre-load the google fonts, and maybe bundle them with the app - especially if we can strip them to just the required characters (to keep the app small).
 - [ ] Add Google Analytics

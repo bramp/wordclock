@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:wordclock/settings/settings_controller.dart';
 import 'package:wordclock/ui/settings/components/language_selector.dart';
 
@@ -7,7 +8,9 @@ void main() {
   testWidgets('LanguageSelector displays supported languages', (
     WidgetTester tester,
   ) async {
+    SharedPreferences.setMockInitialValues({});
     final controller = SettingsController();
+    await controller.loadSettings();
 
     await tester.pumpWidget(
       MaterialApp(
@@ -46,7 +49,9 @@ void main() {
   testWidgets('LanguageSelector updates language when tapped', (
     WidgetTester tester,
   ) async {
+    SharedPreferences.setMockInitialValues({});
     final controller = SettingsController();
+    await controller.loadSettings();
 
     await tester.pumpWidget(
       MaterialApp(

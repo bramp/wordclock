@@ -66,7 +66,7 @@ void main() {
       // Custom language that requires padding
       final customLanguage = WordClockLanguage(
         id: 'TEST',
-        languageCode: 'en-test',
+        languageCode: 'en-US',
         displayName: 'Test',
         grids: [
           GridValidatorTestHelper.createMockGrid(ReferenceEnglishTimeToWords()),

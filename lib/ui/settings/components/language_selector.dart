@@ -98,6 +98,11 @@ class _LanguagePickerSheetState extends State<_LanguagePickerSheet> {
               l.englishName.toLowerCase().contains(query) ||
               (l.description?.toLowerCase().contains(query) ?? false);
         }).toList()..sort((a, b) {
+          // Non-alternative languages first
+          if (a.isAlternative != b.isAlternative) {
+            return a.isAlternative ? 1 : -1;
+          }
+
           final nameCompare = a.displayName.compareTo(b.displayName);
           if (nameCompare != 0) return nameCompare;
           return (a.description ?? '').compareTo(b.description ?? '');

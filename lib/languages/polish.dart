@@ -9,6 +9,10 @@ final polishLanguage = WordClockLanguage(
   englishName: 'Polish',
   grids: [
     // @generated begin - do not edit manually
+    // Generated: 2026-02-02T21:47:47.809949
+    // Algorithm: Backtracking
+    // Seed: 0
+    // Iterations: 46750, Duration: 101ms
     WordClockGrid(
       isDefault: true,
       timeToWords: PolishTimeToWords(),
@@ -16,19 +20,22 @@ final polishLanguage = WordClockLanguage(
       grid: WordGrid.fromLetters(
         width: 11,
         letters:
-            'PIERWSZÓSTP'
-            'BCZWARTRZEC'
-            'DZIESIJEDEN'
-            'DZIEWIÓSMĄT'
-            'DWUNDRUGAST'
-            'AĘCZTERTRZY'
-            'TDWADZIEŚCI'
-            'PIĘTANAŚŚCI'
-            'PIĘĆEDZIESI'
-            'HĄTŚĘĆJPIĘĆ',
+            'JEDENASTAĆŚ' // JEDENASTA
+            'ŻŃDZIEWIĄTA' // DZIEWIĄTA
+            'ĆĘĆĆĄĘĆĘŻĆÓ'
+            'ĄÓŃĆCZWARTA' // CZWARTA
+            'ĄŃŚŻŃŚĆÓSMA' // ÓSMA
+            'ŻÓĆĆŃÓŃŃĘĘĘ'
+            'ŻĄŻŻŚSIÓDMA' // SIÓDMA
+            'ĄŻÓŃŚŚDRUGA' // DRUGA
+            'ŚĆÓŚĘĆŻŻŚŚĄ'
+            'ŃŃŚŻŚSZÓSTA' // SZÓSTA
+            'ĄŻĘĆŻŚPIĄTA' // PIĄTA
+            'ŚŻŃŚŃÓĄĘĆĘĘ'
+            'ŃŻŚPIERWSZA', // PIERWSZA
       ),
     ),
-    // @generated end
+    // @generated end,
   ],
   minuteIncrement: 5,
 );

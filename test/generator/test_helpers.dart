@@ -70,7 +70,7 @@ WordClockLanguage createMockLanguage({
 
   return WordClockLanguage(
     id: id ?? 'TEST',
-    languageCode: languageCode ?? 'en-TEST',
+    languageCode: languageCode ?? 'en-US',
     displayName: displayName ?? 'Test Language',
     englishName: englishName ?? 'Test',
     grids: [

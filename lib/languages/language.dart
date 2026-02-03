@@ -22,7 +22,7 @@ final class WordClockLanguage {
   /// The unique identifier for this language (e.g., 'en', 'e3', 'pl').
   final String id;
 
-  /// The BCP 47 language tag (e.g., 'en-US', 'zh-Hans-CN', 'en-US-x-digital').
+  /// The standard BCP47 language tag (e.g., 'en', 'en-US', 'zh-Hans-CN').
   final String languageCode;
 
   /// The name of the language displayed to the user (Native language name).
@@ -56,6 +56,9 @@ final class WordClockLanguage {
   /// The minute increment this language supports (e.g., 1 or 5).
   final int minuteIncrement;
 
+  /// Whether this is an alternative version of a language (not used for auto-detection).
+  final bool isAlternative;
+
   /// Whether words in the same phrase require at least one cell of padding (or a newline)
   /// between them in the grid. Languages like Japanese and Chinese typically don't.
   final bool requiresPadding;
@@ -68,6 +71,7 @@ final class WordClockLanguage {
     this.description = '',
     required this.grids,
     this.minuteIncrement = 5,
+    this.isAlternative = false,
     this.requiresPadding = true,
   }) : assert(
          grids.where((g) => g.isDefault).length <= 1,

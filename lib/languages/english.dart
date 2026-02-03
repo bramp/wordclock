@@ -4,10 +4,11 @@ import 'package:wordclock/logic/english_time_to_words.dart';
 
 final englishAlternativeLanguage = WordClockLanguage(
   id: 'E2',
-  languageCode: 'en-US-x-alt',
+  languageCode: 'en-US',
   displayName: 'English',
   englishName: 'English',
   description: 'Alternative',
+  isAlternative: true,
   grids: [
     // @generated begin - do not edit manually
     // Generated: 2026-02-02T16:20:27.119746
