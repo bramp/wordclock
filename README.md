@@ -176,13 +176,22 @@ dart run bin/cli.dart
 dart run bin/cli.dart 10:15 --lang=en,fr,de
 ```
 
-### Import TimeCheck (`bin/import_timecheck.dart`)
+### Phrase Validation (`bin/validate_phrases.dart`)
 
-Imports language definitions from the TimeCheck project.
+Uses OpenAI's GPT models to validate that the generated phrases are grammatically correct and suitable for a word clock grid.
+
+**Usage:**
 
 ```bash
-dart run bin/import_timecheck.dart
+# Preview the prompts without sending them to OpenAI (default)
+dart run bin/validate_phrases.dart
+
+# Send prompts to OpenAI for validation (requires OPENAI_API_KEY)
+export OPENAI_API_KEY="your-key"
+dart run bin/validate_phrases.dart --no-dry-run
 ```
+
+The results are saved as Markdown files in the `phrases_validation/` directory, including scores, identified issues, and phrasing suggestions.
 
 ## Related
 
