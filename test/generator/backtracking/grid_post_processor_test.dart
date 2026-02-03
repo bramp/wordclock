@@ -112,10 +112,10 @@ void main() {
       // B starts at 4 + 1 (A) + 4 (padding) = 9.
       final a = result.placements.firstWhere((p) => p.word == 'A');
       final b = result.placements.firstWhere((p) => p.word == 'B');
-      expect(a.startCol, equals(4));
-      expect(b.startCol, equals(9));
+      expect(a.startCol, equals(3));
+      expect(b.startCol, equals(7));
 
-      expect(result.grid.sublist(10, 20).join(''), equals('....A....B'));
+      expect(result.grid.sublist(10, 20).join(''), equals('...A...B..'));
     });
 
     test('respects mandatory gaps on middle rows', () {
@@ -149,8 +149,8 @@ void main() {
       // B starts at 4 + 1 (A) + 3 (extra) + 1 (mandatory) = 9.
       final a = result.placements.firstWhere((p) => p.word == 'A');
       final b = result.placements.firstWhere((p) => p.word == 'B');
-      expect(a.startCol, equals(4));
-      expect(b.startCol, equals(9));
+      expect(a.startCol, equals(3));
+      expect(b.startCol, equals(7));
     });
 
     test('clusters overlapping words', () {
@@ -179,8 +179,8 @@ void main() {
       // ABC at 7, B at 8.
       final abc = result.placements.firstWhere((p) => p.word == 'ABC');
       final b = result.placements.firstWhere((p) => p.word == 'B');
-      expect(abc.startCol, equals(7));
-      expect(b.startCol, equals(8));
+      expect(abc.startCol, equals(3));
+      expect(b.startCol, equals(4));
     });
 
     test('splits multiple clusters from one row into multiple rows', () {

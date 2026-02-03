@@ -7,6 +7,7 @@
 - [ ] Optimize Web load time (investigate font loading, renderer, etc.).
 - [ ] Add integration tests.
 - [ ] Persist all the settings (language, grid, etc.)
+- [ ] Persisting of grid does not seem to work.
 - [ ] Replace the word "atom" with "word"
 
 ## Internationalization

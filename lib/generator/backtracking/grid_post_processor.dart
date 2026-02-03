@@ -6,7 +6,6 @@ import 'package:wordclock/model/types.dart';
 import 'package:wordclock/model/word_grid.dart';
 
 /// Post-processes word placements to apply aesthetic alignments and fill padding.
-/// Post-processes word placements to apply aesthetic alignments and fill padding.
 class GridPostProcessor {
   final int width;
   final int height;
@@ -126,11 +125,29 @@ class GridPostProcessor {
       } else if (r == firstRowWithWords) {
         // First row with words: push left
       } else {
-        // Intermediate: fair spread
-        int perSlot = extraPadding ~/ numSlots;
-        int remainder = extraPadding % numSlots;
-        for (int k = 0; k < numSlots; k++) {
-          distribution[k] = perSlot + (k < remainder ? 1 : 0);
+        // Intermediate: distribute padding generally (Center/Justified)
+        if (numSlots == 1) {
+          // Center the single item
+          distribution[0] = extraPadding ~/ 2;
+        } else {
+          // Distribute padding between items and edges.
+          // We use a randomized approach to avoid vertical columns:
+          // We have 'extraPadding' to distribute into 'numSlots + 1' buckets
+          // (before 1st item, between items, after last item).
+          int totalBuckets = numSlots + 1;
+
+          List<int> buckets = List.filled(totalBuckets, 0);
+
+          // Distribute extraPadding randomly one unit at a time.
+          // This ensures a "stable" (seeded) but "random" distribution.
+          for (int p = 0; p < extraPadding; p++) {
+            buckets[random.nextInt(totalBuckets)]++;
+          }
+
+          // Map buckets to distribution array (which covers padding *before* each item).
+          for (int k = 0; k < numSlots; k++) {
+            distribution[k] = buckets[k];
+          }
         }
       }
 
