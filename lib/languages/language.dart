@@ -60,10 +60,6 @@ final class WordClockLanguage {
   /// between them in the grid. Languages like Japanese and Chinese typically don't.
   final bool requiresPadding;
 
-  /// Whether phrases should be split into individual character nodes (atoms)
-  /// for the dependency graph. This increases character reuse.
-  final bool atomizePhrases;
-
   WordClockLanguage({
     required this.id,
     required this.languageCode,
@@ -73,7 +69,6 @@ final class WordClockLanguage {
     required this.grids,
     this.minuteIncrement = 5,
     this.requiresPadding = true,
-    this.atomizePhrases = false,
   }) : assert(
          grids.where((g) => g.isDefault).length <= 1,
          'A language can have at most one default grid.',
@@ -82,14 +77,8 @@ final class WordClockLanguage {
   /// Tokenizes a phrase into units based on this language's configuration.
   ///
   /// Examples:
-  ///   atomizePhrases = false:
   ///     tokenize('IT IS FIVE') => ['IT', 'IS', 'FIVE']
-  ///   atomizePhrases = true:
-  ///     tokenize('IT IS FIVE') => ['I', 'T', 'I', 'S', 'F', 'I', 'V', 'E']
   List<String> tokenize(String phrase) {
-    if (atomizePhrases) {
-      return WordGrid.splitIntoCells(phrase.replaceAll(' ', ''));
-    }
     return phrase.split(' ').where((w) => w.isNotEmpty).toList();
   }
 }

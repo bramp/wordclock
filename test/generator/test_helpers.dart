@@ -65,7 +65,6 @@ WordClockLanguage createMockLanguage({
   String paddingAlphabet = '·',
   int minuteIncrement = 5,
   bool requiresPadding = true,
-  bool atomizePhrases = false,
 }) {
   final converter = timeToWords ?? SimpleConverter(phrases ?? []);
 
@@ -84,7 +83,6 @@ WordClockLanguage createMockLanguage({
     ],
     minuteIncrement: minuteIncrement,
     requiresPadding: requiresPadding,
-    atomizePhrases: atomizePhrases,
   );
 }
 

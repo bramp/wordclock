@@ -56,5 +56,4 @@ final japaneseLanguage = WordClockLanguage(
   ],
   minuteIncrement: 5,
   requiresPadding: false,
-  atomizePhrases: false,
 );

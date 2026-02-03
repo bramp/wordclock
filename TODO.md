@@ -37,7 +37,7 @@
 - [ ] Allow for wordclock.me/$lang/ routing
 - [ ] Replace the word "atom" with "word"
 - [ ] Add additional visual modes to the clock. Such as displaying the time in seconds. Or a audio visualizer.
-- [ ] We no longer need `atomizePhrases`, it produces poor grids. So we should just remove that feature.
+- [x] We no longer need `atomizePhrases`, it produces poor grids. So we should just remove that feature.
 
 ## Language Grid Status
 

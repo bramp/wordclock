@@ -31,5 +31,4 @@ final polishLanguage = WordClockLanguage(
     // @generated end
   ],
   minuteIncrement: 5,
-  atomizePhrases: true,
 );

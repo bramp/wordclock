@@ -56,7 +56,6 @@ final chineseSimplifiedLanguage = WordClockLanguage(
   ],
   minuteIncrement: 5,
   requiresPadding: false,
-  atomizePhrases: false,
 );
 
 final chineseTraditionalLanguage = WordClockLanguage(
@@ -113,5 +112,4 @@ final chineseTraditionalLanguage = WordClockLanguage(
   ],
   minuteIncrement: 5,
   requiresPadding: false,
-  atomizePhrases: false,
 );

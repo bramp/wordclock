@@ -14,7 +14,7 @@ void main() {
         final graph = WordDependencyGraphBuilder.build(language: language);
         final dagSorts = graph.countTopologicalSorts();
         if (['JP', 'CS', 'CT'].contains(language.id)) {
-          // These graphs consist of large components (>30 nodes) due to atomizePhrases: false
+          // These graphs consist of large components (>30 nodes) due to lack of splitting,
           // or lack of dependencies, which are too slow to count exactly.
           // We allow overflowSorts or a valid count.
           expect(

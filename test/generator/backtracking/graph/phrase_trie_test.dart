@@ -67,20 +67,6 @@ void main() {
       final trie = PhraseTrie.fromPhrases(['', '  '], language);
       expect(trie.roots, isEmpty);
     });
-
-    test('handles atomizePhrases = true', () {
-      final language = createMockLanguage(atomizePhrases: true);
-      // 'IT IS' -> 'I', 'T', 'I', 'S'
-      final trie = PhraseTrie.fromPhrases(['IT IS'], language);
-
-      expect(trie.roots.keys, ['I']);
-      final iNode = trie.roots['I']!;
-      expect(iNode.children.keys, ['T']);
-      final tNode = iNode.children['T']!;
-      expect(tNode.children.keys, ['I']);
-      final iNode2 = tNode.children['I']!;
-      expect(iNode2.children.keys, ['S']);
-    });
   });
 
   group('PhraseTrie - counts and strings', () {

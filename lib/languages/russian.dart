@@ -52,5 +52,4 @@ final russianLanguage = WordClockLanguage(
     ),
   ],
   minuteIncrement: 5,
-  atomizePhrases: true,
 );
