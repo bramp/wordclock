@@ -10,13 +10,13 @@ final swedishLanguage = WordClockLanguage(
   description: null,
   grids: [
     // @generated begin - do not edit manually
-    // Generated: 2026-01-31T21:52:14.409259
+    // Generated: 2026-02-02T20:33:21.808124
     // Algorithm: Backtracking
     // Seed: 0
-    // Iterations: 23, Duration: 4ms
+    // Iterations: 23, Duration: 17ms
     WordClockGrid(
       isDefault: true,
-      timeToWords: ReferenceSwedishTimeToWords(),
+      timeToWords: SwedishTimeToWords(),
       paddingAlphabet: 'AEFIKLMNOPQRSTUVXYZ',
       grid: WordGrid.fromLetters(
         width: 11,
@@ -28,7 +28,7 @@ final swedishLanguage = WordClockLanguage(
             'UPAÖVERNKLI' // ÖVER I
             'YMMKLASHALV' // HALV
             'TOLVFYRAFEM' // TOLV FYRA FEM
-            'ÄTTAELVATIO' // ÄTTA ELVA TIO
+            'ÅTTAELVATIO' // ÅTTA ELVA TIO
             'ETTVÅTRESEX' // ETT TVÅ TRE SEX
             'QKNLSJUTNIO', // SJU NIO
       ),
