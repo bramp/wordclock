@@ -10,10 +10,10 @@ final englishAlternativeLanguage = WordClockLanguage(
   description: 'Alternative',
   grids: [
     // @generated begin - do not edit manually
-    // Generated: 2026-01-31T22:03:12.756432
+    // Generated: 2026-02-02T16:20:27.119746
     // Algorithm: Backtracking
     // Seed: 0
-    // Iterations: 23, Duration: 13ms
+    // Iterations: 23, Duration: 5ms
     WordClockGrid(
       isDefault: true,
       timeToWords: EnglishAlternativeTimeToWords(),
@@ -30,7 +30,7 @@ final englishAlternativeLanguage = WordClockLanguage(
             'SEVENLTHREE' // SEVEN THREE
             'FIVENINETEN' // FIVE NINE TEN
             'RFOURCTWONE' // FOUR TWO ONE
-            'XSIXPO\'CLOCK', // SIX O'CLOCK
+            'XSIXPO’CLOCK', // SIX O’CLOCK
       ),
     ),
     // @generated end,
@@ -67,7 +67,7 @@ final englishLanguage = WordClockLanguage(
   description: null,
   grids: [
     // @generated begin - do not edit manually
-    // Generated: 2026-01-31T21:51:10.082228
+    // Generated: 2026-02-02T16:20:27.425934
     // Algorithm: Backtracking
     // Seed: 0
     // Iterations: 23, Duration: 4ms
@@ -87,7 +87,7 @@ final englishLanguage = WordClockLanguage(
             'SEVENLTHREE' // SEVEN THREE
             'FIVENINETEN' // FIVE NINE TEN
             'RFOURCTWONE' // FOUR TWO ONE
-            'XSIXPO\'CLOCK', // SIX O'CLOCK
+            'XSIXPO’CLOCK', // SIX O’CLOCK
       ),
     ),
     // @generated end,

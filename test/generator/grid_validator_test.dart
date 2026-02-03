@@ -32,7 +32,7 @@ void main() {
             "MSEVENEONEM"
             "ELEVENFTENA"
             "CSIXPTHREED"
-            "FOURDO'CLOCK",
+            "FOURDO’CLOCK",
       );
 
       final issues = GridValidator.validate(grid, englishLanguage);
@@ -55,7 +55,7 @@ void main() {
             "MSEVENEONEM"
             "ELEVENFXYZA" // TEN -> XYZ
             "CSIXPTHREED"
-            "FOURDO'CLOCK",
+            "FOURDO’CLOCK",
       );
 
       final issues = GridValidator.validate(grid, englishLanguage);

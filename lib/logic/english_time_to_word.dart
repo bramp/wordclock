@@ -164,12 +164,13 @@ class ReferenceEnglishAlternativeTimeToWords extends _BaseEnglishTimeToWords {
 
 /// English implementation that differs from [ReferenceEnglishTimeToWords] by:
 /// - Consistently using a space in "TWENTY FIVE".
+/// - Using typographic apostrophe for "O’CLOCK".
 class EnglishTimeToWords extends ReferenceEnglishTimeToWords {
   const EnglishTimeToWords() : super(useSpaceInTwentyFive: true);
 
   @override
   String getDelta(int minute) {
-    if (minute == 0) return " O'CLOCK";
+    if (minute == 0) return " O’CLOCK";
     return super.getDelta(minute);
   }
 }
@@ -177,14 +178,14 @@ class EnglishTimeToWords extends ReferenceEnglishTimeToWords {
 /// English Alternative implementation that differs from [ReferenceEnglishAlternativeTimeToWords] by:
 /// - Removing the optional "A" from "A QUARTER" (e.g., "QUARTER PAST").
 /// - Consistently using a space in "TWENTY FIVE".
-// TODO This alternative, is basically now the same as the ReferenceEnglishTimeToWords?
+/// - Using typographic apostrophe for "O’CLOCK".
 class EnglishAlternativeTimeToWords
     extends ReferenceEnglishAlternativeTimeToWords {
   const EnglishAlternativeTimeToWords() : super(useSpaceInTwentyFive: true);
 
   @override
   String getDelta(int minute) {
-    if (minute == 0) return " O'CLOCK";
+    if (minute == 0) return " O’CLOCK";
     // Recommendation: Drop the redundant "A" from "A QUARTER" for compactness.
     return super.getDelta(minute).replaceAll(' A QUARTER', ' QUARTER');
   }
