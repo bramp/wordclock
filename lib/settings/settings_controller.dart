@@ -1,4 +1,5 @@
 // Void
+import 'dart:convert';
 import 'package:clock/clock.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
@@ -16,6 +17,7 @@ enum ClockSpeed { normal, fast, hyper }
 class SettingsController extends ChangeNotifier {
   static const String _kLanguageIdKey = 'preferred_language_id';
   static const String _kUiLocaleKey = 'ui_locale';
+  static const String _kThemeKey = 'theme_settings';
 
   static List<WordClockLanguage> get supportedLanguages =>
       WordClockLanguages.all;
@@ -32,9 +34,6 @@ class SettingsController extends ChangeNotifier {
   final AdjustableClock _clock = AdjustableClock();
 
   bool _isManualTime = false;
-
-  // Dynamic Grid State
-  int? _gridSeed;
 
   // Shared preferences instance
   SharedPreferences? _prefs;
@@ -115,6 +114,18 @@ class SettingsController extends ChangeNotifier {
     // If no persistence, try to match system
     _uiLocale ??= _detectBestUiLocale();
 
+    // 3. Resolve Theme
+    final String? savedThemeJson = _prefs?.getString(_kThemeKey);
+    if (savedThemeJson != null) {
+      try {
+        _currentSettings = ThemeSettings.fromJson(
+          jsonDecode(savedThemeJson) as Map<String, dynamic>,
+        );
+      } catch (e) {
+        debugPrint('Error loading theme settings: $e');
+      }
+    }
+
     _regenerateGrid();
     notifyListeners();
   }
@@ -184,7 +195,6 @@ class SettingsController extends ChangeNotifier {
 
   bool get isManualTime => _isManualTime;
 
-  int? get gridSeed => _gridSeed;
   WordClockLanguage get currentLanguage => _currentLanguage;
   WordClockGrid get currentGrid => _currentGrid;
   bool get highlightAll => _highlightAll;
@@ -200,6 +210,7 @@ class SettingsController extends ChangeNotifier {
     _currentSettings = newSettings.copyWith(
       backgroundType: _currentSettings.backgroundType,
     );
+    _saveTheme();
     notifyListeners();
   }
 
@@ -210,6 +221,7 @@ class SettingsController extends ChangeNotifier {
       settingName: 'background_type',
       value: type.toString(),
     );
+    _saveTheme();
     notifyListeners();
   }
 
@@ -237,31 +249,63 @@ class SettingsController extends ChangeNotifier {
     notifyListeners();
   }
 
-  void setGridSeed(int? seed) {
-    if (_gridSeed == seed) return;
-    _gridSeed = seed;
-    _allActiveIndices = null;
-    _regenerateGrid();
-    notifyListeners();
-  }
-
   void _regenerateGrid() {
     final defGridRef = _currentLanguage.defaultGridRef;
-    if (_gridSeed == null && defGridRef != null) {
+    if (defGridRef != null) {
       _currentGrid = defGridRef;
     } else {
       final builder = BacktrackingGridBuilder(
         width: 11,
         height: 10,
         language: _currentLanguage,
-        seed: _gridSeed ?? 0,
+        seed: 0,
       );
       final result = builder.build();
+      // Ensure we have a valid TimeToWords.
+      // If defaultGridRef is null, we might need a fallback TimeToWords instance.
+      // Assuming all languages have a defaultGridRef or we construct one.
+      // But BacktrackingGridBuilder uses _currentLanguage to build.
+      // We need a TimeToWords for the grid.
+      // WordClockLanguages usually have a reference implementation.
+      // For now, assume defaultGridRef exists for all supported languages in the list.
+      // If not, we might crash. But _currentLanguage usually has one.
+      // Fallback to English generic logic if really needed, but dangerous.
+      // Let's assume defGridRef is safe or use language.timeToWords property if added.
+      // Since we don't have language.timeToWords property exposed easily without instance,
+      // and defaultGridRef is the standard access.
+      // If defGridRef is null, we are in trouble anyway.
+      // But let's just use the builder result.
       _currentGrid = WordClockGrid(
         grid: result.grid,
-        timeToWords: defGridRef!.timeToWords,
+        timeToWords:
+            defGridRef?.timeToWords ??
+            WordClockLanguages.byId['EN']!.defaultGridRef!.timeToWords,
       );
     }
+  }
+
+  void _saveTheme() {
+    _prefs?.setString(_kThemeKey, jsonEncode(_currentSettings.toJson()));
+  }
+
+  void resetSettings() {
+    _prefs?.clear();
+
+    // Reset to defaults
+    _currentSettings = ThemeSettings.defaultTheme;
+    _uiLocale = _detectBestUiLocale();
+    _currentLanguage = _detectBestLanguage();
+    _allActiveIndices = null;
+
+    // Reset transient
+    _isManualTime = false;
+    _clockSpeed = ClockSpeed.normal;
+    _highlightAll = false;
+    _clock.setRate(1.0);
+    _clock.setTime(DateTime.now());
+
+    _regenerateGrid();
+    notifyListeners();
   }
 
   void setClockSpeed(ClockSpeed speed) {

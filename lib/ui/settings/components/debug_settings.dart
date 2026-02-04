@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:wordclock/settings/settings_controller.dart';
 import 'package:wordclock/ui/settings/components/section_header.dart';
-import 'package:wordclock/ui/settings/components/seed_selector.dart';
+// Void
 import 'package:wordclock/ui/settings/components/speed_selector.dart';
 
 class DebugSettings extends StatelessWidget {
@@ -81,16 +81,43 @@ class DebugSettings extends StatelessWidget {
             },
           ),
         const SizedBox(height: 16),
-        Padding(
-          padding: const EdgeInsets.only(bottom: 8.0),
-          child: const Text(
-            'Grid Seed',
-            style: TextStyle(color: Colors.white, fontSize: 16),
+        const Divider(color: Colors.white24),
+        ListTile(
+          contentPadding: EdgeInsets.zero,
+          title: const Text(
+            'Reset All Settings',
+            style: TextStyle(color: Colors.redAccent),
           ),
-        ),
-        SeedSelector(
-          value: controller.gridSeed,
-          onChanged: (val) => controller.setGridSeed(val),
+          leading: const Icon(Icons.delete_forever, color: Colors.redAccent),
+          onTap: () async {
+            // Optional: Confirmation dialog
+            final confirm = await showDialog<bool>(
+              context: context,
+              builder: (context) => AlertDialog(
+                title: const Text('Reset Settings?'),
+                content: const Text(
+                  'This will clear all saved preferences and restore defaults.',
+                ),
+                actions: [
+                  TextButton(
+                    onPressed: () => Navigator.pop(context, false),
+                    child: const Text('Cancel'),
+                  ),
+                  TextButton(
+                    onPressed: () => Navigator.pop(context, true),
+                    child: const Text(
+                      'Reset',
+                      style: TextStyle(color: Colors.red),
+                    ),
+                  ),
+                ],
+              ),
+            );
+
+            if (confirm == true) {
+              controller.resetSettings();
+            }
+          },
         ),
       ],
     );
