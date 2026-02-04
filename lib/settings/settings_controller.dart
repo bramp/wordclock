@@ -58,6 +58,14 @@ class SettingsController extends ChangeNotifier {
   Future<void> loadSettings() async {
     _prefs = await SharedPreferences.getInstance();
 
+    _resolveLanguage();
+    _resolveUiLocale();
+    _loadTheme();
+
+    notifyListeners();
+  }
+
+  void _resolveLanguage() {
     // 1. Resolve Clock Language
     // Priority: Persistence -> System -> Default (EN)
     // BUT we check URL first (Priority 1) manually here to ensure initial state is correct before Router attaches.
@@ -97,7 +105,10 @@ class SettingsController extends ChangeNotifier {
     } else {
       _gridLanguage = _detectBestLanguage();
     }
+    _updateGrid();
+  }
 
+  void _resolveUiLocale() {
     // 2. Resolve UI Locale
     // Priority: Persistence -> System -> Default (first supported)
     final String? savedUiLocale = _prefs?.getString(_kUiLocaleKey);
@@ -114,7 +125,9 @@ class SettingsController extends ChangeNotifier {
 
     // If no persistence, try to match system
     _uiLocale ??= _detectBestUiLocale();
+  }
 
+  void _loadTheme() {
     // 3. Resolve Theme
     final String? savedThemeJson = _prefs?.getString(_kThemeKey);
     if (savedThemeJson != null) {
@@ -126,9 +139,6 @@ class SettingsController extends ChangeNotifier {
         debugPrint('Error loading theme settings: $e');
       }
     }
-
-    _updateGrid();
-    notifyListeners();
   }
 
   bool _isSupportedUiLocale(Locale locale) {

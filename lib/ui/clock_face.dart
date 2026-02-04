@@ -76,7 +76,6 @@ class _ClockFaceState extends State<ClockFace>
 
     _lastTime = now;
     _lastGrid = grid.grid;
-    _lastGrid = grid.grid;
     final lang = widget.settingsController.gridLanguage;
 
     if (widget.settingsController.highlightAll) {
