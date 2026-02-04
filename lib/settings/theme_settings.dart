@@ -1,4 +1,3 @@
-// ignore_for_file: deprecated_member_use
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 
@@ -95,9 +94,11 @@ class ThemeSettings {
 
   Map<String, dynamic> toJson() {
     return {
-      'activeGradientColors': activeGradientColors.map((c) => c.value).toList(),
-      'inactiveColor': inactiveColor.value,
-      'backgroundColor': backgroundColor.value,
+      'activeGradientColors': activeGradientColors
+          .map((c) => c.toARGB32())
+          .toList(),
+      'inactiveColor': inactiveColor.toARGB32(),
+      'backgroundColor': backgroundColor.toARGB32(),
       'showMinuteDots': showMinuteDots,
       'backgroundType': backgroundType.index,
     };

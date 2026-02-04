@@ -76,7 +76,8 @@ class _ClockFaceState extends State<ClockFace>
 
     _lastTime = now;
     _lastGrid = grid.grid;
-    final lang = widget.settingsController.currentLanguage;
+    _lastGrid = grid.grid;
+    final lang = widget.settingsController.gridLanguage;
 
     if (widget.settingsController.highlightAll) {
       _activeIndices = widget.settingsController.allActiveIndices;
@@ -162,10 +163,10 @@ class _ClockFaceState extends State<ClockFace>
       builder: (context, child) {
         if (kDebugMode) print('Rebuilding ClockFace... ${DateTime.now()}');
         final settings = widget.settingsController.settings;
-        final lang = widget.settingsController.currentLanguage;
+        final lang = widget.settingsController.gridLanguage;
         // Use the clock provided by settings
         final now = widget.settingsController.clock.now();
-        final grid = widget.settingsController.currentGrid;
+        final grid = widget.settingsController.grid;
 
         // Recalculate grid if time changed
         _recalculateIndices(now, grid);

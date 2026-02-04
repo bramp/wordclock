@@ -88,7 +88,7 @@ class SettingsPanel extends StatelessWidget {
                       const SizedBox(height: 16),
                       const SectionHeader(title: 'Clock Language'),
                       LanguageSelector<WordClockLanguage>(
-                        currentSelection: controller.currentLanguage,
+                        currentSelection: controller.gridLanguage,
                         availableOptions: sortedLanguages,
                         labelBuilder: (l) => l.displayName,
                         subtitleBuilder: (l) => l.description,

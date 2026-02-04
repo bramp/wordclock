@@ -8,7 +8,6 @@ import 'package:wordclock/model/adjustable_clock.dart';
 import 'package:wordclock/generator/utils/word_clock_utils.dart';
 import 'package:wordclock/services/analytics_service.dart';
 import 'package:wordclock/settings/theme_settings.dart';
-import 'package:wordclock/generator/backtracking/grid_builder.dart';
 import 'package:wordclock/languages/language.dart';
 import 'package:wordclock/languages/all.dart';
 
@@ -22,10 +21,11 @@ class SettingsController extends ChangeNotifier {
   static List<WordClockLanguage> get supportedLanguages =>
       WordClockLanguages.all;
 
+  // TODO Update this based on
   static const List<Locale> supportedUiLocales = [
     Locale('en'),
-    Locale('fr'),
-    Locale('es'),
+    //Locale('fr'),
+    //Locale('es'),
   ];
 
   ThemeSettings _currentSettings = ThemeSettings.defaultTheme;
@@ -39,8 +39,9 @@ class SettingsController extends ChangeNotifier {
   SharedPreferences? _prefs;
 
   // The default language is English ('EN').
-  late WordClockLanguage _currentLanguage;
-  late WordClockGrid _currentGrid;
+  // The default language is English ('EN').
+  late WordClockLanguage _gridLanguage;
+  late WordClockGrid _grid;
 
   // UI Locale support
   Locale? _uiLocale;
@@ -49,8 +50,8 @@ class SettingsController extends ChangeNotifier {
   Set<int>? _allActiveIndices;
 
   SettingsController() {
-    _currentLanguage = WordClockLanguages.byId['EN']!;
-    _regenerateGrid();
+    _gridLanguage = WordClockLanguages.byId['EN']!;
+    _updateGrid();
   }
 
   /// Initializes the controller by loading persisted settings.
@@ -89,12 +90,12 @@ class SettingsController extends ChangeNotifier {
     }
 
     if (urlLang != null) {
-      _currentLanguage = urlLang;
+      _gridLanguage = urlLang;
     } else if (savedLangId != null &&
         WordClockLanguages.byId.containsKey(savedLangId)) {
-      _currentLanguage = WordClockLanguages.byId[savedLangId]!;
+      _gridLanguage = WordClockLanguages.byId[savedLangId]!;
     } else {
-      _currentLanguage = _detectBestLanguage();
+      _gridLanguage = _detectBestLanguage();
     }
 
     // 2. Resolve UI Locale
@@ -126,7 +127,7 @@ class SettingsController extends ChangeNotifier {
       }
     }
 
-    _regenerateGrid();
+    _updateGrid();
     notifyListeners();
   }
 
@@ -195,8 +196,8 @@ class SettingsController extends ChangeNotifier {
 
   bool get isManualTime => _isManualTime;
 
-  WordClockLanguage get currentLanguage => _currentLanguage;
-  WordClockGrid get currentGrid => _currentGrid;
+  WordClockLanguage get gridLanguage => _gridLanguage;
+  WordClockGrid get grid => _grid;
   bool get highlightAll => _highlightAll;
 
   Locale get uiLocale => _uiLocale ?? supportedUiLocales.first;
@@ -226,10 +227,10 @@ class SettingsController extends ChangeNotifier {
   }
 
   void setLanguage(WordClockLanguage language) {
-    if (_currentLanguage == language) return;
-    _currentLanguage = language;
+    if (_gridLanguage == language) return;
+    _gridLanguage = language;
     _allActiveIndices = null;
-    _regenerateGrid();
+    _updateGrid();
 
     _prefs?.setString(_kLanguageIdKey, language.id);
     AnalyticsService.logLanguageChange(language.id);
@@ -249,39 +250,10 @@ class SettingsController extends ChangeNotifier {
     notifyListeners();
   }
 
-  void _regenerateGrid() {
-    final defGridRef = _currentLanguage.defaultGridRef;
-    if (defGridRef != null) {
-      _currentGrid = defGridRef;
-    } else {
-      final builder = BacktrackingGridBuilder(
-        width: 11,
-        height: 10,
-        language: _currentLanguage,
-        seed: 0,
-      );
-      final result = builder.build();
-      // Ensure we have a valid TimeToWords.
-      // If defaultGridRef is null, we might need a fallback TimeToWords instance.
-      // Assuming all languages have a defaultGridRef or we construct one.
-      // But BacktrackingGridBuilder uses _currentLanguage to build.
-      // We need a TimeToWords for the grid.
-      // WordClockLanguages usually have a reference implementation.
-      // For now, assume defaultGridRef exists for all supported languages in the list.
-      // If not, we might crash. But _currentLanguage usually has one.
-      // Fallback to English generic logic if really needed, but dangerous.
-      // Let's assume defGridRef is safe or use language.timeToWords property if added.
-      // Since we don't have language.timeToWords property exposed easily without instance,
-      // and defaultGridRef is the standard access.
-      // If defGridRef is null, we are in trouble anyway.
-      // But let's just use the builder result.
-      _currentGrid = WordClockGrid(
-        grid: result.grid,
-        timeToWords:
-            defGridRef?.timeToWords ??
-            WordClockLanguages.byId['EN']!.defaultGridRef!.timeToWords,
-      );
-    }
+  void _updateGrid() {
+    _grid =
+        _gridLanguage.defaultGridRef ??
+        WordClockLanguages.byId['EN']!.defaultGridRef!;
   }
 
   void _saveTheme() {
@@ -294,7 +266,7 @@ class SettingsController extends ChangeNotifier {
     // Reset to defaults
     _currentSettings = ThemeSettings.defaultTheme;
     _uiLocale = _detectBestUiLocale();
-    _currentLanguage = _detectBestLanguage();
+    _gridLanguage = _detectBestLanguage();
     _allActiveIndices = null;
 
     // Reset transient
@@ -304,7 +276,7 @@ class SettingsController extends ChangeNotifier {
     _clock.setRate(1.0);
     _clock.setTime(DateTime.now());
 
-    _regenerateGrid();
+    _updateGrid();
     notifyListeners();
   }
 
@@ -344,9 +316,9 @@ class SettingsController extends ChangeNotifier {
 
   Set<int> _calculateAllActiveIndices() {
     final Set<int> all = {};
-    WordClockUtils.forEachTime(_currentLanguage, (_, phrase) {
-      final units = _currentLanguage.tokenize(phrase);
-      all.addAll(_currentGrid.grid.getIndices(units));
+    WordClockUtils.forEachTime(_gridLanguage, (_, phrase) {
+      final units = _gridLanguage.tokenize(phrase);
+      all.addAll(_grid.grid.getIndices(units));
     });
     return all;
   }

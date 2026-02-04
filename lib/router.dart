@@ -18,7 +18,7 @@ GoRouter createRouter(SettingsController settingsController) {
             path: '/',
             redirect: (context, state) {
               // Redirect root to current language
-              return '/${settingsController.currentLanguage.languageCode}';
+              return '/${settingsController.gridLanguage.languageCode}';
             },
           ),
           GoRoute(
@@ -35,11 +35,11 @@ GoRouter createRouter(SettingsController settingsController) {
               // Validation: Is this a supported language URL path?
               if (targetLang == null) {
                 // Invalid language, fallback to current controller language
-                return '/${settingsController.currentLanguage.languageCode}';
+                return '/${settingsController.gridLanguage.languageCode}';
               }
 
               // Synchronization: URL -> State
-              if (settingsController.currentLanguage != targetLang) {
+              if (settingsController.gridLanguage != targetLang) {
                 settingsController.setLanguage(targetLang);
               }
 
