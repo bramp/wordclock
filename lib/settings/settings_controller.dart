@@ -1,5 +1,6 @@
-import 'dart:ui' show PlatformDispatcher;
+// Void
 import 'package:clock/clock.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:wordclock/model/adjustable_clock.dart';
@@ -14,37 +15,41 @@ enum ClockSpeed { normal, fast, hyper }
 
 class SettingsController extends ChangeNotifier {
   static const String _kLanguageIdKey = 'preferred_language_id';
+  static const String _kUiLocaleKey = 'ui_locale';
 
   static List<WordClockLanguage> get supportedLanguages =>
       WordClockLanguages.all;
 
+  static const List<Locale> supportedUiLocales = [
+    Locale('en'),
+    Locale('fr'),
+    Locale('es'),
+  ];
+
   ThemeSettings _currentSettings = ThemeSettings.defaultTheme;
 
   // The active clock instance.
-  // We use AdjustableClock which allows shifting time and changing speed.
-  // By default, it aligns with system time.
   final AdjustableClock _clock = AdjustableClock();
 
-  // Track state simply to report to UI (though clock handles logic)
   bool _isManualTime = false;
 
   // Dynamic Grid State
-  int? _gridSeed; // null = use default static grid
+  int? _gridSeed;
 
   // Shared preferences instance
   SharedPreferences? _prefs;
 
   // The default language is English ('EN').
-  // Note: supportedLanguages is sorted by ID, so we look it up.
   late WordClockLanguage _currentLanguage;
   late WordClockGrid _currentGrid;
+
+  // UI Locale support
+  Locale? _uiLocale;
 
   bool _highlightAll = false;
   Set<int>? _allActiveIndices;
 
   SettingsController() {
-    // We initialize with a safe default.
-    // Call loadSettings() to override this with persisted or detected language.
     _currentLanguage = WordClockLanguages.byId['EN']!;
     _regenerateGrid();
   }
@@ -52,27 +57,84 @@ class SettingsController extends ChangeNotifier {
   /// Initializes the controller by loading persisted settings.
   Future<void> loadSettings() async {
     _prefs = await SharedPreferences.getInstance();
+
+    // 1. Resolve Clock Language
+    // Priority: Persistence -> System -> Default (EN)
+    // BUT we check URL first (Priority 1) manually here to ensure initial state is correct before Router attaches.
     final String? savedLangId = _prefs?.getString(_kLanguageIdKey);
 
-    if (savedLangId != null &&
+    WordClockLanguage? urlLang;
+    try {
+      if (kIsWeb) {
+        final uri = Uri.base;
+        for (final segment in uri.pathSegments) {
+          final lang = WordClockLanguages.findByCode(segment);
+          if (lang != null) {
+            urlLang = lang;
+            break;
+          }
+        }
+        if (urlLang == null && uri.hasFragment) {
+          final parts = uri.fragment.split('/');
+          for (final part in parts) {
+            final lang = WordClockLanguages.findByCode(part);
+            if (lang != null) {
+              urlLang = lang;
+              break;
+            }
+          }
+        }
+      }
+    } catch (e) {
+      debugPrint('Error parsing URI: $e');
+    }
+
+    if (urlLang != null) {
+      _currentLanguage = urlLang;
+    } else if (savedLangId != null &&
         WordClockLanguages.byId.containsKey(savedLangId)) {
       _currentLanguage = WordClockLanguages.byId[savedLangId]!;
     } else {
-      // No saved preference, try to match system locale.
       _currentLanguage = _detectBestLanguage();
     }
+
+    // 2. Resolve UI Locale
+    // Priority: Persistence -> System -> Default (first supported)
+    final String? savedUiLocale = _prefs?.getString(_kUiLocaleKey);
+    if (savedUiLocale != null) {
+      final parts = savedUiLocale.split('_');
+      final locale = parts.length > 1
+          ? Locale(parts[0], parts[1])
+          : Locale(parts[0]);
+
+      if (_isSupportedUiLocale(locale)) {
+        _uiLocale = locale;
+      }
+    }
+
+    // If no persistence, try to match system
+    _uiLocale ??= _detectBestUiLocale();
+
     _regenerateGrid();
     notifyListeners();
   }
 
-  /// Parses a BCP47 language tag (e.g., 'en-US', 'zh-Hans-CN') into a Flutter Locale.
+  bool _isSupportedUiLocale(Locale locale) {
+    return supportedUiLocales.any((l) => l.languageCode == locale.languageCode);
+  }
+
+  Locale _detectBestUiLocale() {
+    final userLocales = PlatformDispatcher.instance.locales;
+    return basicLocaleListResolution(userLocales, supportedUiLocales);
+  }
+
+  // ... (Existing _parseLocale and _detectBestLanguage methods remain valid for Clock Language)
   Locale _parseLocale(String languageCode) {
     final parts = languageCode.split('-');
     if (parts.length == 1) {
       return Locale(parts[0]);
     }
     if (parts.length == 2) {
-      // Could be language-country or language-script
       if (parts[1].length == 4) {
         return Locale.fromSubtags(languageCode: parts[0], scriptCode: parts[1]);
       }
@@ -90,20 +152,12 @@ class SettingsController extends ChangeNotifier {
 
   WordClockLanguage _detectBestLanguage() {
     final userLocales = PlatformDispatcher.instance.locales;
-
-    // Map supported languages to Flutter Locales for resolution
     final List<Locale> supportedLocales = [];
     final Map<Locale, WordClockLanguage> localeToLang = {};
 
     for (final lang in supportedLanguages) {
-      if (lang.isAlternative) {
-        continue;
-      }
-
+      if (lang.isAlternative) continue;
       final locale = _parseLocale(lang.languageCode);
-
-      // Record the mapping. If multiple non-alternative languages share a
-      // locale, we prioritize the one without a description.
       if (!localeToLang.containsKey(locale) ||
           (lang.description == null || lang.description!.isEmpty)) {
         localeToLang[locale] = lang;
@@ -112,13 +166,10 @@ class SettingsController extends ChangeNotifier {
         }
       }
     }
-
-    // Use Flutter's built-in resolution algorithm
     final resolvedLocale = basicLocaleListResolution(
       userLocales,
       supportedLocales,
     );
-
     return localeToLang[resolvedLocale] ??
         WordClockLanguages.byId['EN'] ??
         supportedLanguages.first;
@@ -126,7 +177,6 @@ class SettingsController extends ChangeNotifier {
 
   ThemeSettings get settings => _currentSettings;
 
-  /// Returns the clock instance.
   Clock get clock => _clock;
 
   ClockSpeed get clockSpeed => _clockSpeed;
@@ -139,13 +189,14 @@ class SettingsController extends ChangeNotifier {
   WordClockGrid get currentGrid => _currentGrid;
   bool get highlightAll => _highlightAll;
 
+  Locale get uiLocale => _uiLocale ?? supportedUiLocales.first;
+
   Set<int> get allActiveIndices {
     _allActiveIndices ??= _calculateAllActiveIndices();
     return _allActiveIndices!;
   }
 
   void updateTheme(ThemeSettings newSettings) {
-    // Preserve the user's plasma preference when switching themes
     _currentSettings = newSettings.copyWith(
       backgroundType: _currentSettings.backgroundType,
     );
@@ -155,13 +206,10 @@ class SettingsController extends ChangeNotifier {
   void setBackgroundType(BackgroundType type) {
     if (_currentSettings.backgroundType == type) return;
     _currentSettings = _currentSettings.copyWith(backgroundType: type);
-
-    // Track background type change in analytics
     AnalyticsService.logThemeChange(
       settingName: 'background_type',
       value: type.toString(),
     );
-
     notifyListeners();
   }
 
@@ -171,11 +219,20 @@ class SettingsController extends ChangeNotifier {
     _allActiveIndices = null;
     _regenerateGrid();
 
-    // Persist the selection
     _prefs?.setString(_kLanguageIdKey, language.id);
-
-    // Track language change in analytics
     AnalyticsService.logLanguageChange(language.id);
+
+    notifyListeners();
+  }
+
+  void setUiLocale(Locale locale) {
+    if (_uiLocale == locale) return;
+
+    // Ensure it's supported
+    if (!_isSupportedUiLocale(locale)) return;
+
+    _uiLocale = locale;
+    _prefs?.setString(_kUiLocaleKey, locale.toString());
 
     notifyListeners();
   }

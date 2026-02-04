@@ -1,93 +1,89 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:shared_preferences/shared_preferences.dart';
-import 'package:wordclock/settings/settings_controller.dart';
 import 'package:wordclock/ui/settings/components/language_selector.dart';
 
+class TestLanguage {
+  final String name;
+  final String? subtitle;
+  final String? hiddenKeyword;
+
+  const TestLanguage(this.name, {this.subtitle, this.hiddenKeyword});
+}
+
 void main() {
-  testWidgets('LanguageSelector displays supported languages', (
+  const languages = [
+    TestLanguage('English'),
+    TestLanguage('Español', subtitle: 'Spanish'),
+    TestLanguage('Deutsch', subtitle: 'German'),
+    TestLanguage('日本語', hiddenKeyword: 'Japanese'),
+  ];
+
+  testWidgets('LanguageSelector displays options and supports search', (
     WidgetTester tester,
   ) async {
-    SharedPreferences.setMockInitialValues({});
-    final controller = SettingsController();
-    await controller.loadSettings();
+    TestLanguage? selected = languages[0];
 
     await tester.pumpWidget(
       MaterialApp(
-        home: Scaffold(body: LanguageSelector(controller: controller)),
+        home: Scaffold(
+          body: StatefulBuilder(
+            builder: (context, setState) {
+              return LanguageSelector<TestLanguage>(
+                currentSelection: selected!,
+                availableOptions: languages,
+                labelBuilder: (l) => l.name,
+                subtitleBuilder: (l) => l.subtitle,
+                searchKeywordsBuilder: (l) => l.hiddenKeyword ?? '',
+                onSelected: (l) {
+                  setState(() {
+                    selected = l;
+                  });
+                },
+              );
+            },
+          ),
+        ),
       ),
     );
 
+    // Initial display
     expect(find.text('English'), findsOneWidget);
-    expect(find.text('Español'), findsNothing);
-    expect(find.text('Deutsch'), findsNothing);
-    expect(find.text('日本語'), findsNothing);
 
-    // Open the language picker
-    await tester.tap(find.byType(LanguageSelector));
+    // Open picker
+    await tester.tap(find.byType(LanguageSelector<TestLanguage>));
     await tester.pumpAndSettle();
 
-    // Now all languages should be visible in the sheet
-    // English is present twice (in the selector and in the sheet)
-    // TODO This assumes the app is in English. We should use the current language.
+    // Verify list items
     expect(find.text('English'), findsWidgets);
+    expect(find.widgetWithText(ListTile, 'Español'), findsOneWidget);
+    // Subtitle check
+    expect(find.text('Spanish'), findsOneWidget);
 
-    // Use search to find items instead of scrolling
-    await tester.enterText(find.byType(TextField), 'Español');
+    // Search by name
+    await tester.enterText(find.byType(TextField), 'deut');
     await tester.pumpAndSettle();
-    expect(find.widgetWithText(ListTile, 'Español (Spanish)'), findsWidgets);
+    expect(find.widgetWithText(ListTile, 'Deutsch'), findsOneWidget);
+    // Previously visible items should be filtered out
+    expect(find.widgetWithText(ListTile, 'English'), findsNothing);
 
-    await tester.enterText(find.byType(TextField), 'Deutsch');
+    // Search by subtitle
+    await tester.enterText(find.byType(TextField), 'span');
     await tester.pumpAndSettle();
-    expect(find.widgetWithText(ListTile, 'Deutsch (German)'), findsWidgets);
+    expect(find.widgetWithText(ListTile, 'Español'), findsOneWidget);
 
-    await tester.enterText(find.byType(TextField), '日本語');
-    await tester.pumpAndSettle();
-    expect(find.widgetWithText(ListTile, '日本語 (Japanese)'), findsWidgets);
-  });
-
-  testWidgets('LanguageSelector updates language when tapped', (
-    WidgetTester tester,
-  ) async {
-    SharedPreferences.setMockInitialValues({});
-    final controller = SettingsController();
-    await controller.loadSettings();
-
-    await tester.pumpWidget(
-      MaterialApp(
-        home: Scaffold(body: LanguageSelector(controller: controller)),
-      ),
-    );
-
-    // Initial language should be English
-    expect(controller.currentLanguage.displayName, 'English');
-
-    // Open the language picker
-    await tester.tap(find.byType(LanguageSelector));
+    // Search by hidden keyword
+    await tester.enterText(find.byType(TextField), 'japan');
     await tester.pumpAndSettle();
 
-    // Search and Tap 日本語
-    await tester.enterText(find.byType(TextField), '日本語');
+    // Verify rich label construction: "日本語 (Japanese)"
+    expect(find.widgetWithText(ListTile, '日本語 (Japanese)'), findsOneWidget);
+
+    // Select item
+    await tester.tap(find.widgetWithText(ListTile, '日本語 (Japanese)'));
     await tester.pumpAndSettle();
 
-    final jpItem = find.widgetWithText(ListTile, '日本語 (Japanese)').last;
-    await tester.tap(jpItem);
-    await tester.pumpAndSettle();
-
-    expect(controller.currentLanguage.displayName, '日本語');
-
-    // Open the language picker again
-    await tester.tap(find.byType(LanguageSelector));
-    await tester.pumpAndSettle();
-
-    // Search and Tap English
-    await tester.enterText(find.byType(TextField), 'English');
-    await tester.pumpAndSettle();
-
-    final enItem = find.widgetWithText(ListTile, 'English').last;
-    await tester.tap(enItem);
-    await tester.pumpAndSettle();
-
-    expect(controller.currentLanguage.displayName, 'English');
+    // Verify selection updated
+    expect(selected?.name, '日本語');
+    expect(find.text('日本語'), findsOneWidget);
   });
 }

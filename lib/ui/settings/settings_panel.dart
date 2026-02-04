@@ -7,10 +7,26 @@ import 'package:wordclock/ui/settings/components/language_selector.dart';
 import 'package:wordclock/ui/settings/components/section_header.dart';
 import 'package:wordclock/ui/settings/components/theme_selector.dart';
 
+import 'package:go_router/go_router.dart';
+import 'package:wordclock/languages/language.dart';
+
 class SettingsPanel extends StatelessWidget {
   final SettingsController controller;
 
   const SettingsPanel({super.key, required this.controller});
+
+  String _getUiDisplayName(Locale locale) {
+    switch (locale.languageCode) {
+      case 'en':
+        return 'English';
+      case 'fr':
+        return 'Français';
+      case 'es':
+        return 'Español';
+      default:
+        return locale.toString();
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -19,6 +35,27 @@ class SettingsPanel extends StatelessWidget {
       listenable: controller,
       builder: (context, _) {
         final settings = controller.settings;
+
+        // Sort languages for the selector
+        final sortedLanguages = List<WordClockLanguage>.from(
+          SettingsController.supportedLanguages,
+        );
+        sortedLanguages.sort((a, b) {
+          if (a.isAlternative != b.isAlternative) {
+            return a.isAlternative ? 1 : -1;
+          }
+          final nameCompare = a.displayName.compareTo(b.displayName);
+          if (nameCompare != 0) return nameCompare;
+          return (a.description ?? '').compareTo(b.description ?? '');
+        });
+
+        // Sort UI locales
+        final sortedUiLocales = List<Locale>.from(
+          SettingsController.supportedUiLocales,
+        );
+        sortedUiLocales.sort(
+          (a, b) => _getUiDisplayName(a).compareTo(_getUiDisplayName(b)),
+        );
 
         return Container(
           width: 300, // Fixed width for drawer/panel
@@ -40,8 +77,28 @@ class SettingsPanel extends StatelessWidget {
                   child: ListView(
                     padding: const EdgeInsets.symmetric(horizontal: 16),
                     children: [
-                      const SectionHeader(title: 'Language'),
-                      LanguageSelector(controller: controller),
+                      const SectionHeader(title: 'Interface Language'),
+                      LanguageSelector<Locale>(
+                        currentSelection: controller.uiLocale,
+                        availableOptions: sortedUiLocales,
+                        labelBuilder: _getUiDisplayName,
+                        onSelected: controller.setUiLocale,
+                        icon: Icons.translate,
+                      ),
+                      const SizedBox(height: 16),
+                      const SectionHeader(title: 'Clock Language'),
+                      LanguageSelector<WordClockLanguage>(
+                        currentSelection: controller.currentLanguage,
+                        availableOptions: sortedLanguages,
+                        labelBuilder: (l) => l.displayName,
+                        subtitleBuilder: (l) => l.description,
+                        searchKeywordsBuilder: (l) => l.englishName,
+                        onSelected: (l) {
+                          // Close the drawer/panel if needed? No, context.go handles nav.
+                          context.go('/${l.languageCode}');
+                        },
+                        icon: Icons.language,
+                      ),
                       const SizedBox(height: 24),
                       const SectionHeader(title: 'Theme'),
                       ThemeSelector(

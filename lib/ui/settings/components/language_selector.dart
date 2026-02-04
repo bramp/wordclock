@@ -1,63 +1,77 @@
 import 'package:flutter/material.dart';
-import 'package:wordclock/settings/settings_controller.dart';
 
-class LanguageSelector extends StatelessWidget {
-  final SettingsController controller;
+/// A generic widget to select a language (or any item) from a list.
+///
+/// Displays the currently selected item and behaves like a button that opens
+/// a modal bottom sheet with a searchable list of options.
+class LanguageSelector<T> extends StatelessWidget {
+  final T currentSelection;
+  final List<T> availableOptions;
+  final String Function(T) labelBuilder;
+  final String? Function(T)? subtitleBuilder;
+  final String Function(T)? searchKeywordsBuilder;
+  final void Function(T) onSelected;
+  final IconData icon;
 
-  const LanguageSelector({super.key, required this.controller});
+  const LanguageSelector({
+    super.key,
+    required this.currentSelection,
+    required this.availableOptions,
+    required this.labelBuilder,
+    required this.onSelected,
+    this.subtitleBuilder,
+    this.searchKeywordsBuilder,
+    this.icon = Icons.language,
+  });
 
   @override
   Widget build(BuildContext context) {
-    return ListenableBuilder(
-      listenable: controller,
-      builder: (context, _) {
-        final currentLanguage = controller.currentLanguage;
+    final displayName = labelBuilder(currentSelection);
+    final description = subtitleBuilder?.call(currentSelection);
 
-        return InkWell(
-          onTap: () => _showLanguagePicker(context),
+    return InkWell(
+      onTap: () => _showLanguagePicker(context),
+      borderRadius: BorderRadius.circular(12),
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+        decoration: BoxDecoration(
+          color: Colors.white.withValues(alpha: 0.05),
           borderRadius: BorderRadius.circular(12),
-          child: Container(
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-            decoration: BoxDecoration(
-              color: Colors.white.withValues(alpha: 0.05),
-              borderRadius: BorderRadius.circular(12),
-              border: Border.all(color: Colors.white.withValues(alpha: 0.1)),
-            ),
-            child: Row(
-              children: [
-                const Icon(Icons.language, color: Colors.white70, size: 20),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        currentLanguage.displayName,
-                        style: const TextStyle(
-                          color: Colors.white,
-                          fontWeight: FontWeight.w600,
-                        ),
-                      ),
-                      if (currentLanguage.description != null)
-                        Text(
-                          currentLanguage.description!,
-                          style: TextStyle(
-                            color: Colors.white.withValues(alpha: 0.5),
-                            fontSize: 12,
-                          ),
-                        ),
-                    ],
+          border: Border.all(color: Colors.white.withValues(alpha: 0.1)),
+        ),
+        child: Row(
+          children: [
+            Icon(icon, color: Colors.white70, size: 20),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    displayName,
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontWeight: FontWeight.w600,
+                    ),
                   ),
-                ),
-                Icon(
-                  Icons.keyboard_arrow_down,
-                  color: Colors.white.withValues(alpha: 0.3),
-                ),
-              ],
+                  if (description != null)
+                    Text(
+                      description,
+                      style: TextStyle(
+                        color: Colors.white.withValues(alpha: 0.5),
+                        fontSize: 12,
+                      ),
+                    ),
+                ],
+              ),
             ),
-          ),
-        );
-      },
+            Icon(
+              Icons.keyboard_arrow_down,
+              color: Colors.white.withValues(alpha: 0.3),
+            ),
+          ],
+        ),
+      ),
     );
   }
 
@@ -70,43 +84,58 @@ class LanguageSelector extends StatelessWidget {
         borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
       ),
       builder: (context) {
-        return _LanguagePickerSheet(controller: controller);
+        return _LanguagePickerSheet<T>(
+          currentSelection: currentSelection,
+          availableOptions: availableOptions,
+          labelBuilder: labelBuilder,
+          subtitleBuilder: subtitleBuilder,
+          searchKeywordsBuilder: searchKeywordsBuilder,
+          onSelected: onSelected,
+        );
       },
     );
   }
 }
 
-class _LanguagePickerSheet extends StatefulWidget {
-  final SettingsController controller;
+class _LanguagePickerSheet<T> extends StatefulWidget {
+  final T currentSelection;
+  final List<T> availableOptions;
+  final String Function(T) labelBuilder;
+  final String? Function(T)? subtitleBuilder;
+  final String Function(T)? searchKeywordsBuilder;
+  final void Function(T) onSelected;
 
-  const _LanguagePickerSheet({required this.controller});
+  const _LanguagePickerSheet({
+    required this.currentSelection,
+    required this.availableOptions,
+    required this.labelBuilder,
+    required this.onSelected,
+    this.subtitleBuilder,
+    this.searchKeywordsBuilder,
+  });
 
   @override
-  State<_LanguagePickerSheet> createState() => _LanguagePickerSheetState();
+  State<_LanguagePickerSheet<T>> createState() =>
+      _LanguagePickerSheetState<T>();
 }
 
-class _LanguagePickerSheetState extends State<_LanguagePickerSheet> {
+class _LanguagePickerSheetState<T> extends State<_LanguagePickerSheet<T>> {
   String _searchQuery = '';
 
   @override
   Widget build(BuildContext context) {
-    final filteredLanguages =
-        SettingsController.supportedLanguages.where((l) {
-          if (_searchQuery.isEmpty) return true;
-          final query = _searchQuery.toLowerCase();
-          return l.displayName.toLowerCase().contains(query) ||
-              l.englishName.toLowerCase().contains(query) ||
-              (l.description?.toLowerCase().contains(query) ?? false);
-        }).toList()..sort((a, b) {
-          // Non-alternative languages first
-          if (a.isAlternative != b.isAlternative) {
-            return a.isAlternative ? 1 : -1;
-          }
+    final filteredItems = widget.availableOptions.where((item) {
+      if (_searchQuery.isEmpty) return true;
+      final query = _searchQuery.toLowerCase();
+      final label = widget.labelBuilder(item).toLowerCase();
+      final subtitle = widget.subtitleBuilder?.call(item)?.toLowerCase() ?? '';
+      final keywords =
+          widget.searchKeywordsBuilder?.call(item).toLowerCase() ?? '';
 
-          final nameCompare = a.displayName.compareTo(b.displayName);
-          if (nameCompare != 0) return nameCompare;
-          return (a.description ?? '').compareTo(b.description ?? '');
-        });
+      return label.contains(query) ||
+          subtitle.contains(query) ||
+          keywords.contains(query);
+    }).toList();
 
     return DraggableScrollableSheet(
       initialChildSize: 0.7,
@@ -131,7 +160,7 @@ class _LanguagePickerSheetState extends State<_LanguagePickerSheet> {
                 autofocus: true,
                 style: const TextStyle(color: Colors.white),
                 decoration: InputDecoration(
-                  hintText: 'Search language...',
+                  hintText: 'Search...',
                   hintStyle: const TextStyle(color: Colors.white24),
                   prefixIcon: const Icon(Icons.search, color: Colors.white54),
                   filled: true,
@@ -151,15 +180,22 @@ class _LanguagePickerSheetState extends State<_LanguagePickerSheet> {
             Expanded(
               child: ListView.builder(
                 controller: scrollController,
-                itemCount: filteredLanguages.length,
+                itemCount: filteredItems.length,
                 itemBuilder: (context, index) {
-                  final lang = filteredLanguages[index];
-                  final isSelected =
-                      widget.controller.currentLanguage.id == lang.id;
+                  final item = filteredItems[index];
+                  final isSelected = item == widget.currentSelection;
+                  final label = widget.labelBuilder(item);
+                  final subtitle = widget.subtitleBuilder?.call(item);
+                  final keywords = widget.searchKeywordsBuilder?.call(item);
 
-                  final label = lang.displayName == lang.englishName
-                      ? lang.displayName
-                      : '${lang.displayName} (${lang.englishName})';
+                  // Construct a rich label if keywords are available and distinct
+                  // (e.g. "日本語 (Japanese)")
+                  final displayLabel =
+                      (keywords != null &&
+                          keywords.isNotEmpty &&
+                          keywords != label)
+                      ? '$label ($keywords)'
+                      : label;
 
                   return ListTile(
                     contentPadding: const EdgeInsets.symmetric(
@@ -167,7 +203,7 @@ class _LanguagePickerSheetState extends State<_LanguagePickerSheet> {
                       vertical: 4,
                     ),
                     title: Text(
-                      label,
+                      displayLabel,
                       style: TextStyle(
                         color: isSelected ? Colors.blueAccent : Colors.white,
                         fontWeight: isSelected
@@ -175,9 +211,9 @@ class _LanguagePickerSheetState extends State<_LanguagePickerSheet> {
                             : FontWeight.normal,
                       ),
                     ),
-                    subtitle: lang.description != null
+                    subtitle: subtitle != null
                         ? Text(
-                            lang.description!,
+                            subtitle,
                             style: TextStyle(
                               color: Colors.white.withValues(alpha: 0.5),
                             ),
@@ -187,7 +223,9 @@ class _LanguagePickerSheetState extends State<_LanguagePickerSheet> {
                         ? const Icon(Icons.check, color: Colors.blueAccent)
                         : null,
                     onTap: () {
-                      widget.controller.setLanguage(lang);
+                      widget.onSelected(item);
+                      // Depending on implementation, parent might pop or we pop here
+                      // Usually picker implies selection and close
                       Navigator.pop(context);
                     },
                   );

@@ -14,7 +14,7 @@ import 'package:wordclock/languages/italian.dart';
 import 'package:wordclock/languages/japanese.dart';
 import 'package:wordclock/languages/norwegian.dart';
 import 'package:wordclock/languages/portuguese.dart';
-import 'package:wordclock/languages/romanian.dart';
+//import 'package:wordclock/languages/romanian.dart';
 // import 'package:wordclock/languages/russian.dart';
 import 'package:wordclock/languages/spanish.dart';
 import 'package:wordclock/languages/swedish.dart';
@@ -44,7 +44,6 @@ class WordClockLanguages {
     norwegianLanguage,
     // polishLanguage,
     portugueseLanguage,
-    romanianLanguage,
     // russianLanguage,
     spanishLanguage,
     swabianGermanLanguage,
@@ -57,4 +56,14 @@ class WordClockLanguages {
   static final Map<String, WordClockLanguage> byId = {
     for (final lang in all) lang.id: lang,
   };
+
+  static WordClockLanguage? findByCode(String code) {
+    try {
+      return all.firstWhere(
+        (l) => l.languageCode.toLowerCase() == code.toLowerCase(),
+      );
+    } catch (_) {
+      return null;
+    }
+  }
 }

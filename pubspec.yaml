@@ -46,6 +46,10 @@ dependencies:
   meta: ^1.17.0
   shared_preferences: ^2.5.4
   characters: ^1.4.1
+  go_router: ^17.1.0
+  intl: ^0.20.2
+  flutter_localizations:
+    sdk: flutter
 
 dev_dependencies:
   flutter_launcher_icons: ^0.14.4
