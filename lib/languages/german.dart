@@ -59,7 +59,7 @@ final berneseGermanLanguage = WordClockLanguage(
 
 final germanAlternativeLanguage = WordClockLanguage(
   id: 'D2',
-  languageCode: 'de-DE',
+  languageCode: 'de-DE-x-alternative',
   displayName: 'Deutsch',
   englishName: 'German',
   description: 'Alternative',
@@ -115,7 +115,7 @@ final germanAlternativeLanguage = WordClockLanguage(
 
 final swabianGermanLanguage = WordClockLanguage(
   id: 'D3',
-  languageCode: 'de-DE',
+  languageCode: 'de-DE-x-swabian',
   displayName: 'Deutsch',
   englishName: 'German',
   description: 'Swabian',
@@ -171,7 +171,7 @@ final swabianGermanLanguage = WordClockLanguage(
 
 final eastGermanLanguage = WordClockLanguage(
   id: 'D4',
-  languageCode: 'de-DE',
+  languageCode: 'de-DE-x-east',
   displayName: 'Deutsch',
   englishName: 'German',
   description: 'East',
