@@ -1,7 +1,6 @@
 // Void
 import 'dart:convert';
 import 'package:clock/clock.dart';
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:wordclock/model/adjustable_clock.dart';
@@ -10,6 +9,7 @@ import 'package:wordclock/services/analytics_service.dart';
 import 'package:wordclock/settings/theme_settings.dart';
 import 'package:wordclock/languages/language.dart';
 import 'package:wordclock/languages/all.dart';
+import 'package:wordclock/services/platform_service.dart';
 
 enum ClockSpeed { normal, fast, hyper }
 
@@ -21,7 +21,7 @@ class SettingsController extends ChangeNotifier {
   static List<WordClockLanguage> get supportedLanguages =>
       WordClockLanguages.all;
 
-  // TODO Update this based on
+  // TODO Update this based on what is actually supported.
   static const List<Locale> supportedUiLocales = [
     Locale('en'),
     //Locale('fr'),
@@ -38,6 +38,8 @@ class SettingsController extends ChangeNotifier {
   // Shared preferences instance
   SharedPreferences? _prefs;
 
+  final PlatformService _platform;
+
   // The default language is English ('EN').
   // The default language is English ('EN').
   late WordClockLanguage _gridLanguage;
@@ -49,14 +51,15 @@ class SettingsController extends ChangeNotifier {
   bool _highlightAll = false;
   Set<int>? _allActiveIndices;
 
-  SettingsController() {
+  SettingsController({PlatformService? platformService})
+    : _platform = platformService ?? const PlatformService() {
     _gridLanguage = WordClockLanguages.byId['EN']!;
     _updateGrid();
   }
 
   /// Initializes the controller by loading persisted settings.
   Future<void> loadSettings() async {
-    _prefs = await SharedPreferences.getInstance();
+    _prefs = await _platform.sharedPreferences;
 
     _resolveLanguage();
     _resolveUiLocale();
@@ -65,6 +68,12 @@ class SettingsController extends ChangeNotifier {
     notifyListeners();
   }
 
+  /// Resolves the grid language to use based on the following priority:
+  ///
+  /// 1. URL Path/Fragment (if on Web): e.g. /en-US or #/es-ES (BCP 47 locales)
+  /// 2. Persisted preference: The language ID previously saved by the user (e.g. 'EN', 'ES').
+  /// 3. System Locale: The best match for the user's device locale.
+  /// 4. Default: English ('EN').
   void _resolveLanguage() {
     // 1. Resolve Clock Language
     // Priority: Persistence -> System -> Default (EN)
@@ -73,8 +82,8 @@ class SettingsController extends ChangeNotifier {
 
     WordClockLanguage? urlLang;
     try {
-      if (kIsWeb) {
-        final uri = Uri.base;
+      if (_platform.isWeb) {
+        final uri = _platform.baseUri;
         for (final segment in uri.pathSegments) {
           final lang = WordClockLanguages.findByCode(segment);
           if (lang != null) {
@@ -146,7 +155,7 @@ class SettingsController extends ChangeNotifier {
   }
 
   Locale _detectBestUiLocale() {
-    final userLocales = PlatformDispatcher.instance.locales;
+    final userLocales = _platform.systemLocales;
     return basicLocaleListResolution(userLocales, supportedUiLocales);
   }
 
@@ -173,12 +182,23 @@ class SettingsController extends ChangeNotifier {
   }
 
   WordClockLanguage _detectBestLanguage() {
-    final userLocales = PlatformDispatcher.instance.locales;
+    final userLocales = _platform.systemLocales;
     final List<Locale> supportedLocales = [];
     final Map<Locale, WordClockLanguage> localeToLang = {};
 
+    // Ensure English is added first to be the default fallback if no other locale matches.
+    if (WordClockLanguages.byId.containsKey('EN')) {
+      final enLang = WordClockLanguages.byId['EN']!;
+      final enLocale = _parseLocale(enLang.languageCode);
+      supportedLocales.add(enLocale);
+      localeToLang[enLocale] = enLang;
+    }
+
     for (final lang in supportedLanguages) {
       if (lang.isAlternative) continue;
+      // Skip if already added (English)
+      if (lang.id == 'EN') continue;
+
       final locale = _parseLocale(lang.languageCode);
       if (!localeToLang.containsKey(locale) ||
           (lang.description == null || lang.description!.isEmpty)) {
