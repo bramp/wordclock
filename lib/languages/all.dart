@@ -44,6 +44,7 @@ class WordClockLanguages {
     norwegianLanguage,
     // polishLanguage,
     portugueseLanguage,
+    // romanianLanguage,
     // russianLanguage,
     spanishLanguage,
     swabianGermanLanguage,
