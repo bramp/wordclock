@@ -1,15 +1,23 @@
 # WordClock TODOs
 
 ## Core
-- [ ] Add Google Analytics
-  - [ ] For GDPR compliance, you may need to add a consent banner
-  - [ ] Add tracking of how long the user keeps the app open for.
+- [x] Add Firebase / Google Analytics
+  - [x] For GDPR compliance, you may need to add a consent banner
+  - [x] Add tracking of how long the user keeps the app open for.
 - [ ] Optimize Web load time (investigate font loading, renderer, etc.).
 - [ ] Add integration tests.
 - [ ] Persist all the settings (language, grid, etc.)
 - [ ] Persisting of grid does not seem to work.
 - [x] Replace the word "atom" with "word"
 - [ ] When "Show minute dots" is disabled, the grid should be larger, to fill the gap.
+
+## Platform
+- [ ] Add support for Web
+- [ ] Add support for Android
+- [ ] Add support for iOS
+- [ ] Add support for Windows
+- [ ] Add support for Linux
+- [ ] Add support for MacOS
 
 ## Internationalization
 - [ ] Translate the app

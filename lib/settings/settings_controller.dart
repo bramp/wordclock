@@ -17,6 +17,7 @@ class SettingsController extends ChangeNotifier {
   static const String _kLanguageIdKey = 'preferred_language_id';
   static const String _kUiLocaleKey = 'ui_locale';
   static const String _kThemeKey = 'theme_settings';
+  static const String _kAnalyticsConsentKey = 'analytics_consent';
 
   static List<WordClockLanguage> get supportedLanguages =>
       WordClockLanguages.all;
@@ -48,6 +49,9 @@ class SettingsController extends ChangeNotifier {
   // UI Locale support
   Locale? _uiLocale;
 
+  // Analytics consent
+  bool? _analyticsConsent;
+
   bool _highlightAll = false;
   Set<int>? _allActiveIndices;
 
@@ -64,6 +68,7 @@ class SettingsController extends ChangeNotifier {
     _resolveLanguage();
     _resolveUiLocale();
     _loadTheme();
+    _resolveAnalyticsConsent();
 
     notifyListeners();
   }
@@ -150,6 +155,16 @@ class SettingsController extends ChangeNotifier {
     }
   }
 
+  void _resolveAnalyticsConsent() {
+    // 4. Resolve Analytics Consent
+    final bool? consented = _prefs?.getBool(_kAnalyticsConsentKey);
+    _analyticsConsent = consented;
+
+    // If explicit consent is stored, respect it.
+    // Otherwise, default to disabled until user decides.
+    AnalyticsService.setAnalyticsCollectionEnabled(consented ?? false);
+  }
+
   bool _isSupportedUiLocale(Locale locale) {
     return supportedUiLocales.any((l) => l.languageCode == locale.languageCode);
   }
@@ -231,6 +246,8 @@ class SettingsController extends ChangeNotifier {
   bool get highlightAll => _highlightAll;
 
   Locale get uiLocale => _uiLocale ?? supportedUiLocales.first;
+
+  bool? get analyticsConsent => _analyticsConsent;
 
   Set<int> get allActiveIndices {
     _allActiveIndices ??= _calculateAllActiveIndices();
@@ -341,6 +358,14 @@ class SettingsController extends ChangeNotifier {
 
   void toggleHighlightAll() {
     _highlightAll = !_highlightAll;
+    notifyListeners();
+  }
+
+  void setAnalyticsConsent(bool consented) {
+    if (_analyticsConsent == consented) return;
+    _analyticsConsent = consented;
+    _prefs?.setBool(_kAnalyticsConsentKey, consented);
+    AnalyticsService.setAnalyticsCollectionEnabled(consented);
     notifyListeners();
   }
 

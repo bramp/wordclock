@@ -9,7 +9,7 @@ class AnalyticsService {
   static FirebaseAnalyticsObserver? _observer;
 
   /// Initialize Firebase and Analytics
-  static Future<void> initialize() async {
+  static Future<void> initialize({bool enabled = true}) async {
     try {
       // Initialize Firebase on all platforms
       await Firebase.initializeApp(
@@ -17,12 +17,22 @@ class AnalyticsService {
       );
       _analytics = FirebaseAnalytics.instance;
       _observer = FirebaseAnalyticsObserver(analytics: _analytics!);
+
+      // Set initial collection state
+      await _analytics!.setAnalyticsCollectionEnabled(enabled);
     } catch (e) {
       // Firebase initialization might fail if not configured for all platforms
       // This is expected for platforms without Firebase configuration
       if (kDebugMode) {
         print('Firebase Analytics initialization skipped: $e');
       }
+    }
+  }
+
+  /// Enable or disable analytics collection
+  static Future<void> setAnalyticsCollectionEnabled(bool enabled) async {
+    if (_analytics != null) {
+      await _analytics!.setAnalyticsCollectionEnabled(enabled);
     }
   }
 
