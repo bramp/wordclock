@@ -19,6 +19,7 @@ void main() {
         MaterialApp(
           home: LetterGrid(
             grid: _testGrid,
+            locale: const Locale('en'),
             activeIndices: const {},
             activeColor: Colors.white,
             inactiveColor: Colors.grey,
@@ -42,6 +43,7 @@ void main() {
         MaterialApp(
           home: LetterGrid(
             grid: _testGrid,
+            locale: const Locale('en'),
             activeIndices: activeIndices,
             activeColor: activeColor,
             inactiveColor: inactiveColor,
@@ -66,12 +68,12 @@ void main() {
       // Check 'A' (Index 0) - Active
       final styleA = getStyle('A');
       expect(styleA.color, activeColor);
-      expect(styleA.fontWeight, FontWeight.w900);
+      expect(styleA.fontWeight, FontWeight.w700);
 
       // Check 'B' (Index 1) - Inactive
       final styleB = getStyle('B');
       expect(styleB.color, inactiveColor);
-      expect(styleB.fontWeight, FontWeight.w300);
+      expect(styleB.fontWeight, FontWeight.w400);
 
       // Check 'P' (Index 15) - Active
       final styleP = getStyle('P');

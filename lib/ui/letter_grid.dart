@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:wordclock/model/word_grid.dart';
 import 'package:wordclock/ui/clock_letter.dart';
 
 class LetterGrid extends StatelessWidget {
   final WordGrid grid;
+  final Locale locale;
   final Set<int> activeIndices;
   final Color activeColor;
   final Color inactiveColor;
@@ -16,6 +18,7 @@ class LetterGrid extends StatelessWidget {
   const LetterGrid({
     super.key,
     required this.grid,
+    required this.locale,
     required this.activeIndices,
     this.activeColor = Colors.white,
     this.inactiveColor = const Color.fromRGBO(255, 255, 255, 0.15),
@@ -51,21 +54,28 @@ class LetterGrid extends StatelessWidget {
 
           final fontSize = height * 0.6;
 
-          final activeStyle = TextStyle(
-            fontFamily: 'monospace',
-            // fontSize applied directly to Text via ClockLetter
-            fontWeight: FontWeight.w900,
-            color: activeColor,
-            shadows: shadows,
+          final activeStyle = _getStyle(FontWeight.w700, activeColor, shadows);
+          final inactiveStyle = _getStyle(
+            FontWeight.w400,
+            inactiveColor,
+            const [],
           );
 
-          final inactiveStyle = TextStyle(
-            fontFamily: 'monospace',
-            // fontSize applied directly to Text via ClockLetter
-            fontWeight: FontWeight.w300,
-            color: inactiveColor,
-            shadows: const [],
-          );
+          // final activeStyle = TextStyle(
+          //   fontFamily: 'monospace',
+          //   // fontSize applied directly to Text via ClockLetter
+          //   fontWeight: FontWeight.w900,
+          //   color: activeColor,
+          //   shadows: shadows,
+          // );
+
+          // final inactiveStyle = TextStyle(
+          //   fontFamily: 'monospace',
+          //   // fontSize applied directly to Text via ClockLetter
+          //   fontWeight: FontWeight.w300,
+          //   color: inactiveColor,
+          //   shadows: const [],
+          // );
 
           return GridView.count(
             physics: const NeverScrollableScrollPhysics(),
@@ -89,6 +99,66 @@ class LetterGrid extends StatelessWidget {
           );
         },
       ),
+    );
+  }
+
+  /// Returns the appropriate Noto Sans variant based on the [locale].
+  ///
+  /// This mapping is essential for two reasons:
+  /// 1. **Asset Bundling**: The `google_fonts` package maps these specific methods
+  ///    to font family names (e.g., [GoogleFonts.notoSansJp] looks for "Noto Sans JP").
+  ///    This allows us to bundle the fonts as assets and turn off runtime fetching.
+  /// 2. **Glyph Coverage**: Different languages require specific glyph sets.
+  ///    Using the language-specific variant ensures that characters like Kanji or
+  ///    Tamil script are rendered using the correct typeface instead of falling
+  ///    back to a generic system font.
+  TextStyle _getStyle(FontWeight weight, Color color, List<Shadow> shadows) {
+    final language = locale.languageCode.toLowerCase();
+
+    if (language == 'ta') {
+      return GoogleFonts.notoSansTamil(
+        fontWeight: weight,
+        color: color,
+        shadows: shadows,
+      );
+    }
+
+    if (language == 'ja') {
+      return GoogleFonts.notoSansJp(
+        fontWeight: weight,
+        color: color,
+        shadows: shadows,
+      );
+    }
+
+    if (language == 'zh') {
+      // Handle Traditional Chinese variants
+      final script = locale.scriptCode?.toLowerCase();
+      final country = locale.countryCode?.toLowerCase();
+
+      if (script == 'hant' ||
+          country == 'tw' ||
+          country == 'hk' ||
+          country == 'mo') {
+        return GoogleFonts.notoSansTc(
+          fontWeight: weight,
+          color: color,
+          shadows: shadows,
+        );
+      }
+
+      // Default to Simplified Chinese
+      return GoogleFonts.notoSansSc(
+        fontWeight: weight,
+        color: color,
+        shadows: shadows,
+      );
+    }
+
+    return GoogleFonts.notoSans(
+      fontWeight: weight,
+      color: color,
+      shadows: shadows,
     );
   }
 }

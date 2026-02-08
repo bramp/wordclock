@@ -12,6 +12,7 @@ import 'package:wordclock/ui/clock_layout.dart';
 import 'package:wordclock/ui/letter_grid.dart';
 import 'package:wordclock/settings/settings_controller.dart';
 import 'package:wordclock/ui/settings/settings_panel.dart';
+import 'package:wordclock/utils/locale_helper.dart';
 
 class ClockFace extends StatefulWidget {
   final SettingsController settingsController;
@@ -105,6 +106,7 @@ class _ClockFaceState extends State<ClockFace>
   Widget? _cachedActiveGrid;
   Set<int>? _lastActiveIndices;
   WordGrid? _lastCachedGrid;
+  Locale? _lastLocale;
 
   void _updateCachedGrids(
     SettingsController settings,
@@ -113,12 +115,15 @@ class _ClockFaceState extends State<ClockFace>
     Duration duration,
     Curve curve,
   ) {
+    final locale = LocaleHelper.parseLocale(settings.gridLanguage.languageCode);
     if (_cachedActiveGrid == null ||
         _cachedInactiveGrid == null ||
         !setEquals(_lastActiveIndices, activeIndices) ||
-        _lastCachedGrid != grid) {
+        _lastCachedGrid != grid ||
+        _lastLocale != locale) {
       _cachedInactiveGrid = LetterGrid(
         grid: grid,
+        locale: locale,
         activeIndices: const {},
         inactiveColor: const Color(0xFF333333),
         activeColor: Colors.transparent,
@@ -128,6 +133,7 @@ class _ClockFaceState extends State<ClockFace>
 
       _cachedActiveGrid = LetterGrid(
         grid: grid,
+        locale: locale,
         activeIndices: activeIndices,
         activeColor: Colors.white,
         inactiveColor: Colors.white.withValues(alpha: 0),
@@ -137,6 +143,7 @@ class _ClockFaceState extends State<ClockFace>
 
       _lastActiveIndices = activeIndices;
       _lastCachedGrid = grid;
+      _lastLocale = locale;
     }
   }
 
@@ -182,33 +189,28 @@ class _ClockFaceState extends State<ClockFace>
         );
 
         return Scaffold(
-          key: _scaffoldKey, // TODO Do we need a GlobalKey? Document why
+          key: _scaffoldKey,
           backgroundColor: settings.backgroundColor,
           endDrawer: SettingsPanel(controller: widget.settingsController),
           drawerScrimColor: Colors.black.withAlpha(0x4D),
-          body: GestureDetector(
-            onLongPress: () async {
-              final phrase = lang.timeToWords.convert(now);
-              await Clipboard.setData(ClipboardData(text: phrase));
-              if (context.mounted) {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(
-                    content: Text('Copied "$phrase" to clipboard'),
-                    duration: const Duration(seconds: 2),
-                    behavior: SnackBarBehavior.floating,
-                    width: 400,
-                  ),
-                );
-              }
-            },
-            child: Stack(
-              children: [
-                // Background: Faceplate color (usually matches scaffold)
-                Positioned.fill(
-                  child: Container(color: settings.backgroundColor),
-                ),
-
-                Center(
+          body: Stack(
+            children: [
+              GestureDetector(
+                onLongPress: () async {
+                  final phrase = lang.timeToWords.convert(now);
+                  await Clipboard.setData(ClipboardData(text: phrase));
+                  if (context.mounted) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(
+                        content: Text('Copied "$phrase" to clipboard'),
+                        duration: const Duration(seconds: 2),
+                        behavior: SnackBarBehavior.floating,
+                        width: 400,
+                      ),
+                    );
+                  }
+                },
+                child: Center(
                   child: Stack(
                     children: [
                       // Layer 1: Inactive Elements
@@ -217,7 +219,7 @@ class _ClockFaceState extends State<ClockFace>
                           grid: grid.grid,
                           remainder: 0,
                           showDots: showDots,
-                          forceAllDots: true, // Always show placeholder dots
+                          forceAllDots: true,
                           dotColor: settings.inactiveColor,
                           duration: widget.animationDuration,
                           curve: widget.animationCurve,
@@ -226,7 +228,6 @@ class _ClockFaceState extends State<ClockFace>
                       ),
 
                       // Layer 2: Active Elements
-                      // We animate the shader if plasma is selected
                       ListenableBuilder(
                         listenable: _plasmaController,
                         builder: (context, child) {
@@ -235,7 +236,6 @@ class _ClockFaceState extends State<ClockFace>
                               shaderCallback: (bounds) {
                                 if (settings.backgroundType ==
                                     BackgroundType.plasma) {
-                                  // Plasma effect: Rotating Sweep Gradient of the active colors
                                   return SweepGradient(
                                     colors: [
                                       ...settings.activeGradientColors,
@@ -246,7 +246,6 @@ class _ClockFaceState extends State<ClockFace>
                                     ),
                                   ).createShader(bounds);
                                 } else {
-                                  // Standard: Linear Gradient
                                   return LinearGradient(
                                     begin: Alignment.topLeft,
                                     end: Alignment.bottomRight,
@@ -273,23 +272,25 @@ class _ClockFaceState extends State<ClockFace>
                     ],
                   ),
                 ),
+              ),
 
-                // Settings Button (Bottom Right)
-                Positioned(
-                  bottom: 16,
-                  right: 16,
-                  child: IconButton(
-                    icon: Icon(
-                      Icons.settings,
-                      color: Colors.white.withValues(alpha: 0.3),
-                    ),
-                    onPressed: () {
-                      _scaffoldKey.currentState?.openEndDrawer();
-                    },
+              // Settings Button (Bottom Right)
+              Positioned(
+                bottom: 16,
+                right: 16,
+                child: IconButton(
+                  key: const Key('settings-button'),
+                  tooltip: 'Settings',
+                  icon: Icon(
+                    Icons.settings,
+                    color: Colors.white.withValues(alpha: 0.3),
                   ),
+                  onPressed: () {
+                    _scaffoldKey.currentState?.openEndDrawer();
+                  },
                 ),
-              ],
-            ),
+              ),
+            ],
           ),
         );
       },

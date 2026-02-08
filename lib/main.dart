@@ -1,12 +1,27 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
+import 'package:flutter/foundation.dart';
+import 'package:flutter/services.dart';
 import 'package:go_router/go_router.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:wordclock/services/analytics_service.dart';
 import 'package:wordclock/settings/settings_controller.dart';
 import 'package:wordclock/router.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+
+  // Allow fonts to be downloaded at runtime.
+  // We try and package all fonts with the app, and we have
+  // test/font_integration_test.dart to try and ensure this. But as a fallback
+  // we allow runtime fetching.
+  GoogleFonts.config.allowRuntimeFetching = true;
+
+  // Register font license
+  LicenseRegistry.addLicense(() async* {
+    final license = await rootBundle.loadString('assets/fonts/OFL.txt');
+    yield LicenseEntryWithLineBreaks(['google_fonts', 'Noto Sans'], license);
+  });
 
   // Initialize Firebase Analytics
   await AnalyticsService.initialize();
@@ -38,16 +53,21 @@ class WordClockApp extends StatelessWidget {
         return MaterialApp.router(
           title: 'WordClock',
           routerConfig: router,
-          theme: ThemeData(
-            colorScheme: ColorScheme.fromSeed(
-              seedColor: settingsController.settings.activeGradientColors.first,
-              brightness: Brightness.dark,
-            ),
-            useMaterial3: true,
-            fontFamily: 'Courier',
-            scaffoldBackgroundColor:
-                settingsController.settings.backgroundColor,
-          ),
+          theme: () {
+            final baseTheme = ThemeData(
+              colorScheme: ColorScheme.fromSeed(
+                seedColor:
+                    settingsController.settings.activeGradientColors.first,
+                brightness: Brightness.dark,
+              ),
+              useMaterial3: true,
+              scaffoldBackgroundColor:
+                  settingsController.settings.backgroundColor,
+            );
+            return baseTheme.copyWith(
+              textTheme: GoogleFonts.notoSansTextTheme(baseTheme.textTheme),
+            );
+          }(),
           // Localization
           locale: settingsController.uiLocale,
           supportedLocales: SettingsController.supportedUiLocales,
@@ -56,9 +76,6 @@ class WordClockApp extends StatelessWidget {
             GlobalWidgetsLocalizations.delegate,
             GlobalCupertinoLocalizations.delegate,
           ],
-          // Navigator observers handled by GoRouter generally, but we can attach analytics if needed
-          // via router listener or observer. AnalyticsService.observer is a NavigatorObserver.
-          // GoRouter accepts observers.
         );
       },
     );

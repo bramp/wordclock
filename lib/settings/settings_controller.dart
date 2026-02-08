@@ -10,6 +10,7 @@ import 'package:wordclock/settings/theme_settings.dart';
 import 'package:wordclock/languages/language.dart';
 import 'package:wordclock/languages/all.dart';
 import 'package:wordclock/services/platform_service.dart';
+import 'package:wordclock/utils/locale_helper.dart';
 
 enum ClockSpeed { normal, fast, hyper }
 
@@ -117,7 +118,7 @@ class SettingsController extends ChangeNotifier {
         WordClockLanguages.byId.containsKey(savedLangId)) {
       _gridLanguage = WordClockLanguages.byId[savedLangId]!;
     } else {
-      _gridLanguage = _detectBestLanguage();
+      _gridLanguage = LocaleHelper.detectBestLanguage(_platform.systemLocales);
     }
     _updateGrid();
   }
@@ -138,7 +139,10 @@ class SettingsController extends ChangeNotifier {
     }
 
     // If no persistence, try to match system
-    _uiLocale ??= _detectBestUiLocale();
+    _uiLocale ??= basicLocaleListResolution(
+      _platform.systemLocales,
+      supportedUiLocales,
+    );
   }
 
   void _loadTheme() {
@@ -167,69 +171,6 @@ class SettingsController extends ChangeNotifier {
 
   bool _isSupportedUiLocale(Locale locale) {
     return supportedUiLocales.any((l) => l.languageCode == locale.languageCode);
-  }
-
-  Locale _detectBestUiLocale() {
-    final userLocales = _platform.systemLocales;
-    return basicLocaleListResolution(userLocales, supportedUiLocales);
-  }
-
-  // ... (Existing _parseLocale and _detectBestLanguage methods remain valid for Clock Language)
-  Locale _parseLocale(String languageCode) {
-    final parts = languageCode.split('-');
-    if (parts.length == 1) {
-      return Locale(parts[0]);
-    }
-    if (parts.length == 2) {
-      if (parts[1].length == 4) {
-        return Locale.fromSubtags(languageCode: parts[0], scriptCode: parts[1]);
-      }
-      return Locale(parts[0], parts[1]);
-    }
-    if (parts.length == 3) {
-      return Locale.fromSubtags(
-        languageCode: parts[0],
-        scriptCode: parts[1],
-        countryCode: parts[2],
-      );
-    }
-    return Locale(parts[0]);
-  }
-
-  WordClockLanguage _detectBestLanguage() {
-    final userLocales = _platform.systemLocales;
-    final List<Locale> supportedLocales = [];
-    final Map<Locale, WordClockLanguage> localeToLang = {};
-
-    // Ensure English is added first to be the default fallback if no other locale matches.
-    if (WordClockLanguages.byId.containsKey('EN')) {
-      final enLang = WordClockLanguages.byId['EN']!;
-      final enLocale = _parseLocale(enLang.languageCode);
-      supportedLocales.add(enLocale);
-      localeToLang[enLocale] = enLang;
-    }
-
-    for (final lang in supportedLanguages) {
-      if (lang.isAlternative) continue;
-      // Skip if already added (English)
-      if (lang.id == 'EN') continue;
-
-      final locale = _parseLocale(lang.languageCode);
-      if (!localeToLang.containsKey(locale) ||
-          (lang.description == null || lang.description!.isEmpty)) {
-        localeToLang[locale] = lang;
-        if (!supportedLocales.contains(locale)) {
-          supportedLocales.add(locale);
-        }
-      }
-    }
-    final resolvedLocale = basicLocaleListResolution(
-      userLocales,
-      supportedLocales,
-    );
-    return localeToLang[resolvedLocale] ??
-        WordClockLanguages.byId['EN'] ??
-        supportedLanguages.first;
   }
 
   ThemeSettings get settings => _currentSettings;
@@ -312,8 +253,11 @@ class SettingsController extends ChangeNotifier {
 
     // Reset to defaults
     _currentSettings = ThemeSettings.defaultTheme;
-    _uiLocale = _detectBestUiLocale();
-    _gridLanguage = _detectBestLanguage();
+    _uiLocale = basicLocaleListResolution(
+      _platform.systemLocales,
+      supportedUiLocales,
+    );
+    _gridLanguage = LocaleHelper.detectBestLanguage(_platform.systemLocales);
     _allActiveIndices = null;
 
     // Reset transient

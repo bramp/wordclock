@@ -4,12 +4,14 @@
 - [x] Add Firebase / Google Analytics
   - [x] For GDPR compliance, you may need to add a consent banner
   - [x] Add tracking of how long the user keeps the app open for.
-- [ ] Optimize Web load time (investigate font loading, renderer, etc.).
+- [x] Optimize Web load time (investigate font loading, renderer, etc.).
 - [ ] Add integration tests.
 - [ ] Persist all the settings (language, grid, etc.)
 - [ ] Persisting of grid does not seem to work.
 - [x] Replace the word "atom" with "word"
 - [ ] When "Show minute dots" is disabled, the grid should be larger, to fill the gap.
+- [ ] Add a licences popup
+- [ ] Add semantic labels for accessibility
 
 ## Platform
 - [ ] Add support for Web
@@ -21,11 +23,13 @@
 
 ## Internationalization
 - [ ] Translate the app
+- [ ] Hide the language dropdown when there is only one language.
 - [x] Allow for wordclock.me/$lang/ routing
-- [ ] Fix the issue where foreign characters take a while to load. We should pre-load the google fonts, and maybe bundle them with the app - especially if we can strip them to just the required characters (to keep the app small).
+- [x] Fix the issue where foreign characters take a while to load. We should pre-load the google fonts, and maybe bundle them with the app - especially if we can strip them to just the required characters (to keep the app small).
 - [ ] Add support for other languages (see <https://en.wikipedia.org/wiki/Languages_used_on_the_Internet#Usage_statistics_of_content_languages_for_websites> for list)
 - [X] We need tests, to ensure the correct language selection behaviour
 - [ ] The UI language, should try and use the URL language as a hint, if needed
+- [ ] Consider allowing compact languages (like Japnese) to count in minutes, not five minutes.
 
 ## Visual
 - [ ] Add additional visual modes to the clock. Such as displaying the time in seconds. Or a audio visualizer.

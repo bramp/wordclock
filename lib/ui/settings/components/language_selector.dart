@@ -51,7 +51,7 @@ class LanguageSelector<T> extends StatelessWidget {
                     displayName,
                     style: const TextStyle(
                       color: Colors.white,
-                      fontWeight: FontWeight.w600,
+                      fontWeight: FontWeight.bold,
                     ),
                   ),
                   if (description != null)

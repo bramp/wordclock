@@ -162,6 +162,26 @@ class SettingsPanel extends StatelessWidget {
                       ListTile(
                         contentPadding: EdgeInsets.zero,
                         title: const Text(
+                          'Licenses',
+                          style: TextStyle(color: Colors.white),
+                        ),
+                        trailing: const Icon(
+                          Icons.description,
+                          color: Colors.grey,
+                          size: 20,
+                        ),
+                        onTap: () {
+                          showLicensePage(
+                            context: context,
+                            applicationName: 'WordClock',
+                            applicationVersion: 'v1.0.0',
+                            applicationIcon: const Icon(Icons.access_time),
+                          );
+                        },
+                      ),
+                      ListTile(
+                        contentPadding: EdgeInsets.zero,
+                        title: const Text(
                           'Privacy Policy',
                           style: TextStyle(color: Colors.white),
                         ),
