@@ -8,7 +8,7 @@
 - [ ] Add integration tests.
 - [ ] Persist all the settings (language, grid, etc.)
 - [ ] Persisting of grid does not seem to work.
-- [ ] Replace the word "atom" with "word"
+- [x] Replace the word "atom" with "word"
 - [ ] When "Show minute dots" is disabled, the grid should be larger, to fill the gap.
 
 ## Internationalization
@@ -60,6 +60,16 @@
 - [ ] Estonian
 - [x] Norwegian (NO)
 - [ ] Latvian
+
+### Top constructed languages
+- [ ] Esperanto
+- [ ] Klingon
+- [ ] High Valyrian (Game of Thrones)
+- [ ] Na'vi (Avatar)
+- [ ] Elvish / Quenya (The Lord of the Rings)
+- [ ] Circular Gallifreyan (Doctor Who)
+- [ ] Dothraki (Game of Thrones)
+- [ ] Black Speech (The "Mordor" Language)
 
 ### Top 10 Indian Languages
 - [ ] Hindi
