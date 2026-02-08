@@ -1,5 +1,7 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:url_launcher/url_launcher.dart';
+import 'package:wordclock/constants.dart';
 import 'package:wordclock/settings/settings_controller.dart';
 import 'package:wordclock/settings/theme_settings.dart';
 import 'package:wordclock/ui/settings/components/debug_settings.dart';
@@ -156,6 +158,24 @@ class SettingsPanel extends StatelessWidget {
                           'Built with Flutter',
                           style: TextStyle(color: Colors.grey),
                         ),
+                      ),
+                      ListTile(
+                        contentPadding: EdgeInsets.zero,
+                        title: const Text(
+                          'Privacy Policy',
+                          style: TextStyle(color: Colors.white),
+                        ),
+                        trailing: const Icon(
+                          Icons.open_in_new,
+                          color: Colors.grey,
+                          size: 20,
+                        ),
+                        onTap: () async {
+                          final uri = Uri.parse(kPrivacyPolicyUrl);
+                          if (await canLaunchUrl(uri)) {
+                            await launchUrl(uri);
+                          }
+                        },
                       ),
 
                       if (kDebugMode) DebugSettings(controller: controller),

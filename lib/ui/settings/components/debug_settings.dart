@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:wordclock/settings/settings_controller.dart';
 import 'package:wordclock/ui/settings/components/section_header.dart';
-// Void
 import 'package:wordclock/ui/settings/components/speed_selector.dart';
 
 class DebugSettings extends StatelessWidget {

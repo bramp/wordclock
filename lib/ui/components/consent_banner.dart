@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:url_launcher/url_launcher.dart';
+import 'package:wordclock/constants.dart';
 import 'package:wordclock/settings/settings_controller.dart';
 
 class ConsentBanner extends StatelessWidget {
@@ -56,16 +58,31 @@ class ConsentBanner extends StatelessWidget {
                   ),
                   const SizedBox(height: 16),
                   Row(
-                    mainAxisAlignment: MainAxisAlignment.end,
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
                       TextButton(
-                        onPressed: () => controller.setAnalyticsConsent(false),
-                        child: const Text('Decline'),
+                        onPressed: () async {
+                          final uri = Uri.parse(kPrivacyPolicyUrl);
+                          if (await canLaunchUrl(uri)) {
+                            await launchUrl(uri);
+                          }
+                        },
+                        child: const Text('Privacy Policy'),
                       ),
-                      const SizedBox(width: 8),
-                      FilledButton(
-                        onPressed: () => controller.setAnalyticsConsent(true),
-                        child: const Text('Accept'),
+                      Row(
+                        children: [
+                          TextButton(
+                            onPressed: () =>
+                                controller.setAnalyticsConsent(false),
+                            child: const Text('Decline'),
+                          ),
+                          const SizedBox(width: 8),
+                          FilledButton(
+                            onPressed: () =>
+                                controller.setAnalyticsConsent(true),
+                            child: const Text('Accept'),
+                          ),
+                        ],
                       ),
                     ],
                   ),
