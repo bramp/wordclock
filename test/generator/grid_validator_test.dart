@@ -39,7 +39,7 @@ void main() {
       expect(issues, isEmpty);
     });
 
-    test('reports missing atoms', () {
+    test('reports missing words', () {
       // Create a grid missing "TEN"
       // English grid has "TEN" at line 1 ("ITEISDTENLF") and line 8 ("ELEVENFTENA")
       // We must remove BOTH
@@ -59,7 +59,7 @@ void main() {
       );
 
       final issues = GridValidator.validate(grid, englishLanguage);
-      expect(issues, contains(matches(r'Missing atom "TEN"')));
+      expect(issues, contains(matches(r'Missing word "TEN"')));
     });
 
     test('validates padding correctly', () {

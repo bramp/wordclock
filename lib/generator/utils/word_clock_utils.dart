@@ -4,7 +4,7 @@ import 'package:wordclock/model/word_grid.dart';
 
 class WordClockUtils {
   /// Generates the set of all unique words required to display any time
-  /// supported by the language. These words typically serve as the "atoms"
+  /// supported by the language. These words typically serve as the "words"
   /// for the dependency graph and grid layout.
   static Set<String> getAllWords(WordClockLanguage language) {
     final words = <String>{};

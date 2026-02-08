@@ -37,7 +37,7 @@ class GridValidator {
     }
 
     // Check phrase constraints
-    final reportedMissingAtoms = <String>{};
+    final reportedMissingWords = <String>{};
     final reportedPaddingIssues = <String>{};
 
     WordClockUtils.forEachTime(language, (time, phrase) {
@@ -58,15 +58,15 @@ class GridValidator {
         final indices = sequences[i];
 
         if (indices == null) {
-          if (reportedMissingAtoms.add(unit)) {
+          if (reportedMissingWords.add(unit)) {
             final timeStr =
                 '${time.hour.toString().padLeft(2, '0')}:${time.minute.toString().padLeft(2, '0')}';
             issues.add(
-              'Missing atom "$unit" (in phrase "$phrase", at $timeStr)',
+              'Missing word "$unit" (in phrase "$phrase", at $timeStr)',
             );
           }
-          // If we miss an atom, we can't meaningfully check padding for subsequent words
-          // relying on this one. But we continue to report other missing atoms.
+          // If we miss a word, we can't meaningfully check padding for subsequent words
+          // relying on this one. But we continue to report other missing words.
           // Reset lastEndIndex? Or just break?
           // Original logic broke. Let's break.
           break;
