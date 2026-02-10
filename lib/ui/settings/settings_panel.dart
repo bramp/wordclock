@@ -165,6 +165,17 @@ class SettingsPanel extends StatelessWidget {
                       ),
                       ListTile(
                         contentPadding: EdgeInsets.zero,
+                        title: const Text('by bramp'),
+                        trailing: const Icon(Icons.open_in_new, size: 20),
+                        onTap: () async {
+                          final uri = Uri.parse(kAuthorUrl);
+                          if (await canLaunchUrl(uri)) {
+                            await launchUrl(uri);
+                          }
+                        },
+                      ),
+                      ListTile(
+                        contentPadding: EdgeInsets.zero,
                         title: const Text('Licenses'),
                         trailing: const Icon(Icons.description, size: 20),
                         onTap: () {
