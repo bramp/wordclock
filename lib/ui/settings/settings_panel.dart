@@ -86,6 +86,7 @@ class SettingsPanel extends StatelessWidget {
                         labelBuilder: _getUiDisplayName,
                         onSelected: controller.setUiLocale,
                         icon: Icons.translate,
+                        semanticsLabelPrefix: 'Interface Language',
                       ),
                       const SizedBox(height: 16),
                       const SectionHeader(title: 'Clock Language'),
@@ -100,6 +101,7 @@ class SettingsPanel extends StatelessWidget {
                           context.go('/${l.languageCode}');
                         },
                         icon: Icons.language,
+                        semanticsLabelPrefix: 'Clock Language',
                       ),
                       const SizedBox(height: 24),
                       const SectionHeader(title: 'Theme'),

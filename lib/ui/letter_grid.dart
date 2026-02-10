@@ -61,22 +61,6 @@ class LetterGrid extends StatelessWidget {
             const [],
           );
 
-          // final activeStyle = TextStyle(
-          //   fontFamily: 'monospace',
-          //   // fontSize applied directly to Text via ClockLetter
-          //   fontWeight: FontWeight.w900,
-          //   color: activeColor,
-          //   shadows: shadows,
-          // );
-
-          // final inactiveStyle = TextStyle(
-          //   fontFamily: 'monospace',
-          //   // fontSize applied directly to Text via ClockLetter
-          //   fontWeight: FontWeight.w300,
-          //   color: inactiveColor,
-          //   shadows: const [],
-          // );
-
           return GridView.count(
             physics: const NeverScrollableScrollPhysics(),
             crossAxisCount: grid.width,

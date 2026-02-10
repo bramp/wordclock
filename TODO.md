@@ -11,7 +11,7 @@
 - [x] Replace the word "atom" with "word"
 - [ ] When "Show minute dots" is disabled, the grid should be larger, to fill the gap.
 - [ ] Add a licences popup
-- [ ] Add semantic labels for accessibility
+- [x] Add semantic labels for accessibility
 
 ## Platform
 - [ ] Add support for Web

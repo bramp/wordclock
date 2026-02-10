@@ -12,6 +12,7 @@ class LanguageSelector<T> extends StatelessWidget {
   final String Function(T)? searchKeywordsBuilder;
   final void Function(T) onSelected;
   final IconData icon;
+  final String? semanticsLabelPrefix;
 
   const LanguageSelector({
     super.key,
@@ -22,6 +23,7 @@ class LanguageSelector<T> extends StatelessWidget {
     this.subtitleBuilder,
     this.searchKeywordsBuilder,
     this.icon = Icons.language,
+    this.semanticsLabelPrefix,
   });
 
   @override
@@ -29,47 +31,55 @@ class LanguageSelector<T> extends StatelessWidget {
     final displayName = labelBuilder(currentSelection);
     final description = subtitleBuilder?.call(currentSelection);
 
-    return InkWell(
-      onTap: () => _showLanguagePicker(context),
-      borderRadius: BorderRadius.circular(12),
-      child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-        decoration: BoxDecoration(
-          color: Colors.white.withValues(alpha: 0.05),
-          borderRadius: BorderRadius.circular(12),
-          border: Border.all(color: Colors.white.withValues(alpha: 0.1)),
-        ),
-        child: Row(
-          children: [
-            Icon(icon, color: Colors.white70, size: 20),
-            const SizedBox(width: 12),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    displayName,
-                    style: const TextStyle(
-                      color: Colors.white,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                  if (description != null)
+    return Semantics(
+      label: semanticsLabelPrefix != null
+          ? '$semanticsLabelPrefix: Change $displayName language'
+          : 'Change $displayName language',
+      button: true,
+      hint: 'Opens a language selection menu',
+      excludeSemantics: true,
+      child: InkWell(
+        onTap: () => _showLanguagePicker(context),
+        borderRadius: BorderRadius.circular(12),
+        child: Container(
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+          decoration: BoxDecoration(
+            color: Colors.white.withValues(alpha: 0.05),
+            borderRadius: BorderRadius.circular(12),
+            border: Border.all(color: Colors.white.withValues(alpha: 0.1)),
+          ),
+          child: Row(
+            children: [
+              Icon(icon, color: Colors.white70, size: 20),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
                     Text(
-                      description,
-                      style: TextStyle(
-                        color: Colors.white.withValues(alpha: 0.5),
-                        fontSize: 12,
+                      displayName,
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontWeight: FontWeight.bold,
                       ),
                     ),
-                ],
+                    if (description != null)
+                      Text(
+                        description,
+                        style: TextStyle(
+                          color: Colors.white.withValues(alpha: 0.5),
+                          fontSize: 12,
+                        ),
+                      ),
+                  ],
+                ),
               ),
-            ),
-            Icon(
-              Icons.keyboard_arrow_down,
-              color: Colors.white.withValues(alpha: 0.3),
-            ),
-          ],
+              Icon(
+                Icons.keyboard_arrow_down,
+                color: Colors.white.withValues(alpha: 0.3),
+              ),
+            ],
+          ),
         ),
       ),
     );

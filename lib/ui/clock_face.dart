@@ -189,7 +189,7 @@ class _ClockFaceState extends State<ClockFace>
         );
 
         return Scaffold(
-          key: _scaffoldKey,
+          key: _scaffoldKey, // TODO Do we need a GlobalKey? Document why
           backgroundColor: settings.backgroundColor,
           endDrawer: SettingsPanel(controller: widget.settingsController),
           drawerScrimColor: Colors.black.withAlpha(0x4D),
@@ -210,66 +210,75 @@ class _ClockFaceState extends State<ClockFace>
                     );
                   }
                 },
-                child: Center(
-                  child: Stack(
-                    children: [
-                      // Layer 1: Inactive Elements
-                      RepaintBoundary(
-                        child: ClockLayout(
-                          grid: grid.grid,
-                          remainder: 0,
-                          showDots: showDots,
-                          forceAllDots: true,
-                          dotColor: settings.inactiveColor,
-                          duration: widget.animationDuration,
-                          curve: widget.animationCurve,
-                          child: _cachedInactiveGrid!,
+                child: Semantics(
+                  label:
+                      'Current time in words: ${lang.timeToWords.convert(now)}${showDots && _remainder > 0 ? ', plus $_remainder minute${_remainder > 1 ? 's' : ''}' : ''}',
+                  hint: 'Long press to copy time to clipboard',
+                  excludeSemantics: true,
+                  child: Center(
+                    child: Stack(
+                      children: [
+                        // Layer 1: Inactive Elements
+                        RepaintBoundary(
+                          child: ClockLayout(
+                            grid: grid.grid,
+                            remainder: 0,
+                            showDots: showDots,
+                            forceAllDots: true,
+                            dotColor: settings.inactiveColor,
+                            duration: widget.animationDuration,
+                            curve: widget.animationCurve,
+                            child: _cachedInactiveGrid!,
+                          ),
                         ),
-                      ),
 
-                      // Layer 2: Active Elements
-                      ListenableBuilder(
-                        listenable: _plasmaController,
-                        builder: (context, child) {
-                          return RepaintBoundary(
-                            child: ShaderMask(
-                              shaderCallback: (bounds) {
-                                if (settings.backgroundType ==
-                                    BackgroundType.plasma) {
-                                  return SweepGradient(
-                                    colors: [
-                                      ...settings.activeGradientColors,
-                                      settings.activeGradientColors.first,
-                                    ],
-                                    transform: GradientRotation(
-                                      _plasmaController.value * 2 * 3.14159,
-                                    ),
-                                  ).createShader(bounds);
-                                } else {
-                                  return LinearGradient(
-                                    begin: Alignment.topLeft,
-                                    end: Alignment.bottomRight,
-                                    colors: settings.activeGradientColors,
-                                  ).createShader(bounds);
-                                }
-                              },
-                              blendMode: BlendMode.srcIn,
-                              child: child!,
-                            ),
-                          );
-                        },
-                        child: ClockLayout(
-                          grid: grid.grid,
-                          remainder: _remainder,
-                          showDots: showDots,
-                          forceAllDots: false,
-                          dotColor: Colors.white,
-                          duration: widget.animationDuration,
-                          curve: widget.animationCurve,
-                          child: _cachedActiveGrid!,
+                        // Layer 2: Active Elements
+                        // We animate the shader if plasma is selected
+                        ListenableBuilder(
+                          listenable: _plasmaController,
+                          builder: (context, child) {
+                            return RepaintBoundary(
+                              child: ShaderMask(
+                                shaderCallback: (bounds) {
+                                  if (settings.backgroundType ==
+                                      BackgroundType.plasma) {
+                                    // Plasma effect: Rotating Sweep Gradient of the active colors
+                                    return SweepGradient(
+                                      colors: [
+                                        ...settings.activeGradientColors,
+                                        settings.activeGradientColors.first,
+                                      ],
+                                      transform: GradientRotation(
+                                        _plasmaController.value * 2 * 3.14159,
+                                      ),
+                                    ).createShader(bounds);
+                                  } else {
+                                    // Standard: Linear Gradient
+                                    return LinearGradient(
+                                      begin: Alignment.topLeft,
+                                      end: Alignment.bottomRight,
+                                      colors: settings.activeGradientColors,
+                                    ).createShader(bounds);
+                                  }
+                                },
+                                blendMode: BlendMode.srcIn,
+                                child: child!,
+                              ),
+                            );
+                          },
+                          child: ClockLayout(
+                            grid: grid.grid,
+                            remainder: _remainder,
+                            showDots: showDots,
+                            forceAllDots: false,
+                            dotColor: Colors.white,
+                            duration: widget.animationDuration,
+                            curve: widget.animationCurve,
+                            child: _cachedActiveGrid!,
+                          ),
                         ),
-                      ),
-                    ],
+                      ],
+                    ),
                   ),
                 ),
               ),
@@ -281,10 +290,7 @@ class _ClockFaceState extends State<ClockFace>
                 child: IconButton(
                   key: const Key('settings-button'),
                   tooltip: 'Settings',
-                  icon: Icon(
-                    Icons.settings,
-                    color: Colors.white.withValues(alpha: 0.3),
-                  ),
+                  icon: const Icon(Icons.settings, color: Colors.white),
                   onPressed: () {
                     _scaffoldKey.currentState?.openEndDrawer();
                   },
