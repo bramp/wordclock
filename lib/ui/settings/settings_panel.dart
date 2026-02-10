@@ -113,7 +113,7 @@ class SettingsPanel extends StatelessWidget {
                       const SectionHeader(title: 'Display'),
                       Tooltip(
                         message:
-                            'The four corner dots represent minutes 1, 2, 3, and 4 of each five-minute step.',
+                            'The four corner dots represent 1, 2, 3, and 4 minutes past each five-minute step.',
                         child: SwitchListTile(
                           contentPadding: EdgeInsets.zero,
                           title: const Text(
@@ -144,6 +144,10 @@ class SettingsPanel extends StatelessWidget {
                         title: const Text(
                           'Plasma Text',
                           style: TextStyle(color: Colors.white),
+                        ),
+                        subtitle: const Text(
+                          'Adds animated background color effect',
+                          style: TextStyle(color: Colors.grey, fontSize: 12),
                         ),
                         value: settings.backgroundType == BackgroundType.plasma,
                         activeThumbColor: settings.activeGradientColors.last,
