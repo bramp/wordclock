@@ -111,25 +111,33 @@ class SettingsPanel extends StatelessWidget {
                       ),
                       const SizedBox(height: 24),
                       const SectionHeader(title: 'Display'),
-                      SwitchListTile(
-                        contentPadding: EdgeInsets.zero,
-                        title: const Text(
-                          'Show Minute Dots',
-                          style: TextStyle(color: Colors.white),
+                      Tooltip(
+                        message:
+                            'The four corner dots represent minutes 1, 2, 3, and 4 of each five-minute step.',
+                        child: SwitchListTile(
+                          contentPadding: EdgeInsets.zero,
+                          title: const Text(
+                            'Show Minute Dots',
+                            style: TextStyle(color: Colors.white),
+                          ),
+                          subtitle: const Text(
+                            'Displays corner dots for precise minutes',
+                            style: TextStyle(color: Colors.grey, fontSize: 12),
+                          ),
+                          value: settings.showMinuteDots,
+                          activeThumbColor: settings.activeGradientColors.last,
+                          onChanged: (value) {
+                            controller.updateTheme(
+                              ThemeSettings(
+                                activeGradientColors:
+                                    settings.activeGradientColors,
+                                inactiveColor: settings.inactiveColor,
+                                backgroundColor: settings.backgroundColor,
+                                showMinuteDots: value,
+                              ),
+                            );
+                          },
                         ),
-                        value: settings.showMinuteDots,
-                        activeThumbColor: settings.activeGradientColors.last,
-                        onChanged: (value) {
-                          controller.updateTheme(
-                            ThemeSettings(
-                              activeGradientColors:
-                                  settings.activeGradientColors,
-                              inactiveColor: settings.inactiveColor,
-                              backgroundColor: settings.backgroundColor,
-                              showMinuteDots: value,
-                            ),
-                          );
-                        },
                       ),
                       SwitchListTile(
                         contentPadding: EdgeInsets.zero,

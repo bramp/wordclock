@@ -38,8 +38,11 @@ class ClockLayout extends StatelessWidget {
         child: Stack(
           children: [
             // The Grid (Inset)
-            // Push grid in so dots fit in corners
-            Padding(padding: const EdgeInsets.all(24.0), child: child),
+            // Push grid in so dots fit in corners, only if we are showing dots.
+            Padding(
+              padding: EdgeInsets.all(showDots ? 24.0 : 0.0),
+              child: child,
+            ),
 
             if (showDots) ...[
               // 1 minute: Top Left
