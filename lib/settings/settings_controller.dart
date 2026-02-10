@@ -44,7 +44,6 @@ class SettingsController extends ChangeNotifier {
   final PlatformService _platform;
 
   // The default language is English ('EN').
-  // The default language is English ('EN').
   late WordClockLanguage _gridLanguage;
   late WordClockGrid _grid;
 

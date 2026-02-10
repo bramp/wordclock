@@ -5,15 +5,15 @@
   - [x] For GDPR compliance, you may need to add a consent banner
   - [x] Add tracking of how long the user keeps the app open for.
 - [x] Optimize Web load time (investigate font loading, renderer, etc.).
-- [ ] Add integration tests.
+- [x] Add integration tests.
 - [x] Persist all the settings (language, grid, etc.)
 - [x] Replace the word "atom" with "word"
 - [ ] When "Show minute dots" is disabled, the grid should be larger, to fill the gap.
-- [ ] Add a licences popup
+- [x] Add a licences popup
 - [x] Add semantic labels for accessibility
 
 ## Platform
-- [ ] Add support for Web
+- [x] Add support for Web
 - [ ] Add support for Android
 - [ ] Add support for iOS
 - [ ] Add support for Windows
