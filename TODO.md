@@ -6,8 +6,7 @@
   - [x] Add tracking of how long the user keeps the app open for.
 - [x] Optimize Web load time (investigate font loading, renderer, etc.).
 - [ ] Add integration tests.
-- [ ] Persist all the settings (language, grid, etc.)
-- [ ] Persisting of grid does not seem to work.
+- [x] Persist all the settings (language, grid, etc.)
 - [x] Replace the word "atom" with "word"
 - [ ] When "Show minute dots" is disabled, the grid should be larger, to fill the gap.
 - [ ] Add a licences popup

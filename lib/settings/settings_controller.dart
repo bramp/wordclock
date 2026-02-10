@@ -15,10 +15,11 @@ import 'package:wordclock/utils/locale_helper.dart';
 enum ClockSpeed { normal, fast, hyper }
 
 class SettingsController extends ChangeNotifier {
-  static const String _kLanguageIdKey = 'preferred_language_id';
-  static const String _kUiLocaleKey = 'ui_locale';
-  static const String _kThemeKey = 'theme_settings';
-  static const String _kAnalyticsConsentKey = 'analytics_consent';
+  static const String kLanguageIdKey = 'preferred_language_id';
+  static const String kUiLocaleKey = 'ui_locale';
+  static const String kThemeKey = 'theme_settings';
+  static const String kAnalyticsConsentKey = 'analytics_consent';
+  static const String kClockSpeedKey = 'clock_speed';
 
   static List<WordClockLanguage> get supportedLanguages =>
       WordClockLanguages.all;
@@ -70,6 +71,7 @@ class SettingsController extends ChangeNotifier {
     _resolveUiLocale();
     _loadTheme();
     _resolveAnalyticsConsent();
+    _resolveClockSpeed();
 
     notifyListeners();
   }
@@ -84,7 +86,7 @@ class SettingsController extends ChangeNotifier {
     // 1. Resolve Clock Language
     // Priority: Persistence -> System -> Default (EN)
     // BUT we check URL first (Priority 1) manually here to ensure initial state is correct before Router attaches.
-    final String? savedLangId = _prefs?.getString(_kLanguageIdKey);
+    final String? savedLangId = _prefs?.getString(kLanguageIdKey);
 
     WordClockLanguage? urlLang;
     try {
@@ -126,7 +128,7 @@ class SettingsController extends ChangeNotifier {
   void _resolveUiLocale() {
     // 2. Resolve UI Locale
     // Priority: Persistence -> System -> Default (first supported)
-    final String? savedUiLocale = _prefs?.getString(_kUiLocaleKey);
+    final String? savedUiLocale = _prefs?.getString(kUiLocaleKey);
     if (savedUiLocale != null) {
       final parts = savedUiLocale.split('_');
       final locale = parts.length > 1
@@ -147,7 +149,7 @@ class SettingsController extends ChangeNotifier {
 
   void _loadTheme() {
     // 3. Resolve Theme
-    final String? savedThemeJson = _prefs?.getString(_kThemeKey);
+    final String? savedThemeJson = _prefs?.getString(kThemeKey);
     if (savedThemeJson != null) {
       try {
         _currentSettings = ThemeSettings.fromJson(
@@ -161,12 +163,23 @@ class SettingsController extends ChangeNotifier {
 
   void _resolveAnalyticsConsent() {
     // 4. Resolve Analytics Consent
-    final bool? consented = _prefs?.getBool(_kAnalyticsConsentKey);
+    final bool? consented = _prefs?.getBool(kAnalyticsConsentKey);
     _analyticsConsent = consented;
 
     // If explicit consent is stored, respect it.
     // Otherwise, default to disabled until user decides.
     AnalyticsService.setAnalyticsCollectionEnabled(consented ?? false);
+  }
+
+  void _resolveClockSpeed() {
+    final String? speedStr = _prefs?.getString(kClockSpeedKey);
+    if (speedStr != null) {
+      try {
+        setClockSpeed(ClockSpeed.values.byName(speedStr));
+      } catch (e) {
+        debugPrint('Error loading clock speed: $e');
+      }
+    }
   }
 
   bool _isSupportedUiLocale(Locale locale) {
@@ -220,7 +233,7 @@ class SettingsController extends ChangeNotifier {
     _allActiveIndices = null;
     _updateGrid();
 
-    _prefs?.setString(_kLanguageIdKey, language.id);
+    _prefs?.setString(kLanguageIdKey, language.id);
     AnalyticsService.logLanguageChange(language.id);
 
     notifyListeners();
@@ -233,7 +246,7 @@ class SettingsController extends ChangeNotifier {
     if (!_isSupportedUiLocale(locale)) return;
 
     _uiLocale = locale;
-    _prefs?.setString(_kUiLocaleKey, locale.toString());
+    _prefs?.setString(kUiLocaleKey, locale.toString());
 
     notifyListeners();
   }
@@ -245,7 +258,7 @@ class SettingsController extends ChangeNotifier {
   }
 
   void _saveTheme() {
-    _prefs?.setString(_kThemeKey, jsonEncode(_currentSettings.toJson()));
+    _prefs?.setString(kThemeKey, jsonEncode(_currentSettings.toJson()));
   }
 
   void resetSettings() {
@@ -285,6 +298,7 @@ class SettingsController extends ChangeNotifier {
         _clock.setRate(300.0);
         break;
     }
+    _prefs?.setString(kClockSpeedKey, speed.name);
     notifyListeners();
   }
 
@@ -308,7 +322,7 @@ class SettingsController extends ChangeNotifier {
   void setAnalyticsConsent(bool consented) {
     if (_analyticsConsent == consented) return;
     _analyticsConsent = consented;
-    _prefs?.setBool(_kAnalyticsConsentKey, consented);
+    _prefs?.setBool(kAnalyticsConsentKey, consented);
     AnalyticsService.setAnalyticsCollectionEnabled(consented);
     notifyListeners();
   }
