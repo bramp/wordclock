@@ -70,9 +70,7 @@ class SettingsPanel extends StatelessWidget {
                   padding: const EdgeInsets.all(16.0),
                   child: Text(
                     'Settings',
-                    style: Theme.of(
-                      context,
-                    ).textTheme.headlineSmall?.copyWith(color: Colors.white),
+                    style: Theme.of(context).textTheme.headlineSmall,
                   ),
                 ),
                 Expanded(
@@ -97,7 +95,6 @@ class SettingsPanel extends StatelessWidget {
                         subtitleBuilder: (l) => l.description,
                         searchKeywordsBuilder: (l) => l.englishName,
                         onSelected: (l) {
-                          // Close the drawer/panel if needed? No, context.go handles nav.
                           context.go('/${l.languageCode}');
                         },
                         icon: Icons.language,
@@ -116,13 +113,9 @@ class SettingsPanel extends StatelessWidget {
                             'The four corner dots represent 1, 2, 3, and 4 minutes past each five-minute step.',
                         child: SwitchListTile(
                           contentPadding: EdgeInsets.zero,
-                          title: const Text(
-                            'Show Minute Dots',
-                            style: TextStyle(color: Colors.white),
-                          ),
+                          title: const Text('Show Minute Dots'),
                           subtitle: const Text(
                             'Displays corner dots for precise minutes',
-                            style: TextStyle(color: Colors.grey, fontSize: 12),
                           ),
                           value: settings.showMinuteDots,
                           activeThumbColor: settings.activeGradientColors.last,
@@ -141,13 +134,9 @@ class SettingsPanel extends StatelessWidget {
                       ),
                       SwitchListTile(
                         contentPadding: EdgeInsets.zero,
-                        title: const Text(
-                          'Plasma Text',
-                          style: TextStyle(color: Colors.white),
-                        ),
+                        title: const Text('Plasma Text'),
                         subtitle: const Text(
                           'Adds animated background color effect',
-                          style: TextStyle(color: Colors.grey, fontSize: 12),
                         ),
                         value: settings.backgroundType == BackgroundType.plasma,
                         activeThumbColor: settings.activeGradientColors.last,
@@ -160,30 +149,24 @@ class SettingsPanel extends StatelessWidget {
                         },
                       ),
 
-                      const SizedBox(height: 24),
-                      const SectionHeader(title: 'About'),
-                      const ListTile(
+                      const SizedBox(height: 32),
+                      Text(
+                        'About',
+                        style: Theme.of(context).textTheme.headlineSmall,
+                      ),
+                      const SizedBox(height: 8),
+                      ListTile(
                         contentPadding: EdgeInsets.zero,
-                        title: Text(
-                          'WordClock v1.0',
-                          style: TextStyle(color: Colors.grey),
-                        ),
+                        title: const Text('WordClock v1.0'),
                         subtitle: Text(
                           'Built with Flutter',
-                          style: TextStyle(color: Colors.grey),
+                          style: Theme.of(context).textTheme.bodySmall,
                         ),
                       ),
                       ListTile(
                         contentPadding: EdgeInsets.zero,
-                        title: const Text(
-                          'Licenses',
-                          style: TextStyle(color: Colors.white),
-                        ),
-                        trailing: const Icon(
-                          Icons.description,
-                          color: Colors.grey,
-                          size: 20,
-                        ),
+                        title: const Text('Licenses'),
+                        trailing: const Icon(Icons.description, size: 20),
                         onTap: () {
                           showLicensePage(
                             context: context,
@@ -195,15 +178,8 @@ class SettingsPanel extends StatelessWidget {
                       ),
                       ListTile(
                         contentPadding: EdgeInsets.zero,
-                        title: const Text(
-                          'Privacy Policy',
-                          style: TextStyle(color: Colors.white),
-                        ),
-                        trailing: const Icon(
-                          Icons.open_in_new,
-                          color: Colors.grey,
-                          size: 20,
-                        ),
+                        title: const Text('Privacy Policy'),
+                        trailing: const Icon(Icons.open_in_new, size: 20),
                         onTap: () async {
                           final uri = Uri.parse(kPrivacyPolicyUrl);
                           if (await canLaunchUrl(uri)) {

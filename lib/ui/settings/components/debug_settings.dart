@@ -27,27 +27,20 @@ class DebugSettings extends StatelessWidget {
         ),
         SwitchListTile(
           contentPadding: EdgeInsets.zero,
-          title: const Text(
-            'Highlight All Cells',
-            style: TextStyle(color: Colors.white),
-          ),
-          subtitle: const Text(
-            'Show every character that could light up',
-            style: TextStyle(color: Colors.grey, fontSize: 12),
-          ),
+          title: const Text('Highlight All Cells'),
+          subtitle: const Text('Show every character that could light up'),
           value: controller.highlightAll,
           onChanged: (value) => controller.toggleHighlightAll(),
         ),
         ListTile(
           contentPadding: EdgeInsets.zero,
-          title: const Text('Set Time', style: TextStyle(color: Colors.white)),
+          title: const Text('Set Time'),
           subtitle: Text(
             controller.isManualTime
                 ? '${controller.clock.now().hour.toString().padLeft(2, '0')}:${controller.clock.now().minute.toString().padLeft(2, '0')}'
                 : 'System Time',
-            style: const TextStyle(color: Colors.grey),
           ),
-          trailing: const Icon(Icons.access_time, color: Colors.grey),
+          trailing: const Icon(Icons.access_time, size: 20),
           onTap: () async {
             final now = controller.clock.now();
             final time = await showTimePicker(
@@ -74,20 +67,28 @@ class DebugSettings extends StatelessWidget {
               'Reset to System Time',
               style: TextStyle(color: Colors.redAccent),
             ),
-            leading: const Icon(Icons.restore, color: Colors.redAccent),
+            leading: const Icon(
+              Icons.restore,
+              color: Colors.redAccent,
+              size: 20,
+            ),
             onTap: () {
               controller.setManualTime(null);
             },
           ),
         const SizedBox(height: 16),
-        const Divider(color: Colors.white24),
+        const Divider(),
         ListTile(
           contentPadding: EdgeInsets.zero,
           title: const Text(
             'Reset All Settings',
             style: TextStyle(color: Colors.redAccent),
           ),
-          leading: const Icon(Icons.delete_forever, color: Colors.redAccent),
+          leading: const Icon(
+            Icons.delete_forever,
+            color: Colors.redAccent,
+            size: 20,
+          ),
           onTap: () async {
             // Optional: Confirmation dialog
             final confirm = await showDialog<bool>(

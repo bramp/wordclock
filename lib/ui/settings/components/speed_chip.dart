@@ -30,7 +30,11 @@ class SpeedChip extends StatelessWidget {
                 ? color.withValues(alpha: 0.2)
                 : Colors.transparent,
             border: Border.all(
-              color: isSelected ? color : Colors.grey.withValues(alpha: 0.3),
+              color: isSelected
+                  ? color
+                  : Theme.of(
+                      context,
+                    ).colorScheme.onSurfaceVariant.withValues(alpha: 0.3),
               width: 1.5,
             ),
             borderRadius: BorderRadius.circular(16),
@@ -38,7 +42,9 @@ class SpeedChip extends StatelessWidget {
           child: Text(
             label,
             style: TextStyle(
-              color: isSelected ? Colors.white : Colors.grey,
+              color: isSelected
+                  ? Theme.of(context).colorScheme.onSurface
+                  : Theme.of(context).colorScheme.onSurfaceVariant,
               fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
               fontSize: 13,
             ),

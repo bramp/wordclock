@@ -12,12 +12,7 @@ class SectionHeader extends StatelessWidget {
         padding: const EdgeInsets.only(bottom: 12.0),
         child: Text(
           title.toUpperCase(),
-          style: const TextStyle(
-            color: Colors.grey,
-            fontSize: 12,
-            fontWeight: FontWeight.bold,
-            letterSpacing: 1.5,
-          ),
+          style: Theme.of(context).textTheme.labelSmall,
         ),
       ),
     );

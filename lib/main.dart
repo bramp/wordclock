@@ -64,8 +64,30 @@ class WordClockApp extends StatelessWidget {
               scaffoldBackgroundColor:
                   settingsController.settings.backgroundColor,
             );
+            final textTheme = GoogleFonts.notoSansTextTheme(
+              baseTheme.textTheme,
+            );
             return baseTheme.copyWith(
-              textTheme: GoogleFonts.notoSansTextTheme(baseTheme.textTheme),
+              textTheme: textTheme.copyWith(
+                // Secondary text (subtitles, counts)
+                bodySmall: textTheme.bodySmall?.copyWith(
+                  color: Colors.white60,
+                  fontSize: 12,
+                ),
+                // Section headers
+                labelSmall: textTheme.labelSmall?.copyWith(
+                  color: baseTheme.colorScheme.onSurfaceVariant,
+                  letterSpacing: 1.2,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+              listTileTheme: ListTileThemeData(
+                contentPadding: const EdgeInsets.symmetric(horizontal: 16),
+                visualDensity: VisualDensity.compact,
+                subtitleTextStyle: textTheme.bodySmall?.copyWith(
+                  color: Colors.white60,
+                ),
+              ),
             );
           }(),
           // Localization

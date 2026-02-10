@@ -58,18 +58,12 @@ class LanguageSelector<T> extends StatelessWidget {
                   children: [
                     Text(
                       displayName,
-                      style: const TextStyle(
-                        color: Colors.white,
-                        fontWeight: FontWeight.bold,
-                      ),
+                      style: const TextStyle(fontWeight: FontWeight.bold),
                     ),
                     if (description != null)
                       Text(
                         description,
-                        style: TextStyle(
-                          color: Colors.white.withValues(alpha: 0.5),
-                          fontSize: 12,
-                        ),
+                        style: Theme.of(context).textTheme.bodySmall,
                       ),
                   ],
                 ),
@@ -168,7 +162,6 @@ class _LanguagePickerSheetState<T> extends State<_LanguagePickerSheet<T>> {
               padding: const EdgeInsets.all(16.0),
               child: TextField(
                 autofocus: true,
-                style: const TextStyle(color: Colors.white),
                 decoration: InputDecoration(
                   hintText: 'Search...',
                   hintStyle: const TextStyle(color: Colors.white24),
@@ -215,7 +208,7 @@ class _LanguagePickerSheetState<T> extends State<_LanguagePickerSheet<T>> {
                     title: Text(
                       displayLabel,
                       style: TextStyle(
-                        color: isSelected ? Colors.blueAccent : Colors.white,
+                        color: isSelected ? Colors.blueAccent : null,
                         fontWeight: isSelected
                             ? FontWeight.bold
                             : FontWeight.normal,
@@ -224,9 +217,7 @@ class _LanguagePickerSheetState<T> extends State<_LanguagePickerSheet<T>> {
                     subtitle: subtitle != null
                         ? Text(
                             subtitle,
-                            style: TextStyle(
-                              color: Colors.white.withValues(alpha: 0.5),
-                            ),
+                            style: Theme.of(context).textTheme.bodySmall,
                           )
                         : null,
                     trailing: isSelected

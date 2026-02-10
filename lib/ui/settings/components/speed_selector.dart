@@ -18,11 +18,8 @@ class SpeedSelector extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Padding(
-          padding: const EdgeInsets.only(bottom: 8.0),
-          child: const Text(
-            'Speed',
-            style: TextStyle(color: Colors.white, fontSize: 16),
-          ),
+          padding: const EdgeInsets.only(bottom: 8.0, left: 0.0),
+          child: Text('Speed', style: Theme.of(context).textTheme.bodyLarge),
         ),
         Wrap(
           spacing: 8,
@@ -54,7 +51,7 @@ class SpeedSelector extends StatelessWidget {
             ClockSpeed.normal => 'Standard time',
             ClockSpeed.fast => '1 minute per second',
             ClockSpeed.hyper => '5 minutes per second',
-          }, style: const TextStyle(color: Colors.grey, fontSize: 12)),
+          }, style: Theme.of(context).textTheme.bodySmall),
         ),
       ],
     );

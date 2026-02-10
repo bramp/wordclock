@@ -32,7 +32,9 @@ class ThemeChip extends StatelessWidget {
             border: Border.all(
               color: isSelected
                   ? colors.first
-                  : Colors.grey.withValues(alpha: 0.3),
+                  : Theme.of(
+                      context,
+                    ).colorScheme.onSurfaceVariant.withValues(alpha: 0.3),
               width: 2,
             ),
             borderRadius: BorderRadius.circular(20),
@@ -52,7 +54,9 @@ class ThemeChip extends StatelessWidget {
               Text(
                 label,
                 style: TextStyle(
-                  color: isSelected ? Colors.white : Colors.grey,
+                  color: isSelected
+                      ? Theme.of(context).colorScheme.onSurface
+                      : Theme.of(context).colorScheme.onSurfaceVariant,
                   fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
                 ),
               ),
