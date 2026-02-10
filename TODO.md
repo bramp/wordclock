@@ -8,7 +8,7 @@
 - [x] Add integration tests.
 - [x] Persist all the settings (language, grid, etc.)
 - [x] Replace the word "atom" with "word"
-- [ ] When "Show minute dots" is disabled, the grid should be larger, to fill the gap.
+- [x] When "Show minute dots" is disabled, the grid should be larger, to fill the gap.
 - [x] Add a licences popup
 - [x] Add semantic labels for accessibility
 
