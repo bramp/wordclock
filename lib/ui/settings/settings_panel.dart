@@ -40,7 +40,7 @@ class SettingsPanel extends StatelessWidget {
 
         // Sort languages for the selector
         final sortedLanguages = List<WordClockLanguage>.from(
-          SettingsController.supportedLanguages,
+          SettingsController.supportedLanguages.where((l) => !l.isHidden),
         );
         sortedLanguages.sort((a, b) {
           if (a.isAlternative != b.isAlternative) {

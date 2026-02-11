@@ -74,13 +74,16 @@
 
 ### Top constructed languages
 - [ ] Esperanto
-- [ ] Klingon
+- [x] Klingon
+  - [ ] Update the display name to use pIqaD script
+  - [ ] Ensure the font is compressed / pruned
+  - [ ] Add some instructions, to ask developers to install assets/fonts/pIqaD.ttf (so they can see it in the terminal)
 - [ ] High Valyrian (Game of Thrones)
 - [ ] Na'vi (Avatar)
-- [ ] Elvish / Quenya (The Lord of the Rings)
+- [x] Elvish / Quenya (The Lord of the Rings)
 - [ ] Circular Gallifreyan (Doctor Who)
 - [ ] Dothraki (Game of Thrones)
-- [ ] Black Speech (The "Mordor" Language)
+- [x] Black Speech (The "Mordor" Language)
 
 ### Top 10 Indian Languages
 - [ ] Hindi

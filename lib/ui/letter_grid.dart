@@ -139,6 +139,20 @@ class LetterGrid extends StatelessWidget {
       );
     }
 
+    // Klingon (pIqaD)
+    // print('Language: $language, Script: ${locale.scriptCode}');
+    if (language == 'tlh' &&
+        (locale.scriptCode == 'Piqd' || locale.scriptCode == 'piqd')) {
+      // print('Using KlingonPiqad font');
+      return TextStyle(
+        fontFamily: 'KlingonPiqad',
+        package: null,
+        fontWeight: weight,
+        color: color,
+        shadows: shadows,
+      );
+    }
+
     return GoogleFonts.notoSans(
       fontWeight: weight,
       color: color,

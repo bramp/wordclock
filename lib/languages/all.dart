@@ -1,10 +1,12 @@
 import 'package:wordclock/languages/language.dart';
 // import 'package:wordclock/languages/polish.dart';
+// import 'package:wordclock/languages/black_speech.dart';
 import 'package:wordclock/languages/catalan.dart';
 import 'package:wordclock/languages/chinese.dart';
 import 'package:wordclock/languages/czech.dart';
 import 'package:wordclock/languages/danish.dart';
 import 'package:wordclock/languages/dutch.dart';
+// import 'package:wordclock/languages/elvish.dart';
 import 'package:wordclock/languages/english.dart';
 import 'package:wordclock/languages/french.dart';
 import 'package:wordclock/languages/german.dart';
@@ -12,6 +14,7 @@ import 'package:wordclock/languages/greek.dart';
 // import 'package:wordclock/languages/hebrew.dart';
 import 'package:wordclock/languages/italian.dart';
 import 'package:wordclock/languages/japanese.dart';
+import 'package:wordclock/languages/klingon.dart';
 import 'package:wordclock/languages/norwegian.dart';
 import 'package:wordclock/languages/portuguese.dart';
 //import 'package:wordclock/languages/romanian.dart';
@@ -25,6 +28,7 @@ class WordClockLanguages {
   static final List<WordClockLanguage> all = [
     // keep-sorted start
     berneseGermanLanguage,
+    // blackSpeechLanguage,
     catalanLanguage,
     chineseSimplifiedLanguage,
     chineseTraditionalLanguage,
@@ -32,6 +36,7 @@ class WordClockLanguages {
     danishLanguage,
     dutchLanguage,
     eastGermanLanguage,
+    // elvishLanguage,
     englishAlternativeLanguage,
     englishLanguage,
     frenchLanguage,
@@ -41,6 +46,8 @@ class WordClockLanguages {
     // hebrewLanguage,
     italianLanguage,
     japaneseLanguage,
+    klingonLanguage,
+    klingonPiqadLanguage,
     norwegianLanguage,
     // polishLanguage,
     portugueseLanguage,

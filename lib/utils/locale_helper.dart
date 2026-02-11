@@ -13,8 +13,10 @@ class LocaleHelper {
     if (parts.length == 2) {
       // Check if the second part is a 4-character script code (e.g., 'Hans', 'Hant')
       if (parts[1].length == 4) {
+        // print('Parsing locale: languageCode=${parts[0]}, scriptCode=${parts[1]}');
         return Locale.fromSubtags(languageCode: parts[0], scriptCode: parts[1]);
       }
+      // print('Parsing locale: languageCode=${parts[0]}, countryCode=${parts[1]}');
       return Locale(parts[0], parts[1]);
     }
     if (parts.length == 3) {
@@ -24,6 +26,7 @@ class LocaleHelper {
         countryCode: parts[2],
       );
     }
+    // print('Parsing locale fallback: ${parts[0]}');
     return Locale(parts[0]);
   }
 
@@ -41,6 +44,7 @@ class LocaleHelper {
     }
 
     for (final lang in WordClockLanguages.all) {
+      if (lang.isHidden) continue;
       if (lang.isAlternative) continue;
       if (lang.id == 'EN') continue;
 

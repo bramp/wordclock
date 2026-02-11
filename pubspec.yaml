@@ -120,6 +120,9 @@ flutter:
         - asset: assets/fonts/NotoSansJP-Regular.ttf
         - asset: assets/fonts/NotoSansJP-Bold.ttf
           weight: 700
+    - family: KlingonPiqad
+      fonts:
+        - asset: assets/fonts/pIqaD.ttf
 
   assets:
     - assets/fonts/OFL.txt
@@ -134,3 +137,4 @@ flutter:
     - assets/fonts/NotoSansTC-Bold.ttf
     - assets/fonts/NotoSansJP-Regular.ttf
     - assets/fonts/NotoSansJP-Bold.ttf
+    - assets/fonts/pIqaD.ttf

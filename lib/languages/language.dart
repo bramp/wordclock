@@ -59,6 +59,9 @@ final class WordClockLanguage {
   /// Whether this is an alternative version of a language (not used for auto-detection).
   final bool isAlternative;
 
+  /// Whether this language should be hidden from the language picker.
+  final bool isHidden;
+
   /// Whether words in the same phrase require at least one cell of padding (or a newline)
   /// between them in the grid. Languages like Japanese and Chinese typically don't.
   final bool requiresPadding;
@@ -72,6 +75,7 @@ final class WordClockLanguage {
     required this.grids,
     this.minuteIncrement = 5,
     this.isAlternative = false,
+    this.isHidden = false,
     this.requiresPadding = true,
   }) : assert(
          grids.where((g) => g.isDefault).length <= 1,

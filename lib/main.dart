@@ -23,6 +23,14 @@ void main() async {
     yield LicenseEntryWithLineBreaks(['google_fonts', 'Noto Sans'], license);
   });
 
+  // Register Klingon font license
+  LicenseRegistry.addLicense(() async* {
+    yield const LicenseEntryWithLineBreaks(
+      ['KlingonPiqad'],
+      'pIqaD.ttf\nFont provided by the Klingon Language Institute (KLI).\nSee https://hol.kag.org/page/piqadsupport.html for details.',
+    );
+  });
+
   // Initialize Firebase Analytics
   await AnalyticsService.initialize();
 
