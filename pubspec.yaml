@@ -20,7 +20,7 @@ publish_to: 'none' # Remove this line if you wish to publish to pub.dev
 version: 1.0.0+1
 
 environment:
-  sdk: ^3.10.4
+  sdk: ^3.11.0
 
 # Dependencies specify other packages that your package needs in order to work.
 # To automatically upgrade your package dependencies to the latest versions
@@ -42,7 +42,7 @@ dependencies:
 
   # Google Analytics / Firebase Analytics
   firebase_core: ^4.4.0
-  firebase_analytics: ^12.1.1
+  firebase_analytics: ^12.1.2
   meta: ^1.17.0
   shared_preferences: ^2.5.4
   characters: ^1.4.1
