@@ -13,11 +13,6 @@ void main() {
         final defaultGrid = lang.defaultGridRef;
         if (defaultGrid != null) {
           test('defaultGrid valid', () {
-            // KL and KP are currently failing strict validation order
-            if (['KL', 'KP'].contains(lang.id)) {
-              markTestSkipped('Skipping KL/KP validation due to known issues');
-              return;
-            }
             _validateGrid(
               lang,
               defaultGrid.grid,

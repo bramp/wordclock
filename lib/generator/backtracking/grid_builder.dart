@@ -557,18 +557,22 @@ class BacktrackingGridBuilder implements GridSolver {
   /// Returns 1D offset (row * width + col), or -1 if not found.
   @visibleForTesting
   int findEarliestPlacementByPhrase(GridState state, WordNode node) {
-    // If this word can be first in any phrase, it can start at offset 0
-    if (node.hasEmptyPredecessor) {
-      return findFirstValidPlacement(state, node, 0);
-    }
-
-    // Try to find max end offset using the trie
+    // Try to find max end offset using the trie.
+    // This finds the latest end position among all satisfied predecessor sequences.
     final maxEndOffset = _findMaxPredecessorEndOffset(node.phraseTrieNodes);
+
+    // If no predecessor sequences are placed yet...
     if (maxEndOffset == -1) {
-      return -1; // No predecessor sequences satisfied yet
+      if (node.hasEmptyPredecessor) {
+        // ...but this word can be a starter word, so we can try placing it at 0.
+        return findFirstValidPlacement(state, node, 0);
+      } else {
+        // ...and it relies on predecessors, we must wait.
+        return -1;
+      }
     }
 
-    // Calculate the minimum starting offset after the max end position
+    // Predecessors are placed. We must start after the latest one ends.
     final padding = language.requiresPadding ? 2 : 1;
     int minOffset = maxEndOffset + padding;
 

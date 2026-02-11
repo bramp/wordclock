@@ -10,10 +10,9 @@ final klingonLanguage = WordClockLanguage(
   description: "Star Trek's Klingon language",
   isAlternative: true,
   isHidden: true,
-  requiresPadding: true,
   grids: [
     // @generated begin - do not edit manually
-    // Generated: 2026-02-10T21:04:37.743019
+    // Generated: 2026-02-10T22:45:00.006163
     // Algorithm: Backtracking
     // Seed: 0
     // Iterations: 19, Duration: 14ms
@@ -24,16 +23,16 @@ final klingonLanguage = WordClockLanguage(
       grid: WordGrid.fromLetters(
         width: 11,
         letters:
-            'wazmahacorg' // wazmah waz corg
-            'rhutrwtweja' // hut wej
-            'eeIloSocvmo' // loS Soc
-            'vagxjavIcaz' // vag jav caz
-            'rrepgwazmah' // rep wazmah
-            'jkcazmahnab' // cazmah
-            'eavagmahySv' // vagmah
-            'hcwejmahcqn' // wejmah
-            'aloSmahavag' // loSmah vag
-            'tSffjckctup', // tup
+            'wazmahkcorg' // wazmah corg
+            'hutwejloSoc' // hut wej loS Soc
+            'vagajavrwaz' // vag jav waz
+            'rcazwtarepe' // caz rep
+            'eIwazmahvmo' // wazmah
+            'xIcazmahrgj' // cazmah
+            'knvagmahabe' // vagmah
+            'aywejmahSvh' // wejmah
+            'cloSmahcvag' // loSmah vag
+            'qnaatSfftup', // tup
       ),
     ),
     // @generated end,
@@ -51,10 +50,10 @@ final klingonPiqadLanguage = WordClockLanguage(
   requiresPadding: true,
   grids: [
     // @generated begin - do not edit manually
-    // Generated: 2026-02-10T21:05:01.001970
+    // Generated: 2026-02-10T22:45:39.462101
     // Algorithm: Backtracking
     // Seed: 0
-    // Iterations: 19, Duration: 15ms
+    // Iterations: 19, Duration: 14ms
     WordClockGrid(
       isDefault: true,
       timeToWords: KlingonTimeToWords(),
@@ -62,16 +61,16 @@ final klingonPiqadLanguage = WordClockLanguage(
       grid: WordGrid.fromLetters(
         width: 11,
         letters:
-            '' //   
-            '' //  
-            '' //  
-            '' //   
-            '' //  
-            '' // 
-            '' // 
-            '' // 
-            '' //  
-            '', // 
+            'wazmahcorg' // wazmah corg
+            'hutwejloSoc' // hut wej loS Soc
+            'vagjavwaz' // vag jav waz
+            'cazrep' // caz rep
+            'wazmah' // wazmah
+            'cazmah' // cazmah
+            'vagmah' // vagmah
+            'wejmah' // wejmah
+            'loSmahvag' // loSmah vag
+            'tup', // tup
       ),
     ),
     // @generated end,
