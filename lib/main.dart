@@ -11,11 +11,10 @@ import 'package:wordclock/router.dart';
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
-  // Allow fonts to be downloaded at runtime.
-  // We try and package all fonts with the app, and we have
-  // test/font_integration_test.dart to try and ensure this. But as a fallback
-  // we allow runtime fetching.
-  GoogleFonts.config.allowRuntimeFetching = true;
+  // Ensure all fonts are bundled and not downloaded at runtime.
+  // We package all fonts with the app, and we have
+  // test/font_integration_test.dart to ensure this.
+  GoogleFonts.config.allowRuntimeFetching = false;
 
   // Register font license
   LicenseRegistry.addLicense(() async* {

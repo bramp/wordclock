@@ -12,9 +12,8 @@ import 'package:wordclock/ui/settings/settings_panel.dart';
 import 'package:wordclock/settings/theme_settings.dart';
 
 void main() {
-  // Allow fetching of fonts, and we expect these tests
-  // to succeed because the assets are present.
-  GoogleFonts.config.allowRuntimeFetching = true;
+  // Disable runtime fetching of fonts to ensure we are using the bundled assets.
+  GoogleFonts.config.allowRuntimeFetching = false;
 
   testWidgets('All supported languages load bundled fonts programmatically', (
     WidgetTester tester,
