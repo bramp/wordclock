@@ -43,34 +43,33 @@ final klingonLanguage = WordClockLanguage(
 final klingonPiqadLanguage = WordClockLanguage(
   id: 'KP',
   languageCode: 'tlh-Piqd',
-  // TODO Change the display name to pIqaD script
-  displayName: 'tlhIngan Hol',
+  displayName: ' ',
   englishName: 'Klingon',
   description: "Star Trek's Klingon language in pIqaD script",
   requiresPadding: true,
   grids: [
     // @generated begin - do not edit manually
-    // Generated: 2026-02-10T22:45:39.462101
+    // Generated: 2026-02-11T20:24:07.972389
     // Algorithm: Backtracking
     // Seed: 0
     // Iterations: 19, Duration: 14ms
     WordClockGrid(
       isDefault: true,
-      timeToWords: KlingonTimeToWords(),
+      timeToWords: const KlingonTimeToWords(usePiqad: true),
       paddingAlphabet: '',
       grid: WordGrid.fromLetters(
         width: 11,
         letters:
-            'wazmahcorg' // wazmah corg
-            'hutwejloSoc' // hut wej loS Soc
-            'vagjavwaz' // vag jav waz
-            'cazrep' // caz rep
-            'wazmah' // wazmah
-            'cazmah' // cazmah
-            'vagmah' // vagmah
-            'wejmah' // wejmah
-            'loSmahvag' // loSmah vag
-            'tup', // tup
+            '' //  
+            '' //    
+            '' //   
+            '' //  
+            '' // 
+            '' // 
+            '' // 
+            '' // 
+            '' //  
+            '', // 
       ),
     ),
     // @generated end,

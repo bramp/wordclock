@@ -79,7 +79,11 @@ cp "$ASSETS_DIR/NotoSansTC-Regular.ttf" "$ASSETS_DIR/NotoSansTC-Bold.ttf"
 
 # Noto Sans JP (Japanese) Variable
 subset_font "https://github.com/google/fonts/raw/main/ofl/notosansjp/NotoSansJP%5Bwght%5D.ttf" "NotoSansJP-Regular.ttf"
+# Copy JP regular to bold as a fallback
 cp "$ASSETS_DIR/NotoSansJP-Regular.ttf" "$ASSETS_DIR/NotoSansJP-Bold.ttf"
+
+# Klingon pIqaD
+subset_font "https://hol.kag.org/pIqaD.ttf" "pIqaD.ttf"
 
 # Clean up
 # rm -rf "$TEMP_DIR"

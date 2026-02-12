@@ -139,14 +139,11 @@ class LetterGrid extends StatelessWidget {
       );
     }
 
-    // Klingon (pIqaD)
-    // print('Language: $language, Script: ${locale.scriptCode}');
+    // Klingon (pIqaD). Note: 'Piqd' is the ISO 15924 script code.
     if (language == 'tlh' &&
         (locale.scriptCode == 'Piqd' || locale.scriptCode == 'piqd')) {
-      // print('Using KlingonPiqad font');
       return TextStyle(
         fontFamily: 'KlingonPiqad',
-        package: null,
         fontWeight: weight,
         color: color,
         shadows: shadows,

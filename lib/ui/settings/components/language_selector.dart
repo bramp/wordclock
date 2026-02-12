@@ -13,6 +13,7 @@ class LanguageSelector<T> extends StatelessWidget {
   final void Function(T) onSelected;
   final IconData icon;
   final String? semanticsLabelPrefix;
+  final TextStyle? Function(T)? styleBuilder;
 
   const LanguageSelector({
     super.key,
@@ -24,6 +25,7 @@ class LanguageSelector<T> extends StatelessWidget {
     this.searchKeywordsBuilder,
     this.icon = Icons.language,
     this.semanticsLabelPrefix,
+    this.styleBuilder,
   });
 
   @override
@@ -58,7 +60,9 @@ class LanguageSelector<T> extends StatelessWidget {
                   children: [
                     Text(
                       displayName,
-                      style: const TextStyle(fontWeight: FontWeight.bold),
+                      style: const TextStyle(
+                        fontWeight: FontWeight.bold,
+                      ).merge(styleBuilder?.call(currentSelection)),
                     ),
                     if (description != null)
                       Text(
@@ -95,6 +99,7 @@ class LanguageSelector<T> extends StatelessWidget {
           subtitleBuilder: subtitleBuilder,
           searchKeywordsBuilder: searchKeywordsBuilder,
           onSelected: onSelected,
+          styleBuilder: styleBuilder,
         );
       },
     );
@@ -104,10 +109,14 @@ class LanguageSelector<T> extends StatelessWidget {
 class _LanguagePickerSheet<T> extends StatefulWidget {
   final T currentSelection;
   final List<T> availableOptions;
+
+  // TODO We have a lot of builders here. Is it better to have a single builder,
+  // that returns the widget for the row?
   final String Function(T) labelBuilder;
   final String? Function(T)? subtitleBuilder;
   final String Function(T)? searchKeywordsBuilder;
   final void Function(T) onSelected;
+  final TextStyle? Function(T)? styleBuilder;
 
   const _LanguagePickerSheet({
     required this.currentSelection,
@@ -116,6 +125,7 @@ class _LanguagePickerSheet<T> extends StatefulWidget {
     required this.onSelected,
     this.subtitleBuilder,
     this.searchKeywordsBuilder,
+    this.styleBuilder,
   });
 
   @override
@@ -212,7 +222,7 @@ class _LanguagePickerSheetState<T> extends State<_LanguagePickerSheet<T>> {
                         fontWeight: isSelected
                             ? FontWeight.bold
                             : FontWeight.normal,
-                      ),
+                      ).merge(widget.styleBuilder?.call(item)),
                     ),
                     subtitle: subtitle != null
                         ? Text(

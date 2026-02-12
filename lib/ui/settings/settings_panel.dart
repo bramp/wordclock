@@ -94,6 +94,9 @@ class SettingsPanel extends StatelessWidget {
                         labelBuilder: (l) => l.displayName,
                         subtitleBuilder: (l) => l.description,
                         searchKeywordsBuilder: (l) => l.englishName,
+                        styleBuilder: (l) => l.id == 'KP'
+                            ? const TextStyle(fontFamily: 'KlingonPiqad')
+                            : null,
                         onSelected: (l) {
                           context.go('/${l.languageCode}');
                         },

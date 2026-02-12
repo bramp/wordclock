@@ -232,7 +232,7 @@ The `-u` (or `--update`) flag will automatically locate your language file and i
 
 ### 4. Build Fonts
 
-WordClock uses subsetted fonts (Noto Sans) to minimize app size and work offline. You must rebuild the fonts to include any new characters from your added language.
+WordClock uses subsetted fonts (e.g., Noto Sans, Klingon pIqaD) to minimize app size and work offline. You must rebuild the fonts to include any new characters from your added language.
 
 **Step A: Extract Characters**\
 Run the extraction script to scan the codebase and language files for every character used.
