@@ -5,27 +5,44 @@ import 'package:flutter/material.dart';
 /// Displays the currently selected item and behaves like a button that opens
 /// a modal bottom sheet with a searchable list of options.
 class LanguageSelector<T> extends StatelessWidget {
+  /// The currently selected item.
   final T currentSelection;
+
+  /// The list of items to choose from.
   final List<T> availableOptions;
-  final String Function(T) labelBuilder;
-  final String? Function(T)? subtitleBuilder;
-  final String Function(T)? searchKeywordsBuilder;
+
+  /// Callback when an item is selected.
   final void Function(T) onSelected;
-  final IconData icon;
-  final String? semanticsLabelPrefix;
+
+  /// Returns the main display label for an item.
+  final String Function(T) labelBuilder;
+
+  /// Returns an optional subtitle for an item description.
+  final String? Function(T)? subtitleBuilder;
+
+  /// Returns additional keywords for search (e.g. English name for a language).
+  final String Function(T)? searchKeywordsBuilder;
+
+  /// Returns a specific [TextStyle] for an item (e.g. to use a specific font).
   final TextStyle? Function(T)? styleBuilder;
+
+  /// Icon to display in the selector button.
+  final IconData icon;
+
+  /// Prefix for the accessibility label.
+  final String? semanticsLabelPrefix;
 
   const LanguageSelector({
     super.key,
     required this.currentSelection,
     required this.availableOptions,
-    required this.labelBuilder,
     required this.onSelected,
+    required this.labelBuilder,
     this.subtitleBuilder,
     this.searchKeywordsBuilder,
+    this.styleBuilder,
     this.icon = Icons.language,
     this.semanticsLabelPrefix,
-    this.styleBuilder,
   });
 
   @override
@@ -110,8 +127,6 @@ class _LanguagePickerSheet<T> extends StatefulWidget {
   final T currentSelection;
   final List<T> availableOptions;
 
-  // TODO We have a lot of builders here. Is it better to have a single builder,
-  // that returns the widget for the row?
   final String Function(T) labelBuilder;
   final String? Function(T)? subtitleBuilder;
   final String Function(T)? searchKeywordsBuilder;
@@ -136,9 +151,8 @@ class _LanguagePickerSheet<T> extends StatefulWidget {
 class _LanguagePickerSheetState<T> extends State<_LanguagePickerSheet<T>> {
   String _searchQuery = '';
 
-  @override
-  Widget build(BuildContext context) {
-    final filteredItems = widget.availableOptions.where((item) {
+  List<T> _getFilteredItems() {
+    return widget.availableOptions.where((item) {
       if (_searchQuery.isEmpty) return true;
       final query = _searchQuery.toLowerCase();
       final label = widget.labelBuilder(item).toLowerCase();
@@ -150,6 +164,11 @@ class _LanguagePickerSheetState<T> extends State<_LanguagePickerSheet<T>> {
           subtitle.contains(query) ||
           keywords.contains(query);
     }).toList();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final filteredItems = _getFilteredItems();
 
     return DraggableScrollableSheet(
       initialChildSize: 0.7,
@@ -159,93 +178,96 @@ class _LanguagePickerSheetState<T> extends State<_LanguagePickerSheet<T>> {
       builder: (context, scrollController) {
         return Column(
           children: [
-            Container(
-              margin: const EdgeInsets.symmetric(vertical: 8),
-              width: 40,
-              height: 4,
-              decoration: BoxDecoration(
-                color: Colors.white24,
-                borderRadius: BorderRadius.circular(2),
-              ),
-            ),
-            Padding(
-              padding: const EdgeInsets.all(16.0),
-              child: TextField(
-                autofocus: true,
-                decoration: InputDecoration(
-                  hintText: 'Search...',
-                  hintStyle: const TextStyle(color: Colors.white24),
-                  prefixIcon: const Icon(Icons.search, color: Colors.white54),
-                  filled: true,
-                  fillColor: Colors.white.withValues(alpha: 0.05),
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(12),
-                    borderSide: BorderSide.none,
-                  ),
-                ),
-                onChanged: (value) {
-                  setState(() {
-                    _searchQuery = value;
-                  });
-                },
-              ),
+            _PickerHeader(
+              onSearchChanged: (value) => setState(() => _searchQuery = value),
             ),
             Expanded(
               child: ListView.builder(
                 controller: scrollController,
                 itemCount: filteredItems.length,
-                itemBuilder: (context, index) {
-                  final item = filteredItems[index];
-                  final isSelected = item == widget.currentSelection;
-                  final label = widget.labelBuilder(item);
-                  final subtitle = widget.subtitleBuilder?.call(item);
-                  final keywords = widget.searchKeywordsBuilder?.call(item);
-
-                  // Construct a rich label if keywords are available and distinct
-                  // (e.g. "日本語 (Japanese)")
-                  final displayLabel =
-                      (keywords != null &&
-                          keywords.isNotEmpty &&
-                          keywords != label)
-                      ? '$label ($keywords)'
-                      : label;
-
-                  return ListTile(
-                    contentPadding: const EdgeInsets.symmetric(
-                      horizontal: 24,
-                      vertical: 4,
-                    ),
-                    title: Text(
-                      displayLabel,
-                      style: TextStyle(
-                        color: isSelected ? Colors.blueAccent : null,
-                        fontWeight: isSelected
-                            ? FontWeight.bold
-                            : FontWeight.normal,
-                      ).merge(widget.styleBuilder?.call(item)),
-                    ),
-                    subtitle: subtitle != null
-                        ? Text(
-                            subtitle,
-                            style: Theme.of(context).textTheme.bodySmall,
-                          )
-                        : null,
-                    trailing: isSelected
-                        ? const Icon(Icons.check, color: Colors.blueAccent)
-                        : null,
-                    onTap: () {
-                      widget.onSelected(item);
-                      // Depending on implementation, parent might pop or we pop here
-                      // Usually picker implies selection and close
-                      Navigator.pop(context);
-                    },
-                  );
-                },
+                itemBuilder: (context, index) =>
+                    _buildListItem(context, filteredItems[index]),
               ),
             ),
           ],
         );
       },
+    );
+  }
+
+  Widget _buildListItem(BuildContext context, T item) {
+    final isSelected = item == widget.currentSelection;
+    final label = widget.labelBuilder(item);
+    final subtitle = widget.subtitleBuilder?.call(item);
+    final keywords = widget.searchKeywordsBuilder?.call(item);
+
+    // Construct a rich label if keywords are available and distinct
+    // (e.g. "日本語 (Japanese)")
+    final displayLabel =
+        (keywords != null && keywords.isNotEmpty && keywords != label)
+        ? '$label ($keywords)'
+        : label;
+
+    return ListTile(
+      contentPadding: const EdgeInsets.symmetric(horizontal: 24, vertical: 4),
+      title: Text(
+        displayLabel,
+        style: TextStyle(
+          color: isSelected ? Colors.blueAccent : null,
+          fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+        ).merge(widget.styleBuilder?.call(item)),
+      ),
+      subtitle: subtitle != null
+          ? Text(subtitle, style: Theme.of(context).textTheme.bodySmall)
+          : null,
+      trailing: isSelected
+          ? const Icon(Icons.check, color: Colors.blueAccent)
+          : null,
+      onTap: () {
+        widget.onSelected(item);
+        Navigator.pop(context);
+      },
+    );
+  }
+}
+
+class _PickerHeader extends StatelessWidget {
+  final ValueChanged<String> onSearchChanged;
+
+  const _PickerHeader({required this.onSearchChanged});
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      children: [
+        Container(
+          margin: const EdgeInsets.symmetric(vertical: 8),
+          width: 40,
+          height: 4,
+          decoration: BoxDecoration(
+            color: Colors.white24,
+            borderRadius: BorderRadius.circular(2),
+          ),
+        ),
+        Padding(
+          padding: const EdgeInsets.all(16.0),
+          child: TextField(
+            autofocus: true,
+            decoration: InputDecoration(
+              hintText: 'Search...',
+              hintStyle: const TextStyle(color: Colors.white24),
+              prefixIcon: const Icon(Icons.search, color: Colors.white54),
+              filled: true,
+              fillColor: Colors.white.withValues(alpha: 0.05),
+              border: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(12),
+                borderSide: BorderSide.none,
+              ),
+            ),
+            onChanged: onSearchChanged,
+          ),
+        ),
+      ],
     );
   }
 }
