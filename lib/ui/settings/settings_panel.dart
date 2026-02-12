@@ -1,5 +1,6 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:wordclock/constants.dart';
 import 'package:wordclock/settings/settings_controller.dart';
@@ -8,6 +9,7 @@ import 'package:wordclock/ui/settings/components/debug_settings.dart';
 import 'package:wordclock/ui/settings/components/language_selector.dart';
 import 'package:wordclock/ui/settings/components/section_header.dart';
 import 'package:wordclock/ui/settings/components/theme_selector.dart';
+import 'package:wordclock/utils/locale_helper.dart';
 
 import 'package:go_router/go_router.dart';
 import 'package:wordclock/languages/language.dart';
@@ -28,6 +30,38 @@ class SettingsPanel extends StatelessWidget {
       default:
         return locale.toString();
     }
+  }
+
+  TextStyle? _getLanguageStyle(Locale locale) {
+    final language = locale.languageCode.toLowerCase();
+
+    if (language == 'ta') {
+      return GoogleFonts.notoSansTamil();
+    }
+
+    if (language == 'ja') {
+      return GoogleFonts.notoSansJp();
+    }
+
+    if (language == 'zh') {
+      final script = locale.scriptCode?.toLowerCase();
+      final country = locale.countryCode?.toLowerCase();
+
+      if (script == 'hant' ||
+          country == 'tw' ||
+          country == 'hk' ||
+          country == 'mo') {
+        return GoogleFonts.notoSansTc();
+      }
+      return GoogleFonts.notoSansSc();
+    }
+
+    if (language == 'tlh' &&
+        (locale.scriptCode == 'Piqd' || locale.scriptCode == 'piqd')) {
+      return const TextStyle(fontFamily: 'KlingonPiqad');
+    }
+
+    return null;
   }
 
   @override
@@ -82,6 +116,7 @@ class SettingsPanel extends StatelessWidget {
                         currentSelection: controller.uiLocale,
                         availableOptions: sortedUiLocales,
                         labelBuilder: _getUiDisplayName,
+                        styleBuilder: _getLanguageStyle,
                         onSelected: controller.setUiLocale,
                         icon: Icons.translate,
                         semanticsLabelPrefix: 'Interface Language',
@@ -94,9 +129,9 @@ class SettingsPanel extends StatelessWidget {
                         labelBuilder: (l) => l.displayName,
                         subtitleBuilder: (l) => l.description,
                         searchKeywordsBuilder: (l) => l.englishName,
-                        styleBuilder: (l) => l.id == 'KP'
-                            ? const TextStyle(fontFamily: 'KlingonPiqad')
-                            : null,
+                        styleBuilder: (l) => _getLanguageStyle(
+                          LocaleHelper.parseLocale(l.languageCode),
+                        ),
                         onSelected: (l) {
                           context.go('/${l.languageCode}');
                         },
