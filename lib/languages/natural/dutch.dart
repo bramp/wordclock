@@ -1,6 +1,6 @@
 import 'package:wordclock/languages/language.dart';
 import 'package:wordclock/model/word_grid.dart';
-import 'package:wordclock/logic/dutch_time_to_words.dart';
+import 'package:wordclock/languages/natural/dutch_time_to_words.dart';
 
 final dutchLanguage = WordClockLanguage(
   id: 'NL',

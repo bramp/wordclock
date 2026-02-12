@@ -1,34 +1,34 @@
 import 'package:wordclock/languages/language.dart';
-// import 'package:wordclock/languages/polish.dart';
-// import 'package:wordclock/languages/black_speech.dart';
-import 'package:wordclock/languages/catalan.dart';
-import 'package:wordclock/languages/chinese.dart';
-import 'package:wordclock/languages/czech.dart';
-import 'package:wordclock/languages/danish.dart';
-import 'package:wordclock/languages/dutch.dart';
-// import 'package:wordclock/languages/elvish.dart';
-import 'package:wordclock/languages/english.dart';
-import 'package:wordclock/languages/french.dart';
-import 'package:wordclock/languages/german.dart';
-import 'package:wordclock/languages/greek.dart';
-// import 'package:wordclock/languages/hebrew.dart';
-import 'package:wordclock/languages/italian.dart';
-import 'package:wordclock/languages/japanese.dart';
-import 'package:wordclock/languages/klingon.dart';
-import 'package:wordclock/languages/norwegian.dart';
-import 'package:wordclock/languages/portuguese.dart';
-//import 'package:wordclock/languages/romanian.dart';
-// import 'package:wordclock/languages/russian.dart';
-import 'package:wordclock/languages/spanish.dart';
-import 'package:wordclock/languages/swedish.dart';
-import 'package:wordclock/languages/tamil.dart';
-import 'package:wordclock/languages/turkish.dart';
+import 'package:wordclock/languages/conlangs/black_speech.dart';
+import 'package:wordclock/languages/conlangs/elvish.dart';
+import 'package:wordclock/languages/conlangs/klingon.dart';
+import 'package:wordclock/languages/natural/catalan.dart';
+import 'package:wordclock/languages/natural/chinese.dart';
+import 'package:wordclock/languages/natural/czech.dart';
+import 'package:wordclock/languages/natural/danish.dart';
+import 'package:wordclock/languages/natural/dutch.dart';
+import 'package:wordclock/languages/natural/english.dart';
+import 'package:wordclock/languages/natural/french.dart';
+import 'package:wordclock/languages/natural/german.dart';
+import 'package:wordclock/languages/natural/greek.dart';
+// import 'package:wordclock/languages/natural/hebrew.dart';
+import 'package:wordclock/languages/natural/italian.dart';
+import 'package:wordclock/languages/natural/japanese.dart';
+import 'package:wordclock/languages/natural/norwegian.dart';
+// import 'package:wordclock/languages/natural/polish.dart';
+import 'package:wordclock/languages/natural/portuguese.dart';
+// import 'package:wordclock/languages/natural/romanian.dart';
+// import 'package:wordclock/languages/natural/russian.dart';
+import 'package:wordclock/languages/natural/spanish.dart';
+import 'package:wordclock/languages/natural/swedish.dart';
+import 'package:wordclock/languages/natural/tamil.dart';
+import 'package:wordclock/languages/natural/turkish.dart';
 
 class WordClockLanguages {
   static final List<WordClockLanguage> all = [
     // keep-sorted start
     berneseGermanLanguage,
-    // blackSpeechLanguage,
+    blackSpeechLanguage,
     catalanLanguage,
     chineseSimplifiedLanguage,
     chineseTraditionalLanguage,
@@ -36,7 +36,7 @@ class WordClockLanguages {
     danishLanguage,
     dutchLanguage,
     eastGermanLanguage,
-    // elvishLanguage,
+    elvishLanguage,
     englishAlternativeLanguage,
     englishLanguage,
     frenchLanguage,

@@ -1,5 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:wordclock/logic/catalan_time_to_words.dart';
+import 'package:wordclock/languages/natural/catalan_time_to_words.dart';
 
 void main() {
   group('ReferenceCatalanTimeToWords', () {

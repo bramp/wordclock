@@ -1,6 +1,6 @@
 import 'package:wordclock/languages/language.dart';
 import 'package:wordclock/model/word_grid.dart';
-import 'package:wordclock/logic/black_speech_time_to_words.dart';
+import 'package:wordclock/languages/conlangs/black_speech_time_to_words.dart';
 
 final blackSpeechLanguage = WordClockLanguage(
   id: 'BS',

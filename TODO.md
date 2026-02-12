@@ -32,6 +32,9 @@
 
 ## Visual
 - [ ] Add additional visual modes to the clock. Such as displaying the time in seconds. Or a audio visualizer.
+- [ ] The fonts don't always load before being shown
+- [ ] The font subsetting, will include all ascii in the say the Tamil font, that only needs a very short list
+- [ ] The font download / subsetting fetches regular and renames as Bold. Which is wrong. We should try and fetch the variable fonts, subset them.
 
 ## Language Grid Status
 
@@ -42,10 +45,10 @@
 - [x] Japanese (JP)
 - [x] French (FR)
 - [x] Portuguese (PE)
-- [x] Russian (RU)
+- [ ] Russian (RU)
 - [x] Italian (IT)
 - [x] Dutch (NL)
-- [x] Polish (PL) - Refactored for consistency.
+- [ ] Polish (PL) - Refactored for consistency.
 - [x] Turkish (TR)
 - [x] Chinese (CS, CT)
 - [ ] Vietnamese
@@ -55,7 +58,7 @@
 - [ ] Ukrainian
 - [ ] Hungarian
 - [x] Swedish (SE)
-- [x] Romanian (RO) - Generated via `-a trie`
+- [ ] Romanian (RO) - Generated via `-a trie`
 - [x] Greek (GR)
 - [x] Danish (DK)
 - [ ] Finnish

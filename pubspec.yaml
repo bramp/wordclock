@@ -124,8 +124,13 @@ flutter:
       fonts:
         - asset: assets/fonts/pIqaD.ttf
 
+
   assets:
+    # TODO I'm not sure we need the OFL.txt as an asset. It should be listed
+    # in the licence section
     - assets/fonts/OFL.txt
+
+    # TODO I don't think we need to include fonts as assets
     - assets/fonts/NotoSans-Regular.ttf
     - assets/fonts/NotoSans-Medium.ttf
     - assets/fonts/NotoSans-Bold.ttf

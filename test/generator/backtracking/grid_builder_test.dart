@@ -4,7 +4,7 @@ import 'package:wordclock/generator/backtracking/grid_state.dart';
 import 'package:wordclock/generator/backtracking/indexed_word_list.dart';
 import 'package:wordclock/generator/utils/grid_validator.dart';
 import 'package:wordclock/languages/all.dart';
-import 'package:wordclock/languages/english.dart';
+import 'package:wordclock/languages/natural/english.dart';
 import '../test_helpers.dart';
 
 void main() {

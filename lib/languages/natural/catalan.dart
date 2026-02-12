@@ -1,6 +1,6 @@
 import 'package:wordclock/languages/language.dart';
 import 'package:wordclock/model/word_grid.dart';
-import 'package:wordclock/logic/catalan_time_to_words.dart';
+import 'package:wordclock/languages/natural/catalan_time_to_words.dart';
 
 final catalanLanguage = WordClockLanguage(
   id: 'CA',

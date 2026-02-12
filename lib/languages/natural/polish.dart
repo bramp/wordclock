@@ -1,5 +1,5 @@
 import 'package:wordclock/languages/language.dart';
-import 'package:wordclock/logic/polish_time_to_words.dart';
+import 'package:wordclock/languages/natural/polish_time_to_words.dart';
 import 'package:wordclock/model/word_grid.dart';
 
 final polishLanguage = WordClockLanguage(

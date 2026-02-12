@@ -1,5 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:wordclock/logic/greek_time_to_words.dart';
+import 'package:wordclock/languages/natural/greek_time_to_words.dart';
 
 void main() {
   group('ReferenceGreekTimeToWords', () {

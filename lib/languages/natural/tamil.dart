@@ -1,5 +1,5 @@
 import 'package:wordclock/languages/language.dart';
-import 'package:wordclock/logic/tamil_time_to_words.dart';
+import 'package:wordclock/languages/natural/tamil_time_to_words.dart';
 import 'package:wordclock/model/word_grid.dart';
 
 final tamilLanguage = WordClockLanguage(

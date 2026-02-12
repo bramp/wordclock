@@ -2,7 +2,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:wordclock/generator/backtracking/graph/dependency_graph.dart';
 import 'package:wordclock/generator/backtracking/graph/word_node.dart';
 import 'package:wordclock/generator/backtracking/graph/cell_codec.dart';
-import 'package:wordclock/languages/english.dart';
+import 'package:wordclock/languages/natural/english.dart';
 
 final _testCodec = CellCodec();
 

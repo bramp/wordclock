@@ -1,6 +1,6 @@
 import 'package:wordclock/languages/language.dart';
 import 'package:wordclock/model/word_grid.dart';
-import 'package:wordclock/logic/swedish_time_to_words.dart';
+import 'package:wordclock/languages/natural/swedish_time_to_words.dart';
 
 final swedishLanguage = WordClockLanguage(
   id: 'SE',

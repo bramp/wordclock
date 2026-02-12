@@ -1,12 +1,12 @@
 import 'package:wordclock/languages/language.dart';
 import 'package:wordclock/model/word_grid.dart';
-import 'package:wordclock/logic/klingon_time_to_words.dart';
+import 'package:wordclock/languages/conlangs/klingon_time_to_words.dart';
 
 final klingonLanguage = WordClockLanguage(
   id: 'KL',
   languageCode: 'tlh',
   displayName: 'tlhIngan Hol',
-  englishName: 'Klingon',
+  englishName: 'Klingon (xifan hol)',
   description: "Star Trek's Klingon language",
   isAlternative: true,
   isHidden: true,
