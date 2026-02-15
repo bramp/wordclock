@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -10,10 +11,66 @@ import 'package:wordclock/languages/language.dart';
 import 'package:wordclock/ui/settings/components/language_selector.dart';
 import 'package:wordclock/ui/settings/settings_panel.dart';
 import 'package:wordclock/settings/theme_settings.dart';
+import 'package:http/http.dart' as http;
+
+class MockHttpClient extends http.BaseClient {
+  final List<Uri> requestedUris = [];
+
+  @override
+  Future<http.StreamedResponse> send(http.BaseRequest request) async {
+    requestedUris.add(request.url);
+    return http.StreamedResponse(Stream.empty(), 400, request: request);
+  }
+}
+
+final mockClient = MockHttpClient();
 
 void main() {
-  // Disable runtime fetching of fonts to ensure we are using the bundled assets.
-  GoogleFonts.config.allowRuntimeFetching = false;
+  // We enable runtime fetching in tests so that if a font is NOT found in
+  // assets, GoogleFonts will attempt to fetch it via HTTP. In this test
+  // environment, HTTP requests fail (returning 400), allowing us to catch
+  // the error and identify missing bundled fonts.
+  //setUp(() => GoogleFonts.config.allowRuntimeFetching = true);
+  GoogleFonts.config.allowRuntimeFetching = true;
+  GoogleFonts.config.httpClient = mockClient;
+
+  setUp(() {
+    mockClient.requestedUris.clear();
+  });
+
+  testWidgets('Negative test: verify that a missing font fails as expected', (
+    WidgetTester tester,
+  ) async {
+    Object? exception;
+
+    await tester.runAsync(() async {
+      await tester.pumpWidget(
+        MaterialApp(
+          home: Scaffold(
+            body: Text(
+              'Missing Font Test',
+              style: GoogleFonts.abel(), // Abel is NOT bundled
+            ),
+          ),
+        ),
+      );
+
+      await tester.pumpAndSettle();
+
+      try {
+        await GoogleFonts.pendingFonts();
+      } catch (e) {
+        exception = e;
+      }
+    });
+
+    expect(exception, isNotNull);
+    expect(mockClient.requestedUris, isNotEmpty);
+    expect(
+      mockClient.requestedUris.first.toString(),
+      contains('fonts.gstatic.com'),
+    );
+  });
 
   testWidgets('All supported languages load bundled fonts programmatically', (
     WidgetTester tester,
@@ -48,6 +105,12 @@ void main() {
         } catch (e) {
           fail('Font loading failed for language ${language.id}: $e');
         }
+
+        expect(
+          mockClient.requestedUris,
+          isEmpty,
+          reason: 'Language ${language.id} triggered a network request',
+        );
 
         final exception = tester.takeException();
         if (exception != null) {
@@ -140,6 +203,12 @@ void main() {
       } catch (e) {
         fail('Font loading failed for Tamil via UI: $e');
       }
+
+      expect(
+        mockClient.requestedUris,
+        isEmpty,
+        reason: 'Tamil language triggered a network request',
+      );
 
       final exception = tester.takeException();
       if (exception != null) {
