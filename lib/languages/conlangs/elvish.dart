@@ -5,8 +5,8 @@ import 'package:wordclock/languages/conlangs/elvish_time_to_words.dart';
 final elvishLanguage = WordClockLanguage(
   id: 'EL',
   languageCode: 'sjn',
-  displayName: 'Sindarin (Elvish)',
-  englishName: 'Elvish',
+  displayName: '',
+  englishName: 'Sindarin (Elvish)',
   description: "Tolkien's Sindarin language",
   isAlternative: false,
   grids: [
