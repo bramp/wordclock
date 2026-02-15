@@ -80,6 +80,12 @@ LicenseRegistry.addLicense(() async* {
 });
 ```
 
+8.  **Verify Fonts**:
+    If you've added or modified fonts, you can use the Font Debugger to verify they render correctly at various weights:
+    ```bash
+    flutter run -t lib/main_debug_fonts.dart
+    ```
+
 ## 7. Verify
 
 Run the tests to ensure everything is wired up correctly and no font loading errors occur.
