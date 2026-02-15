@@ -64,3 +64,4 @@ junit.xml
 characters.txt
 result.txt
 test_output.txt
+pubspec_overrides.yaml

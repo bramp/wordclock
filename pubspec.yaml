@@ -51,7 +51,11 @@ dependencies:
   flutter_localizations:
     sdk: flutter
   url_launcher: ^6.3.2
-  google_fonts: ^8.0.1
+  google_fonts:
+    git:
+      url: https://github.com/bramp/flutter_packages.git
+      path: packages/google_fonts
+      ref: main
   http: ^1.6.0
 
 dev_dependencies:
@@ -79,8 +83,6 @@ dependency_overrides:
   material_color_utilities: ^0.13.0
   matcher: ^0.12.18
   test_api: ^0.7.9
-  google_fonts:
-    path: ../flutter_packages/packages/google_fonts
 
 
 # For information on the generic Dart part of this file, see the
