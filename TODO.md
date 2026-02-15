@@ -78,9 +78,10 @@
 ### Top constructed languages
 - [ ] Esperanto
 - [x] Klingon
-  - [ ] Update the display name to use pIqaD script
-  - [ ] Ensure the font is compressed / pruned
-  - [ ] Add some instructions, to ask developers to install assets/fonts/pIqaD.ttf (so they can see it in the terminal)
+  - [X] Update the display name to use pIqaD script
+  - [X] Ensure the font is compressed / pruned
+  - [X] Add some instructions, to ask developers to install assets/fonts/pIqaD.ttf (so they can see it in the terminal)
+  - [ ] We get the error "Could not find a set of Noto fonts to display all missing characters. Please add a font asset for the missing characters. See: https://docs.flutter.dev/cookbook/design/fonts"
 - [ ] High Valyrian (Game of Thrones)
 - [ ] Na'vi (Avatar)
 - [x] Elvish / Quenya (The Lord of the Rings)

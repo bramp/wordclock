@@ -18,20 +18,20 @@ final elvishLanguage = WordClockLanguage(
     WordClockGrid(
       isDefault: true,
       timeToWords: ElvishTimeToWords(),
-      paddingAlphabet: 'ABCDEFGHIJKLMNOPQRSTUVWXYZ',
+      paddingAlphabet: '',
       grid: WordGrid.fromLetters(
         width: 11,
         letters:
-            'TOLOTHNELED' // TOLOTH NELED
-            'CANADBMINIB' // CANAD MINIB MIN
-            'OLEBENEDERJ' // LEBEN NEDER
-            'ENEGODOTADA' // ENEG ODO TAD
-            'RIMPAERXLÛT' // IMP PAE LÛ
-            'CANAPHAEPAE' // CANAPHAE PAE
-            'AENELPHAEEH' // NELPHAE
-            'WLTAPHAENUH' // TAPHAE
-            'RFLEPHAEIJM' // LEPHAE
-            'ABEPAELEBEN', // PAELEBEN LEBEN
+            '' //  
+            '' //   
+            '' //  
+            '' //  
+            '' // 
+            '' //   
+            '' //  
+            '' // 
+            '' //  
+            '', //  
       ),
     ),
     // @generated end,

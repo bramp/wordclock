@@ -2,6 +2,15 @@
 
 Adding a new language to WordClock involves defining the logic for telling time, generating a letter grid, and ensuring the necessary fonts are available.
 
+### Developer Note: Font Configuration
+
+If you are developing for languages with custom scripts (e.g., Sindarin, Klingon), please configure your IDE's editor font to include the necessary fonts as fallbacks.
+
+Recommended Font Family setting:
+`Menlo, Monaco, 'Courier New', monospace, pIqaD, 'Alcarin Tengwar'`
+
+![IDE Font Settings](ide_font_settings.png)
+
 ## 1. Create Language File
 
 Create a new file in `lib/languages/natural/<language>.dart` (or `lib/languages/conlangs/<language>.dart`). You need to extend `WordClockLanguage` and implement the `timeToWords` logic.
