@@ -53,64 +53,20 @@ class ElvishTimeToWords extends TimeToWords {
   };
 
   String _getMinuteNumber(int n) {
-    // 5-55
-    if (n < 10) return _getNumber(n); // 5
-
-    // PAE (10)
-    final pae = _getNumber(10);
-    if (n == 10) return pae;
-
-    // LEBEN (5)
+    if (n < 10) return _getNumber(n);
     final leben = _getNumber(5);
-
-    // PAELEBEN (15) = PAE + LEBEN (compound? or separate?)
-    // Usually combined as one word in phonetics but maybe visual separation is better?
-    // Let's assume compound.
-    // PAE: Parma, Yanta+A
-    // LEBEN: Lambe, Umbar+E, Numen+E
-    // Combined: Parma, Yanta+A, Lambe, Umbar+E, Numen+E
-    final paeleben = '$pae$leben';
-    if (n == 15) return paeleben;
-
-    // TAPHAE (20)
-    // TA: Tinco, Formen + A-mark ? (Ph starts next syl?)
-    // PHAE: Formen, Yanta + A-mark
-    // A on Ph?
-    // TA-PHAE.
-    // Tinco , Formen , ThreeDots , Yanta , ThreeDots 
-    final taphae = '';
-    if (n == 20) return taphae;
-
-    if (n == 25) return '$taphae $leben';
-
-    // NELPHAE (30)
-    // NEL: Numen, Lambe + E-mark
-    // PHAE: Formen, Yanta + A-mark
-    // Numen , Lambe , Acute , Formen , Yanta , ThreeDots 
-    final nelphae = '';
-    if (n == 30) return nelphae;
-
-    if (n == 35) return '$nelphae $leben';
-
-    // CANAPHAE (40)
-    // CAN: Quesse, Numen + A-mark
-    // A: (from Cana) -> on Ph?
-    // PHAE: Formen, Yanta+A
-    // Quesse , Numen , ThreeDots , Formen , ThreeDots , Yanta , ThreeDots 
-    final canaphae = '';
-    if (n == 40) return canaphae;
-
-    if (n == 45) return '$canaphae $leben';
-
-    // LEPHAE (50)
-    // LE: Lambe, Formen + E-mark
-    // PHAE: Formen, Yanta + A-mark
-    // Lambe \uE022, Formen \uE009, Acute \uE046, Yanta \uE02A, ThreeDots \uE040
-    final lephae = '\uE022\uE009\uE046\uE02A\uE040';
-    if (n == 50) return lephae;
-
-    if (n == 55) return '$lephae $leben';
-
-    return '';
+    return switch (n) {
+      10 => _getNumber(10), // PAE
+      15 => '${_getNumber(10)}$leben', // PAELEBEN
+      20 => '', // TAPHAE
+      25 => ' $leben', // TAPHAE LEBEN
+      30 => '', // NELPHAE
+      35 => ' $leben', // NELPHAE LEBEN
+      40 => '', // CANAPHAE
+      45 => ' $leben', // CANAPHAE LEBEN
+      50 => '', // LEPHAE
+      55 => ' $leben', // LEPHAE LEBEN
+      _ => '',
+    };
   }
 }
