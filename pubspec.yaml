@@ -95,33 +95,18 @@ flutter:
     - family: Noto Sans
       fonts:
         - asset: assets/fonts/NotoSans-Variable.ttf
-          weight: 400
-        - asset: assets/fonts/NotoSans-Variable.ttf
-          weight: 700
     - family: Noto Sans Tamil
       fonts:
         - asset: assets/fonts/NotoSansTamil-Variable.ttf
-          weight: 400
-        - asset: assets/fonts/NotoSansTamil-Variable.ttf
-          weight: 700
     - family: Noto Sans SC
       fonts:
         - asset: assets/fonts/NotoSansSC-Variable.ttf
-          weight: 400
-        - asset: assets/fonts/NotoSansSC-Variable.ttf
-          weight: 700
     - family: Noto Sans TC
       fonts:
         - asset: assets/fonts/NotoSansTC-Variable.ttf
-          weight: 400
-        - asset: assets/fonts/NotoSansTC-Variable.ttf
-          weight: 700
     - family: Noto Sans JP
       fonts:
         - asset: assets/fonts/NotoSansJP-Variable.ttf
-          weight: 400
-        - asset: assets/fonts/NotoSansJP-Variable.ttf
-          weight: 700
     - family: KlingonPiqad
       fonts:
         - asset: assets/fonts/pIqaD.ttf
