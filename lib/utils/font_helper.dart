@@ -31,7 +31,7 @@ class FontHelper {
     }
 
     // Klingon (pIqaD).
-    if (lang == 'tlh' && (script == 'piqd' || script == 'piqd')) {
+    if (lang == 'tlh' && (script == 'piqd')) {
       return 'KlingonPiqad';
     }
 

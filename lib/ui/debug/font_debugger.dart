@@ -11,9 +11,18 @@ class FontDebugger extends StatelessWidget {
       (const Locale('en'), 'The quick brown fox jumps over the lazy dog.'),
       (const Locale('ta'), 'தமிழ் - பாவாணர்'),
       (const Locale('ja'), '日本語 - 漢字、ひらがな、カタカナ'),
-      (const Locale('zh', 'Hans'), '简体中文 - 你好'),
-      (const Locale('zh', 'Hant'), '繁體中文 - 你好'),
-      (const Locale('tlh', 'pIqaD'), '   (Klingon Sample)'),
+      (
+        const Locale.fromSubtags(languageCode: 'zh', scriptCode: 'Hans'),
+        '简体中文 - 你好',
+      ),
+      (
+        const Locale.fromSubtags(languageCode: 'zh', scriptCode: 'Hant'),
+        '繁體中文 - 你好',
+      ),
+      (
+        const Locale.fromSubtags(languageCode: 'tlh', scriptCode: 'Piqd'),
+        '   (Klingon Sample)',
+      ),
       (const Locale('sjn'), '  (Elvish Sample)'),
     ];
 
