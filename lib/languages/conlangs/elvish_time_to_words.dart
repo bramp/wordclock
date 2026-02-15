@@ -12,10 +12,13 @@ class ElvishTimeToWords extends TimeToWords {
   @override
   String convert(DateTime time) {
     int hour = time.hour;
+    int minute = time.minute;
+
+    // Round to nearest 5 minute increment
+    minute = minute - (minute % 5);
+
     if (hour > 12) hour -= 12;
     if (hour == 0) hour = 12;
-
-    final minute = time.minute;
 
     final hourWord = _getNumber(hour);
 
