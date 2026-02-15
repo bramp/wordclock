@@ -92,6 +92,12 @@ flutter:
   uses-material-design: true
 
   fonts:
+    # Note on Weights:
+    # - For Variable Fonts (e.g., Noto Sans): Do NOT specify weights. Flutter automatically
+    #   maps FontWeight.w100-w900 to the 'wght' axis of the single variable asset.
+    # - For Static Fonts (e.g., AlcarinTengwar): If only a Regular weight exists, do NOT
+    #   specify a weight property. Flutter defaults to 400 (Regular). This allows the
+    #   Flutter engine to apply "Synthetic Bolding" when FontWeight.w700 is requested.
     - family: Noto Sans
       fonts:
         - asset: assets/fonts/NotoSans-Variable.ttf

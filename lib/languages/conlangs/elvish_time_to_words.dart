@@ -14,7 +14,7 @@ class ElvishTimeToWords extends TimeToWords {
     int hour = time.hour;
     int minute = time.minute;
 
-    // Round to nearest 5 minute increment
+    // Round down to the nearest 5 minute increment
     minute = minute - (minute % 5);
 
     if (hour > 12) hour -= 12;

@@ -69,6 +69,9 @@ If you introduced a new font family:
 1.  **Add License File**: Place the font's license file (e.g., `OFL_MyFont.txt`) in `assets/fonts/`.
 2.  **Update Pubspec**: Add the license file to `pubspec.yaml` under `assets`.
 3.  **Register License**: In `lib/main.dart`, add a `LicenseRegistry.addLicense` entry for the new font.
+4.  **Configure Weights**:
+    - **Variable Fonts**: List only the single variable asset. Do **not** specify `weight`. Flutter will automatically map `FontWeight` to the `wght` axis.
+    - **Static Fonts**: If only a regular version is available, list it without a `weight` property. Flutter defaults this to `w400` and will apply "Synthetic Bolding" when `w700` is requested in the UI.
 
 ```dart
 LicenseRegistry.addLicense(() async* {
