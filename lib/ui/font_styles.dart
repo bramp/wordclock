@@ -59,7 +59,20 @@ class FontStyles {
       case 'KlingonPiqad':
         style = const TextStyle(fontFamily: 'KlingonPiqad');
       case 'AlcarinTengwar':
-        style = const TextStyle(fontFamily: 'AlcarinTengwar');
+        // Boost the weight for Elvish as the font is naturally thin.
+        // If regular (w400) is requested, use w600 (SemiBold).
+        // If bold (w700) is requested, use w900 (Black).
+        final baseWeight = fontWeight ?? FontWeight.w400;
+        final boostedWeight = baseWeight.value >= FontWeight.w700.value
+            ? FontWeight.w900
+            : FontWeight.w600;
+
+        style = TextStyle(
+          fontFamily: 'AlcarinTengwar',
+          fontWeight: boostedWeight,
+        );
+        // We consumed fontWeight, so don't apply it again in the copyWith below
+        fontWeight = null;
       case 'NotoSans':
       default:
         style = const TextStyle(fontFamily: 'Noto Sans');
