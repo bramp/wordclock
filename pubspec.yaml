@@ -125,15 +125,9 @@ flutter:
     - family: KlingonPiqad
       fonts:
         - asset: assets/fonts/pIqaD.ttf
-          weight: 400
-        - asset: assets/fonts/pIqaD.ttf
-          weight: 700
     - family: AlcarinTengwar
       fonts:
         - asset: assets/fonts/AlcarinTengwar.ttf
-          weight: 400
-        - asset: assets/fonts/AlcarinTengwar.ttf
-          weight: 700
 
 
   assets:
