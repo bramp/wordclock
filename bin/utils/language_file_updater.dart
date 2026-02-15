@@ -31,7 +31,7 @@ String? findLanguageFilePath(String languageId) {
     return null;
   }
 
-  for (final file in languagesDir.listSync()) {
+  for (final file in languagesDir.listSync(recursive: true)) {
     if (file is File && file.path.endsWith('.dart')) {
       final content = file.readAsStringSync();
       // Look for id: 'XX' pattern where XX is the language ID

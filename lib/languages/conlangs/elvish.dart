@@ -11,10 +11,10 @@ final elvishLanguage = WordClockLanguage(
   isAlternative: false,
   grids: [
     // @generated begin - do not edit manually
-    // Generated: 2026-02-09T18:13:04.607490
+    // Generated: 2026-02-15T11:39:04.527623
     // Algorithm: Backtracking
     // Seed: 0
-    // Iterations: 107, Duration: 13ms
+    // Iterations: 21, Duration: 13ms
     WordClockGrid(
       isDefault: true,
       timeToWords: ElvishTimeToWords(),
@@ -22,16 +22,16 @@ final elvishLanguage = WordClockLanguage(
       grid: WordGrid.fromLetters(
         width: 11,
         letters:
-            '' //  
-            '' //   
-            '' //  
-            '' //  
-            '' // 
-            '' //   
-            '' //  
-            '' // 
-            '' //  
-            '', //  
+            '' //  
+            '' //  
+            '' //   
+            '' //  
+            '' //  
+            '' //  
+            '' //   
+            '' //  
+            '' // 
+            '', // 
       ),
     ),
     // @generated end,

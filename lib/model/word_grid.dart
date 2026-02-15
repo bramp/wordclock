@@ -1,5 +1,5 @@
-import 'package:characters/characters.dart';
 import 'package:wordclock/model/types.dart';
+import 'package:wordclock/utils/string_utils.dart';
 
 class WordGrid {
   final List<Cell> cells;
@@ -40,14 +40,11 @@ class WordGrid {
     bool mergeApostrophes = true,
   }) {
     final List<Cell> result = [];
-    for (final char in letters.characters) {
-      // Merge ' or ’ with the previous character if applicable
-      if (mergeApostrophes &&
-          (char == "'" || char == "’") &&
-          result.isNotEmpty) {
-        result[result.length - 1] = result.last + char;
+    for (final glyph in letters.glyphs) {
+      if (mergeApostrophes && glyph.isApostrophe() && result.isNotEmpty) {
+        result[result.length - 1] = result.last + glyph;
       } else {
-        result.add(char);
+        result.add(glyph);
       }
     }
     return result;

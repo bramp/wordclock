@@ -1,9 +1,9 @@
 // ignore_for_file: avoid_print
 import 'dart:io';
-import 'package:characters/characters.dart';
 import 'package:wordclock/languages/all.dart';
 
 import 'package:wordclock/utils/font_helper.dart';
+import 'package:wordclock/utils/string_utils.dart';
 import 'package:wordclock/generator/utils/word_clock_utils.dart';
 
 // Helper to scan a directory for text files (e.g. .arb, .dart) and extract content
@@ -20,12 +20,7 @@ Future<Set<String>> scanDirectory(
       if (extensions.any((ext) => path.endsWith(ext))) {
         try {
           final content = await entity.readAsString();
-          // Extract string literals or just all chars?
-          // For safety, let's extract all non-ASCII chars found in the file,
-          // assuming ASCII is covered by default subset.
-          // This is a naive heuristic but effective for catching hardcoded specific glyphs.
-          // Use characters package to correctly handle grapheme clusters
-          for (final char in content.characters) {
+          for (final char in content.glyphs) {
             final s = char;
             // Basic check to avoid control chars, etc.
             if (s.trim().isNotEmpty) {
@@ -63,24 +58,18 @@ void main() async {
       final timeToWords = grid.timeToWords;
 
       WordClockUtils.forEachTime(language, (time, phrase) {
-        // Add characters from the phrase directly (no need to tokenize first, unless tokenization removes chars?)
-        // Tokenization usually just splits by space.
-        // We essentially want all characters used in the phrase.
-        // If tokenize removes punctuation that we WANT (unlikely for word clock), we should be careful.
-        // But usually we only display tokenized words in the grid.
-        // So let's use tokenize to be safe and consistent with what ends up in the grid.
         final words = language.tokenize(phrase);
         for (final word in words) {
-          chars.addAll(word.characters);
+          chars.addAll(word.glyphs);
         }
       }, timeToWords: timeToWords);
 
       // Add characters from paddingAlphabet
-      chars.addAll(grid.paddingAlphabet.characters);
+      chars.addAll(grid.paddingAlphabet.glyphs);
     }
 
     // Also add characters from the language name/native name if displayed
-    chars.addAll(language.displayName.characters);
+    chars.addAll(language.displayName.glyphs);
   }
 
   // Future-proofing: Scan lib/l10n or similar if it exists
