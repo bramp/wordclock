@@ -52,13 +52,13 @@ dependencies:
     sdk: flutter
   url_launcher: ^6.3.2
   google_fonts: ^8.0.1
+  http: ^1.6.0
 
 dev_dependencies:
   flutter_launcher_icons: ^0.14.4
   flutter_test:
     sdk: flutter
   flutter_lints: ^6.0.0
-  http: ^1.6.0
   mocktail: ^1.0.4
 
 # Create images with `./favicon.sh`

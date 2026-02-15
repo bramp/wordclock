@@ -7,6 +7,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:wordclock/services/analytics_service.dart';
 import 'package:wordclock/settings/settings_controller.dart';
 import 'package:wordclock/router.dart';
+import 'package:wordclock/utils/logging_http_client.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -16,6 +17,7 @@ void main() async {
   // test/font_integration_test.dart to try and ensure this. But as a fallback
   // we allow runtime fetching.
   GoogleFonts.config.allowRuntimeFetching = true;
+  GoogleFonts.config.httpClient = LoggingHttpClient();
 
   // Register font license
   LicenseRegistry.addLicense(() async* {
