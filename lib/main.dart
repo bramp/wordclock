@@ -19,14 +19,11 @@ void main() async {
   GoogleFonts.config.allowRuntimeFetching = true;
   GoogleFonts.config.httpClient = LoggingHttpClient();
 
-  // Register font license
+  // Register font licenses
   LicenseRegistry.addLicense(() async* {
     final license = await rootBundle.loadString('assets/fonts/OFL.txt');
     yield LicenseEntryWithLineBreaks(['google_fonts', 'Noto Sans'], license);
-  });
 
-  // Register Klingon font license
-  LicenseRegistry.addLicense(() async* {
     yield const LicenseEntryWithLineBreaks(
       ['KlingonPiqad'],
       'pIqaD.ttf\nFont provided by the Klingon Language Institute (KLI).\nSee https://hol.kag.org/page/piqadsupport.html for details.',
