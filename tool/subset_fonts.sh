@@ -12,11 +12,14 @@ if ! command -v pyftsubset &> /dev/null; then
 fi
 
 # Character set file
-CHARS_FILE="characters.txt"
-if [ ! -f "$CHARS_FILE" ]; then
-    echo "Error: $CHARS_FILE not found. Run 'dart run tool/extract_chars.dart' first."
-    exit 1
-fi
+# Character set files check
+check_chars_file() {
+    local file="$1"
+    if [ ! -f "$file" ]; then
+        echo "Error: $file not found. Run 'dart run tool/extract_chars.dart' first."
+        exit 1
+    fi
+}
 
 # Cache directory setup
 CACHE_DIR=".cache/fonts"
@@ -26,10 +29,11 @@ echo "Using cache dir: $CACHE_DIR"
 subset_font() {
     local url="$1"
     local output_name="$2"
+    local chars_file="$3"
+
+    check_chars_file "$chars_file"
+
     local filename=$(basename "$url")
-    # For GitHub raw links with query params or encoded chars, filename might be ugly, but curl handles it.
-    # We'll explicitly save to a simple name in cache based on the output name to avoid collisions or weird chars.
-    # Actually, let's just hash the URL or use the output_name prefix + source.
     local source_filename="${output_name%.*}-Source.ttf"
     local cached_file="$CACHE_DIR/$source_filename"
 
@@ -40,15 +44,15 @@ subset_font() {
         curl -f -L -o "$cached_file" "$url"
     fi
 
-    echo "Subsetting to $output_name..."
-    # --unicodes="U+0020-007E" covers Basic Latin (ASCII)
-    # --text-file="$CHARS_FILE" covers specific extracted characters
-    # --layout-features='*' keeps OpenType features (like ligatures if needed)
-    # --no-hinting reduces size
-    # --desubroutinize for compatibility
+    echo "Subsetting to $output_name using $chars_file..."
+
+    # --layout-features='*' keeps OpenType features.
+    # --no-hinting reduces size.
+    # --desubroutinize for compatibility.
+    # For variable fonts, pyftsubset retains variations by default unless tables are dropped.
 
     pyftsubset "$cached_file" \
-        --text-file="$CHARS_FILE" \
+        --text-file="$chars_file" \
         --unicodes="U+0020-007E" \
         --output-file="$ASSETS_DIR/$output_name" \
         --layout-features='*' \
@@ -58,32 +62,35 @@ subset_font() {
     echo "Created $ASSETS_DIR/$output_name"
 }
 
-# Static Fonts from Noto Fonts GitHub (more reliable for static weights)
-subset_font "https://github.com/notofonts/noto-fonts/raw/master/unhinted/ttf/NotoSans/NotoSans-Regular.ttf" "NotoSans-Regular.ttf"
-subset_font "https://github.com/notofonts/noto-fonts/raw/master/unhinted/ttf/NotoSans/NotoSans-Medium.ttf" "NotoSans-Medium.ttf"
-subset_font "https://github.com/notofonts/noto-fonts/raw/master/unhinted/ttf/NotoSans/NotoSans-Bold.ttf" "NotoSans-Bold.ttf"
+# Noto Sans Variable (Latin)
+subset_font "https://github.com/google/fonts/raw/main/ofl/notosans/NotoSans%5Bwdth%2Cwght%5D.ttf" \
+    "NotoSans-Variable.ttf" \
+    "characters_NotoSans.txt"
 
 # Noto Sans Tamil Variable
-# We just use the regular weight from the variable font and copy it to others for now.
-# Realistically we should use --variations="wght=700" etc but regular is usually enough for a subset.
-subset_font "https://github.com/google/fonts/raw/main/ofl/notosanstamil/NotoSansTamil%5Bwdth%2Cwght%5D.ttf" "NotoSansTamil-Regular.ttf"
-cp "$ASSETS_DIR/NotoSansTamil-Regular.ttf" "$ASSETS_DIR/NotoSansTamil-Bold.ttf"
+subset_font "https://github.com/google/fonts/raw/main/ofl/notosanstamil/NotoSansTamil%5Bwdth%2Cwght%5D.ttf" \
+    "NotoSansTamil-Variable.ttf" \
+    "characters_NotoSansTamil.txt"
 
 # Noto Sans SC (Simplified Chinese) Variable
-subset_font "https://github.com/google/fonts/raw/main/ofl/notosanssc/NotoSansSC%5Bwght%5D.ttf" "NotoSansSC-Regular.ttf"
-cp "$ASSETS_DIR/NotoSansSC-Regular.ttf" "$ASSETS_DIR/NotoSansSC-Bold.ttf"
+subset_font "https://github.com/google/fonts/raw/main/ofl/notosanssc/NotoSansSC%5Bwght%5D.ttf" \
+    "NotoSansSC-Variable.ttf" \
+    "characters_NotoSansSC.txt"
 
 # Noto Sans TC (Traditional Chinese) Variable
-subset_font "https://github.com/google/fonts/raw/main/ofl/notosanstc/NotoSansTC%5Bwght%5D.ttf" "NotoSansTC-Regular.ttf"
-cp "$ASSETS_DIR/NotoSansTC-Regular.ttf" "$ASSETS_DIR/NotoSansTC-Bold.ttf"
+subset_font "https://github.com/google/fonts/raw/main/ofl/notosanstc/NotoSansTC%5Bwght%5D.ttf" \
+    "NotoSansTC-Variable.ttf" \
+    "characters_NotoSansTC.txt"
 
 # Noto Sans JP (Japanese) Variable
-subset_font "https://github.com/google/fonts/raw/main/ofl/notosansjp/NotoSansJP%5Bwght%5D.ttf" "NotoSansJP-Regular.ttf"
-# Copy JP regular to bold as a fallback
-cp "$ASSETS_DIR/NotoSansJP-Regular.ttf" "$ASSETS_DIR/NotoSansJP-Bold.ttf"
+subset_font "https://github.com/google/fonts/raw/main/ofl/notosansjp/NotoSansJP%5Bwght%5D.ttf" \
+    "NotoSansJP-Variable.ttf" \
+    "characters_NotoSansJP.txt"
 
-# Klingon pIqaD
-subset_font "https://hol.kag.org/pIqaD.ttf" "pIqaD.ttf"
+# Klingon pIqaD (Static)
+subset_font "https://hol.kag.org/pIqaD.ttf" \
+    "pIqaD.ttf" \
+    "characters_KlingonPiqad.txt"
 
 # Clean up
 # rm -rf "$TEMP_DIR"

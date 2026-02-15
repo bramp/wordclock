@@ -2,6 +2,8 @@
 import 'dart:io';
 import 'package:characters/characters.dart';
 import 'package:wordclock/languages/all.dart';
+
+import 'package:wordclock/utils/font_helper.dart';
 import 'package:wordclock/generator/utils/word_clock_utils.dart';
 
 // Helper to scan a directory for text files (e.g. .arb, .dart) and extract content
@@ -40,40 +42,68 @@ Future<Set<String>> scanDirectory(
 }
 
 void main() async {
-  final Set<String> allChars = {};
+  // Map of Font Family -> Set of characters
+  final Map<String, Set<String>> fontChars = {
+    'NotoSans': {},
+    'NotoSansTamil': {},
+    'NotoSansJP': {},
+    'NotoSansSC': {},
+    'NotoSansTC': {},
+    'KlingonPiqad': {},
+  };
 
   // Iterate over all supported languages
   for (final language in WordClockLanguages.all) {
-    // Get all words for the language
-    final words = WordClockUtils.getAllWords(language);
+    final fontFamily = FontHelper.getFontFamilyFromTag(language.languageCode);
+    final chars = fontChars[fontFamily]!;
 
-    // Add characters from each word
-    for (final word in words) {
-      allChars.addAll(word.characters);
+    // Iterate over all grids for the language to get all possible words
+    for (final grid in language.grids) {
+      final timeToWords = grid.timeToWords;
+
+      WordClockUtils.forEachTime(language, (time, phrase) {
+        // Add characters from the phrase directly (no need to tokenize first, unless tokenization removes chars?)
+        // Tokenization usually just splits by space.
+        // We essentially want all characters used in the phrase.
+        // If tokenize removes punctuation that we WANT (unlikely for word clock), we should be careful.
+        // But usually we only display tokenized words in the grid.
+        // So let's use tokenize to be safe and consistent with what ends up in the grid.
+        final words = language.tokenize(phrase);
+        for (final word in words) {
+          chars.addAll(word.characters);
+        }
+      }, timeToWords: timeToWords);
+
+      // Add characters from paddingAlphabet
+      chars.addAll(grid.paddingAlphabet.characters);
     }
 
     // Also add characters from the language name/native name if displayed
-    allChars.addAll(language.displayName.characters);
-
-    // Add characters from paddingAlphabet of all grids
-    for (final grid in language.grids) {
-      allChars.addAll(grid.paddingAlphabet.characters);
-    }
+    chars.addAll(language.displayName.characters);
   }
 
   // Future-proofing: Scan lib/l10n or similar if it exists
+  // For now, we assume l10n strings use the default font (NotoSans)
+  // or we need a way to detect their language.
+  // Since we don't have l10n setup yet, we skip or add to NotoSans.
   final extraChars = await scanDirectory(Directory('lib/l10n'), ['.arb']);
-  allChars.addAll(extraChars);
+  fontChars['NotoSans']!.addAll(extraChars);
 
-  // Manual addition for specific UI elements if needed
-  // allChars.addAll("SomeSpecificString".split(''));
-  // Sort and print
-  final sortedChars = allChars.toList()..sort();
-  print('Total unique characters: ${sortedChars.length}');
-  print('Characters: ${sortedChars.join()}');
+  // Write files
+  for (final entry in fontChars.entries) {
+    final family = entry.key;
+    final chars = entry.value.toList()..sort();
 
-  // Save to file for subsetting
-  final file = File('characters.txt');
-  await file.writeAsString(sortedChars.join());
-  print('Saved to characters.txt');
+    if (chars.isEmpty && family != 'NotoSans') {
+      print('Warning: No characters found for $family');
+      continue;
+    }
+
+    print('$family: ${chars.length} unique characters');
+
+    final filename = 'characters_$family.txt';
+    final file = File(filename);
+    await file.writeAsString(chars.join());
+    print('Saved to $filename');
+  }
 }

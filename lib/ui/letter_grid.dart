@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'package:wordclock/model/word_grid.dart';
 import 'package:wordclock/ui/clock_letter.dart';
+import 'package:wordclock/ui/font_styles.dart';
 
 class LetterGrid extends StatelessWidget {
   final WordGrid grid;
@@ -97,60 +97,8 @@ class LetterGrid extends StatelessWidget {
   ///    Tamil script are rendered using the correct typeface instead of falling
   ///    back to a generic system font.
   TextStyle _getStyle(FontWeight weight, Color color, List<Shadow> shadows) {
-    final language = locale.languageCode.toLowerCase();
-
-    if (language == 'ta') {
-      return GoogleFonts.notoSansTamil(
-        fontWeight: weight,
-        color: color,
-        shadows: shadows,
-      );
-    }
-
-    if (language == 'ja') {
-      return GoogleFonts.notoSansJp(
-        fontWeight: weight,
-        color: color,
-        shadows: shadows,
-      );
-    }
-
-    if (language == 'zh') {
-      // Handle Traditional Chinese variants
-      final script = locale.scriptCode?.toLowerCase();
-      final country = locale.countryCode?.toLowerCase();
-
-      if (script == 'hant' ||
-          country == 'tw' ||
-          country == 'hk' ||
-          country == 'mo') {
-        return GoogleFonts.notoSansTc(
-          fontWeight: weight,
-          color: color,
-          shadows: shadows,
-        );
-      }
-
-      // Default to Simplified Chinese
-      return GoogleFonts.notoSansSc(
-        fontWeight: weight,
-        color: color,
-        shadows: shadows,
-      );
-    }
-
-    // Klingon (pIqaD). Note: 'Piqd' is the ISO 15924 script code.
-    if (language == 'tlh' &&
-        (locale.scriptCode == 'Piqd' || locale.scriptCode == 'piqd')) {
-      return TextStyle(
-        fontFamily: 'KlingonPiqad',
-        fontWeight: weight,
-        color: color,
-        shadows: shadows,
-      );
-    }
-
-    return GoogleFonts.notoSans(
+    return FontStyles.getStyleForLocale(
+      locale,
       fontWeight: weight,
       color: color,
       shadows: shadows,

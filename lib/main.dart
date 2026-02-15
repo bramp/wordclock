@@ -3,21 +3,12 @@ import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import 'package:go_router/go_router.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'package:wordclock/services/analytics_service.dart';
 import 'package:wordclock/settings/settings_controller.dart';
 import 'package:wordclock/router.dart';
-import 'package:wordclock/utils/logging_http_client.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-
-  // Allow fonts to be downloaded at runtime.
-  // We try and package all fonts with the app, and we have
-  // test/font_integration_test.dart to try and ensure this. But as a fallback
-  // we allow runtime fetching.
-  GoogleFonts.config.allowRuntimeFetching = true;
-  GoogleFonts.config.httpClient = LoggingHttpClient();
 
   // Register font licenses
   LicenseRegistry.addLicense(() async* {
@@ -71,8 +62,8 @@ class WordClockApp extends StatelessWidget {
               scaffoldBackgroundColor:
                   settingsController.settings.backgroundColor,
             );
-            final textTheme = GoogleFonts.notoSansTextTheme(
-              baseTheme.textTheme,
+            final textTheme = baseTheme.textTheme.apply(
+              fontFamily: 'Noto Sans',
             );
             return baseTheme.copyWith(
               textTheme: textTheme.copyWith(
