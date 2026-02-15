@@ -1,7 +1,22 @@
 import 'package:flutter/material.dart';
 
+import 'package:wordclock/ui/font_styles.dart';
+
 class FontDebugger extends StatelessWidget {
   const FontDebugger({super.key});
+
+  /// Quick map for the debugger
+  String _familyToLangCode(String family) {
+    if (family.contains('Tamil')) return 'ta';
+    if (family.contains('JP')) return 'ja';
+    if (family.contains('SC')) return 'zh-Hans';
+    if (family.contains('TC')) return 'zh-Hant';
+    if (family.contains('Piqad')) {
+      return 'tlh-pIqaD'; // Custom tag for Klingon pIqaD
+    }
+    if (family.contains('Tengwar')) return 'sjn';
+    return 'en';
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -75,8 +90,10 @@ class FontDebugger extends StatelessWidget {
                           Expanded(
                             child: Text(
                               sample,
-                              style: TextStyle(
-                                fontFamily: family,
+                              style: FontStyles.getStyleForLanguage(
+                                // Map display name back to language code if possible, or just family
+                                // Here we cheat and map family to likely code for the sake of the debugger
+                                _familyToLangCode(family),
                                 fontWeight: weight,
                                 color: Colors.white,
                                 fontSize: 20,

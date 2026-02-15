@@ -57,22 +57,39 @@ class FontStyles {
       case 'NotoSansTC':
         style = const TextStyle(fontFamily: 'Noto Sans TC');
       case 'KlingonPiqad':
-        style = const TextStyle(fontFamily: 'KlingonPiqad');
+        // Klingon (pIqaD) looks too thick when synthetic bolding is applied.
+        // Cap the weight at w400 (Regular) to prevent artificial thickening.
+        final baseWeight = fontWeight ?? FontWeight.w400;
+        final cappedWeight = baseWeight.value > FontWeight.w400.value
+            ? FontWeight.w400
+            : baseWeight;
+
+        style = TextStyle(fontFamily: 'KlingonPiqad', fontWeight: cappedWeight);
+        fontWeight = null; // Consumed
+
       case 'AlcarinTengwar':
         // Boost the weight for Elvish as the font is naturally thin.
-        // If regular (w400) is requested, use w600 (SemiBold).
-        // If bold (w700) is requested, use w900 (Black).
+        // We shift the requested weight up by 200 (e.g. 400->600, 700->900).
         final baseWeight = fontWeight ?? FontWeight.w400;
-        final boostedWeight = baseWeight.value >= FontWeight.w700.value
-            ? FontWeight.w900
-            : FontWeight.w600;
+        // Clamp to max 900
+        final boostedValue = (baseWeight.value + 200).clamp(100, 900);
+        final boostedWeight = FontWeight.values.firstWhere(
+          (w) => w.value == boostedValue,
+          orElse: () => FontWeight.w900,
+        );
+
+        // Also boost font size by 20% for better legibility
+        final effectiveSize = (fontSize ?? 14.0) * 1.2;
 
         style = TextStyle(
           fontFamily: 'AlcarinTengwar',
           fontWeight: boostedWeight,
+          fontSize: effectiveSize,
         );
-        // We consumed fontWeight, so don't apply it again in the copyWith below
+        // We consumed fontWeight and fontSize, so don't apply them again
         fontWeight = null;
+        fontSize = null;
+
       case 'NotoSans':
       default:
         style = const TextStyle(fontFamily: 'Noto Sans');
