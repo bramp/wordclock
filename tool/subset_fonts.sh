@@ -92,6 +92,11 @@ subset_font "https://hol.kag.org/pIqaD.ttf" \
     "pIqaD.ttf" \
     "characters_KlingonPiqad.txt"
 
+# Alcarin Tengwar (Variable)
+subset_font "https://github.com/Tosche/Alcarin-Tengwar/raw/main/Fonts%20Variable/AlcarinTengwarVF.ttf" \
+    "AlcarinTengwar.ttf" \
+    "characters_AlcarinTengwar.txt"
+
 # Clean up
 # rm -rf "$TEMP_DIR"
 echo "Done! Fonts are in $ASSETS_DIR"

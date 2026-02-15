@@ -125,7 +125,11 @@ flutter:
     - family: KlingonPiqad
       fonts:
         - asset: assets/fonts/pIqaD.ttf
+    - family: AlcarinTengwar
+      fonts:
+        - asset: assets/fonts/AlcarinTengwar.ttf
 
 
   assets:
-    - assets/fonts/OFL.txt
+    - assets/fonts/OFL_Noto.txt
+    - assets/fonts/OFL_AlcarinTengwar.txt

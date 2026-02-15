@@ -58,6 +58,8 @@ class FontStyles {
         style = const TextStyle(fontFamily: 'Noto Sans TC');
       case 'KlingonPiqad':
         style = const TextStyle(fontFamily: 'KlingonPiqad');
+      case 'AlcarinTengwar':
+        style = const TextStyle(fontFamily: 'AlcarinTengwar');
       case 'NotoSans':
       default:
         style = const TextStyle(fontFamily: 'Noto Sans');

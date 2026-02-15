@@ -52,7 +52,23 @@ Run the shell script to download source fonts and generate optimized subsets.
 ./tool/subset_fonts.sh
 ```
 
-## 5. Verify
+
+## 6. Register Fonts
+
+If you introduced a new font family:
+
+1.  **Add License File**: Place the font's license file (e.g., `OFL_MyFont.txt`) in `assets/fonts/`.
+2.  **Update Pubspec**: Add the license file to `pubspec.yaml` under `assets`.
+3.  **Register License**: In `lib/main.dart`, add a `LicenseRegistry.addLicense` entry for the new font.
+
+```dart
+LicenseRegistry.addLicense(() async* {
+  final myFontLicense = await rootBundle.loadString('assets/fonts/OFL_MyFont.txt');
+  yield LicenseEntryWithLineBreaks(['MyFontFamily'], myFontLicense);
+});
+```
+
+## 7. Verify
 
 Run the tests to ensure everything is wired up correctly and no font loading errors occur.
 

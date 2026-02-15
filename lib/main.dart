@@ -12,8 +12,18 @@ void main() async {
 
   // Register font licenses
   LicenseRegistry.addLicense(() async* {
-    final license = await rootBundle.loadString('assets/fonts/OFL.txt');
-    yield LicenseEntryWithLineBreaks(['google_fonts', 'Noto Sans'], license);
+    final notoLicense = await rootBundle.loadString(
+      'assets/fonts/OFL_Noto.txt',
+    );
+    yield LicenseEntryWithLineBreaks([
+      'google_fonts',
+      'Noto Sans',
+    ], notoLicense);
+
+    final alcarinLicense = await rootBundle.loadString(
+      'assets/fonts/OFL_AlcarinTengwar.txt',
+    );
+    yield LicenseEntryWithLineBreaks(['AlcarinTengwar'], alcarinLicense);
 
     yield const LicenseEntryWithLineBreaks(
       ['KlingonPiqad'],

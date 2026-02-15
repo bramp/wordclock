@@ -35,6 +35,10 @@ class FontHelper {
       return 'KlingonPiqad';
     }
 
+    if (lang == 'sjn') {
+      return 'AlcarinTengwar';
+    }
+
     return 'NotoSans';
   }
 

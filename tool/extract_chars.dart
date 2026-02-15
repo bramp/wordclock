@@ -50,6 +50,7 @@ void main() async {
     'NotoSansSC': {},
     'NotoSansTC': {},
     'KlingonPiqad': {},
+    'AlcarinTengwar': {},
   };
 
   // Iterate over all supported languages
