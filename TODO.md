@@ -33,9 +33,9 @@
 
 ## Visual
 - [ ] Add additional visual modes to the clock. Such as displaying the time in seconds. Or a audio visualizer.
-- [ ] The fonts don't always load before being shown
-- [ ] The font subsetting, will include all ascii in the say the Tamil font, that only needs a very short list
-- [ ] The font download / subsetting fetches regular and renames as Bold. Which is wrong. We should try and fetch the variable fonts, subset them.
+- [x] The fonts don't always load before being shown
+- [x] The font subsetting, will include all ascii in the say the Tamil font, that only needs a very short list
+- [x] The font download / subsetting fetches regular and renames as Bold. Which is wrong. We should try and fetch the variable fonts, subset them.
 
 ## Language Grid Status
 
@@ -85,10 +85,10 @@
   - [ ] We get the error "Could not find a set of Noto fonts to display all missing characters. Please add a font asset for the missing characters. See: https://docs.flutter.dev/cookbook/design/fonts"
 - [ ] High Valyrian (Game of Thrones)
 - [ ] Na'vi (Avatar)
-- [x] Elvish / Quenya (The Lord of the Rings)
+- [x] Quenya (High-Elven)
+- [x] Sindarin (Grey-Elven)
 - [ ] Circular Gallifreyan (Doctor Who)
 - [ ] Dothraki (Game of Thrones)
-- [x] Black Speech (The "Mordor" Language)
 
 ### Top 10 Indian Languages
 - [ ] Hindi

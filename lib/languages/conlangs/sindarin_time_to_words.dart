@@ -8,7 +8,7 @@ import 'package:wordclock/logic/time_to_words.dart';
 ///
 /// Vocabulary based on Neo-Sindarin reconstructions.
 /// Reference: https://www.elfdict.com/
-class ElvishTimeToWords extends TimeToWords {
+class SindarinTimeToWords extends TimeToWords {
   @override
   String convert(DateTime time) {
     int hour = time.hour;

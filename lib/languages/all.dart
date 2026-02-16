@@ -1,6 +1,7 @@
 import 'package:wordclock/languages/language.dart';
-import 'package:wordclock/languages/conlangs/black_speech.dart';
-import 'package:wordclock/languages/conlangs/elvish.dart';
+
+import 'package:wordclock/languages/conlangs/quenya.dart';
+import 'package:wordclock/languages/conlangs/sindarin.dart';
 import 'package:wordclock/languages/conlangs/klingon.dart';
 import 'package:wordclock/languages/natural/catalan.dart';
 import 'package:wordclock/languages/natural/chinese.dart';
@@ -28,7 +29,6 @@ class WordClockLanguages {
   static final List<WordClockLanguage> all = [
     // keep-sorted start
     berneseGermanLanguage,
-    blackSpeechLanguage,
     catalanLanguage,
     chineseSimplifiedLanguage,
     chineseTraditionalLanguage,
@@ -36,7 +36,6 @@ class WordClockLanguages {
     danishLanguage,
     dutchLanguage,
     eastGermanLanguage,
-    elvishLanguage,
     englishAlternativeLanguage,
     englishLanguage,
     frenchLanguage,
@@ -51,6 +50,8 @@ class WordClockLanguages {
     norwegianLanguage,
     // polishLanguage,
     portugueseLanguage,
+    quenyaLanguage,
+    sindarinLanguage,
     // romanianLanguage,
     // russianLanguage,
     spanishLanguage,

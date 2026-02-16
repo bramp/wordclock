@@ -22,6 +22,8 @@ void main() {
       FontStyles.getStyleForLanguage('tlh', scriptCode: 'Piqd').fontFamily,
       'KlingonHaSta',
     );
+    expect(FontStyles.getStyleForLanguage('sjn').fontFamily, 'AlcarinTengwar');
+    expect(FontStyles.getStyleForLanguage('qya').fontFamily, 'AlcarinTengwar');
   });
 
   testWidgets('All languages render without error and use correct font', (

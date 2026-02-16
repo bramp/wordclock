@@ -45,7 +45,7 @@ class FontHelper {
       return 'KlingonHaSta';
     }
 
-    if (lang == 'sjn') {
+    if (lang == 'sjn' || lang == 'qya') {
       return 'AlcarinTengwar';
     }
 
