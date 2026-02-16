@@ -11,6 +11,7 @@
 - [x] When "Show minute dots" is disabled, the grid should be larger, to fill the gap.
 - [x] Add a licences popup
 - [x] Add semantic labels for accessibility
+- [ ] Add golden image tests
 
 ## Platform
 - [x] Add support for Web
@@ -22,7 +23,7 @@
 
 ## Internationalization
 - [ ] Translate the app
-- [ ] Hide the language dropdown when there is only one language.
+- [x] Hide the language dropdown when there is only one language.
 - [x] Allow for wordclock.me/$lang/ routing
 - [x] Fix the issue where foreign characters take a while to load. We should pre-load the google fonts, and maybe bundle them with the app - especially if we can strip them to just the required characters (to keep the app small).
 - [ ] Add support for other languages (see <https://en.wikipedia.org/wiki/Languages_used_on_the_Internet#Usage_statistics_of_content_languages_for_websites> for list)

@@ -83,33 +83,37 @@ class SettingsPanel extends StatelessWidget {
                   child: ListView(
                     padding: const EdgeInsets.symmetric(horizontal: 16),
                     children: [
-                      const SectionHeader(title: 'Interface Language'),
-                      LanguageSelector<Locale>(
-                        currentSelection: controller.uiLocale,
-                        availableOptions: sortedUiLocales,
-                        labelBuilder: _getUiDisplayName,
-                        styleBuilder: _getLanguageStyle,
-                        onSelected: controller.setUiLocale,
-                        icon: Icons.translate,
-                        semanticsLabelPrefix: 'Interface Language',
-                      ),
-                      const SizedBox(height: 16),
-                      const SectionHeader(title: 'Clock Language'),
-                      LanguageSelector<WordClockLanguage>(
-                        currentSelection: controller.gridLanguage,
-                        availableOptions: sortedLanguages,
-                        labelBuilder: (l) => l.displayName,
-                        subtitleBuilder: (l) => l.description,
-                        searchKeywordsBuilder: (l) => l.englishName,
-                        styleBuilder: (l) => _getLanguageStyle(
-                          LocaleHelper.parseLocale(l.languageCode),
+                      if (sortedUiLocales.length > 1) ...[
+                        const SectionHeader(title: 'Interface Language'),
+                        LanguageSelector<Locale>(
+                          currentSelection: controller.uiLocale,
+                          availableOptions: sortedUiLocales,
+                          labelBuilder: _getUiDisplayName,
+                          styleBuilder: _getLanguageStyle,
+                          onSelected: controller.setUiLocale,
+                          icon: Icons.translate,
+                          semanticsLabelPrefix: 'Interface Language',
                         ),
-                        onSelected: (l) {
-                          context.go('/${l.languageCode}');
-                        },
-                        icon: Icons.language,
-                        semanticsLabelPrefix: 'Clock Language',
-                      ),
+                        const SizedBox(height: 16),
+                      ],
+                      if (sortedLanguages.length > 1) ...[
+                        const SectionHeader(title: 'Clock Language'),
+                        LanguageSelector<WordClockLanguage>(
+                          currentSelection: controller.gridLanguage,
+                          availableOptions: sortedLanguages,
+                          labelBuilder: (l) => l.displayName,
+                          subtitleBuilder: (l) => l.description,
+                          searchKeywordsBuilder: (l) => l.englishName,
+                          styleBuilder: (l) => _getLanguageStyle(
+                            LocaleHelper.parseLocale(l.languageCode),
+                          ),
+                          onSelected: (l) {
+                            context.go('/${l.languageCode}');
+                          },
+                          icon: Icons.language,
+                          semanticsLabelPrefix: 'Clock Language',
+                        ),
+                      ],
                       const SizedBox(height: 24),
                       const SectionHeader(title: 'Theme'),
                       ThemeSelector(
