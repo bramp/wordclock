@@ -62,7 +62,7 @@ Run the shell script to download source fonts and generate optimized subsets.
 ```
 
 
-## 6. Register Fonts
+## 5. Register Fonts
 
 If you introduced a new font family:
 
@@ -80,15 +80,31 @@ LicenseRegistry.addLicense(() async* {
 });
 ```
 
-8.  **Verify Fonts**:
-    If you've added or modified fonts, you can use the Font Debugger to verify they render correctly at various weights:
-    ```bash
-    flutter run -d chrome -t lib/main_debug_fonts.dart
-    ```
+## 6. Verify Fonts
 
-## 7. Verify
+If you've added or modified fonts, you can use the Font Debugger to verify they render correctly at various weights:
 
-Run the tests to ensure everything is wired up correctly and no font loading errors occur.
+```bash
+flutter run -d chrome -t lib/main_debug_fonts.dart
+```
+
+## 7. Golden Image Testing
+
+Visual verification is performed using golden image tests in `test/golden_language_test.dart`. To avoid excessive repository size and test time, we only maintain goldens for a **representative subset** of languages.
+
+A language should be added to the golden test suite if it uses:
+- A **unique font family** (e.g., Tamil, Japanese).
+- A **unique character set** or script variant (e.g., Chinese Simplified vs Traditional).
+- **Special rendering logic** (e.g., Klingon pIqaD, Quenya/Sindarin Tengwar modes).
+
+To update goldens after making changes:
+```bash
+flutter test --update-goldens test/golden_language_test.dart
+```
+
+## 8. Run Tests
+
+Run the full test suite to ensure everything is wired up correctly and no font loading errors occur.
 
 ```bash
 flutter test

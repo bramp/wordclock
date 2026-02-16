@@ -31,8 +31,23 @@ void main() {
       settingsController.updateTheme(ThemeSettings.goldenTheme);
       settingsController.setManualTime(fixedTime);
 
+      final representativeIds = {
+        'EN', // Latin
+        'DE', // Latin + Umlauts
+        'GR', // Greek
+        'TR', // Turkish
+        'CZ', // Central European
+        'TA', // Tamil
+        'CS', // Chinese Simplified
+        'CT', // Chinese Traditional
+        'JP', // Japanese
+        'KP', // Klingon pIqaD
+        'QY', // Quenya
+        'SI', // Sindarin
+      };
+
       final languages = SettingsController.supportedLanguages
-          .where((l) => !l.isHidden)
+          .where((l) => representativeIds.contains(l.id))
           .toList();
 
       for (final lang in languages) {
