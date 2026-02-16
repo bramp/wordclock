@@ -104,7 +104,7 @@ subset_font "https://github.com/google/fonts/raw/main/ofl/notosansjp/NotoSansJP%
 
 # Klingon HaSta (Static)
 subset_font "https://www.evertype.com/fonts/tlh/klingon-piqad-hasta.zip" \
-    "HaSta.ttf" \
+    "Klingon-pIqaD-HaSta.ttf" \
     "characters_KlingonHaSta.txt"
 
 # Alcarin Tengwar (Variable)

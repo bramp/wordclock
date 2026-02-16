@@ -115,7 +115,7 @@ flutter:
         - asset: assets/fonts/NotoSansJP-Variable.ttf
     - family: KlingonHaSta
       fonts:
-        - asset: assets/fonts/HaSta.ttf
+        - asset: assets/fonts/Klingon-pIqaD-HaSta.ttf
     - family: AlcarinTengwar
       fonts:
         - asset: assets/fonts/AlcarinTengwar.ttf
