@@ -7,13 +7,13 @@ class AdjustableClock extends Clock {
   double _rate;
 
   AdjustableClock([DateTime? startTime])
-    : _startTime = startTime ?? DateTime.now(),
-      _anchorTime = DateTime.now(),
+    : _startTime = startTime ?? clock.now(),
+      _anchorTime = clock.now(),
       _rate = 1.0;
 
   @override
   DateTime now() {
-    final elapsed = DateTime.now().difference(_anchorTime);
+    final elapsed = clock.now().difference(_anchorTime);
     return _startTime.add(elapsed * _rate);
   }
 
@@ -21,7 +21,7 @@ class AdjustableClock extends Clock {
   /// The clock will continue to tick from this time at the current rate.
   void setTime(DateTime time) {
     _startTime = time;
-    _anchorTime = DateTime.now();
+    _anchorTime = clock.now();
   }
 
   /// Sets the speed multiplier of the clock.
@@ -32,7 +32,7 @@ class AdjustableClock extends Clock {
     // Capture the current virtual time to use as the new start time
     // so the clock doesn't jump wildly when changing rate.
     _startTime = now();
-    _anchorTime = DateTime.now();
+    _anchorTime = clock.now();
     _rate = rate;
   }
 

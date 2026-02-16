@@ -1,4 +1,14 @@
 class FontHelper {
+  static const Map<String, String> familyToAsset = {
+    'Noto Sans': 'assets/fonts/NotoSans-Variable.ttf',
+    'Noto Sans Tamil': 'assets/fonts/NotoSansTamil-Variable.ttf',
+    'Noto Sans SC': 'assets/fonts/NotoSansSC-Variable.ttf',
+    'Noto Sans TC': 'assets/fonts/NotoSansTC-Variable.ttf',
+    'Noto Sans JP': 'assets/fonts/NotoSansJP-Variable.ttf',
+    'KlingonHaSta': 'assets/fonts/Klingon-pIqaD-HaSta.ttf',
+    'AlcarinTengwar': 'assets/fonts/AlcarinTengwar.ttf',
+  };
+
   /// Returns the font family name for the given language configuration.
   ///
   /// The returned string must match the font family name defined in `pubspec.yaml`.
@@ -12,11 +22,11 @@ class FontHelper {
     final country = countryCode?.toLowerCase();
 
     if (lang == 'ta') {
-      return 'NotoSansTamil';
+      return 'Noto Sans Tamil';
     }
 
     if (lang == 'ja') {
-      return 'NotoSansJP';
+      return 'Noto Sans JP';
     }
 
     if (lang == 'zh') {
@@ -25,9 +35,9 @@ class FontHelper {
           country == 'tw' ||
           country == 'hk' ||
           country == 'mo') {
-        return 'NotoSansTC';
+        return 'Noto Sans TC';
       }
-      return 'NotoSansSC';
+      return 'Noto Sans SC';
     }
 
     // Klingon (pIqaD).
@@ -39,7 +49,7 @@ class FontHelper {
       return 'AlcarinTengwar';
     }
 
-    return 'NotoSans';
+    return 'Noto Sans';
   }
 
   /// Parses a BCP47 language tag and returns the corresponding font family.

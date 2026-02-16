@@ -11,7 +11,7 @@
 - [x] When "Show minute dots" is disabled, the grid should be larger, to fill the gap.
 - [x] Add a licences popup
 - [x] Add semantic labels for accessibility
-- [ ] Add golden image tests
+- [x] Add golden image tests
 
 ## Platform
 - [x] Add support for Web

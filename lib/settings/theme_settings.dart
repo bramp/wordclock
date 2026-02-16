@@ -56,6 +56,13 @@ class ThemeSettings {
     backgroundType: BackgroundType.plasma,
   );
 
+  static const goldenTheme = ThemeSettings(
+    activeGradientColors: [Colors.white, Colors.white],
+    inactiveColor: Color.fromRGBO(255, 255, 255, 0.15),
+    backgroundColor: Colors.black,
+    backgroundType: BackgroundType.solid,
+  );
+
   @override
   bool operator ==(Object other) {
     if (identical(this, other)) return true;

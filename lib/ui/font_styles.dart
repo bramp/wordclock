@@ -39,52 +39,30 @@ class FontStyles {
       countryCode: countryCode,
     );
 
-    // Common arguments for GoogleFonts methods
-    // We pass these down so GoogleFonts handles them properly
-    // Note: not all args are supported by all GoogleFonts factories directly,
-    // but most return a TextStyle that supports copyWith or are full TextStyles.
-    // The GoogleFonts package methods typically accept most TextStyle properties.
+    TextStyle style = TextStyle(fontFamily: fontFamily);
 
-    // Helper to call specific factory
-    TextStyle style;
-    switch (fontFamily) {
-      case 'NotoSansTamil':
-        style = const TextStyle(fontFamily: 'Noto Sans Tamil');
-      case 'NotoSansJP':
-        style = const TextStyle(fontFamily: 'Noto Sans JP');
-      case 'NotoSansSC':
-        style = const TextStyle(fontFamily: 'Noto Sans SC');
-      case 'NotoSansTC':
-        style = const TextStyle(fontFamily: 'Noto Sans TC');
-      case 'KlingonHaSta':
-        style = const TextStyle(fontFamily: 'KlingonHaSta');
+    if (fontFamily == 'AlcarinTengwar') {
+      // Boost the weight for Elvish as the font is naturally thin.
+      // We shift the requested weight up by 200 (e.g. 400->600, 700->900).
+      final baseWeight = fontWeight ?? FontWeight.w400;
+      // Clamp to max 900
+      final boostedValue = (baseWeight.value + 200).clamp(100, 900);
+      final boostedWeight = FontWeight.values.firstWhere(
+        (w) => w.value == boostedValue,
+        orElse: () => FontWeight.w900,
+      );
 
-      case 'AlcarinTengwar':
-        // Boost the weight for Elvish as the font is naturally thin.
-        // We shift the requested weight up by 200 (e.g. 400->600, 700->900).
-        final baseWeight = fontWeight ?? FontWeight.w400;
-        // Clamp to max 900
-        final boostedValue = (baseWeight.value + 200).clamp(100, 900);
-        final boostedWeight = FontWeight.values.firstWhere(
-          (w) => w.value == boostedValue,
-          orElse: () => FontWeight.w900,
-        );
+      // Also boost font size by 20% for better legibility
+      final effectiveSize = (fontSize ?? 14.0) * 1.2;
 
-        // Also boost font size by 20% for better legibility
-        final effectiveSize = (fontSize ?? 14.0) * 1.2;
-
-        style = TextStyle(
-          fontFamily: 'AlcarinTengwar',
-          fontWeight: boostedWeight,
-          fontSize: effectiveSize,
-        );
-        // We consumed fontWeight and fontSize, so don't apply them again
-        fontWeight = null;
-        fontSize = null;
-
-      case 'NotoSans':
-      default:
-        style = const TextStyle(fontFamily: 'Noto Sans');
+      style = TextStyle(
+        fontFamily: 'AlcarinTengwar',
+        fontWeight: boostedWeight,
+        fontSize: effectiveSize,
+      );
+      // We consumed fontWeight and fontSize, so don't apply them again
+      fontWeight = null;
+      fontSize = null;
     }
 
     // Apply the overrides
