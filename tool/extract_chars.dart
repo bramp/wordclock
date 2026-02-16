@@ -44,7 +44,7 @@ void main() async {
     'NotoSansJP': {},
     'NotoSansSC': {},
     'NotoSansTC': {},
-    'KlingonPiqad': {},
+    'KlingonHaSta': {},
     'AlcarinTengwar': {},
   };
 

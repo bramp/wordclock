@@ -20,7 +20,7 @@ void main() {
     );
     expect(
       FontStyles.getStyleForLanguage('tlh', scriptCode: 'Piqd').fontFamily,
-      'KlingonPiqad',
+      'KlingonHaSta',
     );
   });
 

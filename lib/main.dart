@@ -25,10 +25,10 @@ void main() async {
     );
     yield LicenseEntryWithLineBreaks(['AlcarinTengwar'], alcarinLicense);
 
-    yield const LicenseEntryWithLineBreaks(
-      ['KlingonPiqad'],
-      'pIqaD.ttf\nFont provided by the Klingon Language Institute (KLI).\nSee https://hol.kag.org/page/piqadsupport.html for details.',
+    final hastaLicense = await rootBundle.loadString(
+      'assets/fonts/OFL_HaSta.txt',
     );
+    yield LicenseEntryWithLineBreaks(['KlingonHaSta'], hastaLicense);
   });
 
   // Initialize Firebase Analytics

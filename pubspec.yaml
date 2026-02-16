@@ -95,7 +95,7 @@ flutter:
     # Note on Weights:
     # - For Variable Fonts (e.g., Noto Sans): Do NOT specify weights. Flutter automatically
     #   maps FontWeight.w100-w900 to the 'wght' axis of the single variable asset.
-    # - For Static Fonts (e.g., AlcarinTengwar): If only a Regular weight exists, do NOT
+    # - For Static Fonts (e.g., KlingonHaSta): If only a Regular weight exists, do NOT
     #   specify a weight property. Flutter defaults to 400 (Regular). This allows the
     #   Flutter engine to apply "Synthetic Bolding" when FontWeight.w700 is requested.
     - family: Noto Sans
@@ -113,9 +113,9 @@ flutter:
     - family: Noto Sans JP
       fonts:
         - asset: assets/fonts/NotoSansJP-Variable.ttf
-    - family: KlingonPiqad
+    - family: KlingonHaSta
       fonts:
-        - asset: assets/fonts/pIqaD.ttf
+        - asset: assets/fonts/HaSta.ttf
     - family: AlcarinTengwar
       fonts:
         - asset: assets/fonts/AlcarinTengwar.ttf
@@ -123,4 +123,5 @@ flutter:
 
   assets:
     - assets/fonts/OFL_Noto.txt
+    - assets/fonts/OFL_HaSta.txt
     - assets/fonts/OFL_AlcarinTengwar.txt

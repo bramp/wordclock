@@ -34,14 +34,29 @@ subset_font() {
     check_chars_file "$chars_file"
 
     local filename=$(basename "$url")
-    local source_filename="${output_name%.*}-Source.ttf"
+    local extension="${filename##*.}"
+    local source_filename="${output_name%.*}-Source.${extension}"
     local cached_file="$CACHE_DIR/$source_filename"
 
     if [ -f "$cached_file" ]; then
-        echo "Using cached $source_filename"
+        echo "Using cached $filename"
     else
         echo "Downloading $url..."
         curl -f -L -o "$cached_file" "$url"
+    fi
+
+    local font_file="$cached_file"
+    if [[ "$filename" == *.zip ]]; then
+        echo "Extracting zip..."
+        unzip -j -o "$cached_file" "*.ttf" -d "$CACHE_DIR"
+        # Find the extracted TTF. Assuming only one TTF or we pick the first relevant one.
+        # Specific for HaSta: Klingon-pIqaD-HaSta.ttf
+        local extracted_ttf=$(find "$CACHE_DIR" -name "*HaSta.ttf" | head -n 1)
+        if [ -z "$extracted_ttf" ]; then
+            echo "Error: Could not find extracted TTF in $CACHE_DIR"
+            exit 1
+        fi
+        font_file="$extracted_ttf"
     fi
 
     echo "Subsetting to $output_name using $chars_file..."
@@ -51,7 +66,7 @@ subset_font() {
     # --desubroutinize for compatibility.
     # For variable fonts, pyftsubset retains variations by default unless tables are dropped.
 
-    pyftsubset "$cached_file" \
+    pyftsubset "$font_file" \
         --text-file="$chars_file" \
         --unicodes="U+0020-007E" \
         --output-file="$ASSETS_DIR/$output_name" \
@@ -87,10 +102,10 @@ subset_font "https://github.com/google/fonts/raw/main/ofl/notosansjp/NotoSansJP%
     "NotoSansJP-Variable.ttf" \
     "characters_NotoSansJP.txt"
 
-# Klingon pIqaD (Static)
-subset_font "https://hol.kag.org/pIqaD.ttf" \
-    "pIqaD.ttf" \
-    "characters_KlingonPiqad.txt"
+# Klingon HaSta (Static)
+subset_font "https://www.evertype.com/fonts/tlh/klingon-piqad-hasta.zip" \
+    "HaSta.ttf" \
+    "characters_KlingonHaSta.txt"
 
 # Alcarin Tengwar (Variable)
 subset_font "https://github.com/Tosche/Alcarin-Tengwar/raw/main/Fonts%20Variable/AlcarinTengwarVF.ttf" \
