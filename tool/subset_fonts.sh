@@ -72,6 +72,7 @@ subset_font() {
         --output-file="$ASSETS_DIR/$output_name" \
         --layout-features='*' \
         --no-hinting \
+        --no-recalc-timestamp \
         --desubroutinize
 
     echo "Created $ASSETS_DIR/$output_name"

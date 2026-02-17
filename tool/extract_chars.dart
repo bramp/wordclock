@@ -39,11 +39,11 @@ Future<Set<String>> scanDirectory(
 void main() async {
   // Map of Font Family -> Set of characters
   final Map<String, Set<String>> fontChars = {
-    'NotoSans': {},
-    'NotoSansTamil': {},
-    'NotoSansJP': {},
-    'NotoSansSC': {},
-    'NotoSansTC': {},
+    'Noto Sans': {},
+    'Noto Sans Tamil': {},
+    'Noto Sans JP': {},
+    'Noto Sans SC': {},
+    'Noto Sans TC': {},
     'KlingonHaSta': {},
     'AlcarinTengwar': {},
   };
@@ -73,15 +73,16 @@ void main() async {
   }
 
   // Future-proofing: Scan lib/l10n or similar if it exists
-  // For now, we assume l10n strings use the default font (NotoSans)
+  // For now, we assume l10n strings use the default font (Noto Sans)
   // or we need a way to detect their language.
-  // Since we don't have l10n setup yet, we skip or add to NotoSans.
+  // Since we don't have l10n setup yet, we skip or add to Noto Sans.
   final extraChars = await scanDirectory(Directory('lib/l10n'), ['.arb']);
-  fontChars['NotoSans']!.addAll(extraChars);
+  fontChars['Noto Sans']!.addAll(extraChars);
 
   // Write files
   for (final entry in fontChars.entries) {
-    final family = entry.key;
+    var family = entry.key.replaceAll(' ', '');
+    // Handle NotoSans variants
     final chars = entry.value.toList()..sort();
 
     if (chars.isEmpty && family != 'NotoSans') {
