@@ -6,12 +6,10 @@ on:
   workflow_call:
 
 jobs:
-  test:
+  unit_tests:
     runs-on: ubuntu-latest
-
     steps:
       - uses: actions/checkout@v6
-
       - name: Cache default Flutter artifacts
         uses: actions/cache@v5
         with:
@@ -25,8 +23,6 @@ jobs:
         uses: subosito/flutter-action@v2
         with:
           channel: 'stable'
-          # You can specify a version here if you want to pin it, e.g., flutter-version: '3.19.0'
-          # Leaving it out uses the latest stable check.
 
       - name: Install dependencies
         run: flutter pub get
@@ -34,9 +30,9 @@ jobs:
       - name: Analyze
         run: flutter analyze
 
-      - name: Run tests
+      - name: Run unit tests
         id: run_tests
-        run: flutter test --file-reporter json:test_report.json --coverage
+        run: flutter test --exclude-tags mac --file-reporter json:test_report.json --coverage
 
       - name: Convert tests to JUnit
         id: convert_junit
@@ -60,3 +56,27 @@ jobs:
           token: ${{ secrets.CODECOV_TOKEN }}
           files: junit.xml
           report_type: test_results
+
+  golden_tests:
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v6
+      - name: Cache default Flutter artifacts
+        uses: actions/cache@v5
+        with:
+          path: |
+            ~/.pub-cache/
+            /opt/hostedtoolcache/flutter/
+            .cache/fonts/
+          key: ${{ runner.os }}-flutter-${{ runner.arch }}-${{ hashFiles('**/pubspec.lock') }}
+
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          channel: 'stable'
+
+      - name: Install dependencies
+        run: flutter pub get
+
+      - name: Run golden tests
+        run: flutter test --tags mac

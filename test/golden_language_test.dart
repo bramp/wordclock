@@ -8,7 +8,7 @@ import 'package:clock/clock.dart';
 import 'test_utils.dart';
 
 void main() {
-  testWidgets('Golden Image Tests for all languages', (
+  testWidgets('Golden Image Tests for all languages', tags: ['golden', 'mac'], (
     WidgetTester tester,
   ) async {
     // Load fonts before any tests
@@ -56,8 +56,17 @@ void main() {
         await tester.pumpWidget(
           MaterialApp(
             debugShowCheckedModeBanner: false,
+            theme: ThemeData(
+              fontFamily: 'Roboto', // Default fallback
+              useMaterial3: false, // consistency
+            ),
             home: Theme(
-              data: ThemeData.dark(),
+              data: ThemeData.dark().copyWith(
+                // Attempt to standardize text rendering
+                textTheme: ThemeData.dark().textTheme.apply(
+                  fontFamily: 'Roboto',
+                ),
+              ),
               child: Scaffold(
                 body: ClockFace(
                   settingsController: settingsController,
