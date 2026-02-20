@@ -4,6 +4,8 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:wordclock/languages/all.dart';
 import 'package:wordclock/utils/font_helper.dart';
 
+import '../../tool/extract_chars.dart';
+
 void main() {
   group('Font Extraction Logic', () {
     test(
@@ -42,18 +44,7 @@ void main() {
     // This test replicates the core logic of tool/extract_chars.dart to ensure it doesn't rot
     test('Extraction logic maps languages to valid font buckets', () {
       // The map used in tool/extract_chars.dart (must be manually kept in sync, which is what we are testing)
-      final extractionbuckets = {
-        'Noto Sans',
-        'Noto Sans Tamil',
-        'Noto Sans JP',
-        'Noto Sans SC',
-        'Noto Sans TC',
-        'KlingonHaSta',
-        'AlcarinTengwar',
-        'ValyrianAdvanced',
-        'Aurebesh',
-        'MandoAF',
-      };
+      final extractionbuckets = supportedFontFamilies;
 
       for (final language in WordClockLanguages.all) {
         final family = FontHelper.getFontFamilyFromTag(language.languageCode);

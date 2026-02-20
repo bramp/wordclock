@@ -3,3 +3,7 @@
 
 # Set default timeout for all tests to 10 seconds
 timeout: 10s
+
+tags:
+  golden:
+  mac:

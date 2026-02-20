@@ -36,19 +36,24 @@ Future<Set<String>> scanDirectory(
   return chars;
 }
 
+// Set of Font Families we expect to extract characters for
+final Set<String> supportedFontFamilies = {
+  'Noto Sans',
+  'Noto Sans Tamil',
+  'Noto Sans JP',
+  'Noto Sans SC',
+  'Noto Sans TC',
+  'KlingonHaSta',
+  'AlcarinTengwar',
+  'ValyrianAdvanced',
+  'Aurebesh',
+  'MandoAF',
+};
+
 void main() async {
   // Map of Font Family -> Set of characters
   final Map<String, Set<String>> fontChars = {
-    'Noto Sans': {},
-    'Noto Sans Tamil': {},
-    'Noto Sans JP': {},
-    'Noto Sans SC': {},
-    'Noto Sans TC': {},
-    'KlingonHaSta': {},
-    'AlcarinTengwar': {},
-    'ValyrianAdvanced': {},
-    'Aurebesh': {},
-    'MandoAF': {},
+    for (var family in supportedFontFamilies) family: {},
   };
 
   // Iterate over all supported languages
