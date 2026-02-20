@@ -43,13 +43,10 @@ void main() {
 
     // This test replicates the core logic of tool/extract_chars.dart to ensure it doesn't rot
     test('Extraction logic maps languages to valid font buckets', () {
-      // The map used in tool/extract_chars.dart (must be manually kept in sync, which is what we are testing)
-      final extractionbuckets = supportedFontFamilies;
-
       for (final language in WordClockLanguages.all) {
         final family = FontHelper.getFontFamilyFromTag(language.languageCode);
         expect(
-          extractionbuckets,
+          supportedFontFamilies,
           contains(family),
           reason:
               'Language ${language.id} uses font "$family", but tool/extract_chars.dart likely does not have a bucket for it.',
