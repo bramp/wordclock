@@ -1,0 +1,14 @@
+This project uses fonts from AurekFonts (https://github.com/AurekFonts/AurekFonts.github.io).
+
+Fonts:
+- AurebeshAF-Canon.otf (Aurebesh)
+- MandoAF-Regular.otf (Mando'a)
+
+License:
+These fonts are provided by AurekFonts for free personal and commercial use.
+"All of the fonts on the site are effectively free for personal + commercial use."
+Source: https://aurekfonts.github.io/
+
+Credits:
+Aurebesh AF by AurekFonts
+Mando AF by AurekFonts
