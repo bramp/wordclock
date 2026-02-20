@@ -30,6 +30,7 @@ subset_font() {
     local url="$1"
     local output_name="$2"
     local chars_file="$3"
+    local internal_zip_file="$4"
 
     check_chars_file "$chars_file"
 
@@ -48,15 +49,19 @@ subset_font() {
     local font_file="$cached_file"
     if [[ "$filename" == *.zip ]]; then
         echo "Extracting zip..."
-        unzip -j -o "$cached_file" "*.ttf" -d "$CACHE_DIR"
-        # Find the extracted TTF. Assuming only one TTF or we pick the first relevant one.
-        # Specific for HaSta: Klingon-pIqaD-HaSta.ttf
-        local extracted_ttf=$(find "$CACHE_DIR" -name "*HaSta.ttf" | head -n 1)
-        if [ -z "$extracted_ttf" ]; then
-            echo "Error: Could not find extracted TTF in $CACHE_DIR"
+        unzip -j -o "$cached_file" -d "$CACHE_DIR"
+
+        if [ -n "$internal_zip_file" ]; then
+             font_file="$CACHE_DIR/$internal_zip_file"
+        else
+             # Fallback: specific logic for HaSta
+             font_file=$(find "$CACHE_DIR" -name "*HaSta.ttf" | head -n 1)
+        fi
+
+        if [ ! -f "$font_file" ]; then
+            echo "Error: Could not find extracted font file '$internal_zip_file' in $CACHE_DIR"
             exit 1
         fi
-        font_file="$extracted_ttf"
     fi
 
     echo "Subsetting to $output_name using $chars_file..."
@@ -112,6 +117,18 @@ subset_font "https://www.evertype.com/fonts/tlh/klingon-piqad-hasta.zip" \
 subset_font "https://github.com/Tosche/Alcarin-Tengwar/raw/main/Fonts%20Variable/AlcarinTengwarVF.ttf" \
     "AlcarinTengwar.ttf" \
     "characters_AlcarinTengwar.txt"
+
+# Aurebesh (AurekFonts)
+subset_font "https://aurekfonts.github.io/AurebeshAF/AurebeshAF.zip" \
+    "AurebeshAF-Canon.otf" \
+    "characters_Aurebesh.txt" \
+    "AurebeshAF-Canon.otf"
+
+# Mando'a (AurekFonts)
+subset_font "https://aurekfonts.github.io/MandoAF/MandoAF.zip" \
+    "MandoAF-Regular.otf" \
+    "characters_MandoAF.txt" \
+    "MandoAF-Regular.otf"
 
 # Clean up
 # rm -rf "$TEMP_DIR"

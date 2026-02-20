@@ -12,6 +12,8 @@
 - [x] Add a licences popup
 - [x] Add semantic labels for accessibility
 - [x] Add golden image tests
+- [ ] With the White theme, the plasma text effect is not relevant (and should be disabled)
+- [ ] Add screenshot/animations to the README, and a link to the live site.
 
 ## Platform
 - [x] Add support for Web
@@ -77,18 +79,20 @@
 - [ ] Latvian
 
 ### Top constructed languages
-- [ ] Esperanto
+- [x] Esperanto
 - [x] Klingon
   - [X] Update the display name to use pIqaD script
   - [X] Ensure the font is compressed / pruned
   - [X] Add some instructions, to ask developers to install assets/fonts/pIqaD.ttf (so they can see it in the terminal)
   - [ ] We get the error "Could not find a set of Noto fonts to display all missing characters. Please add a font asset for the missing characters. See: https://docs.flutter.dev/cookbook/design/fonts"
-- [ ] High Valyrian (Game of Thrones)
+- [x] High Valyrian (Game of Thrones)
+  - [ ] Add "Tubī" (In the day) / "Gēlenka" (In the night)
 - [ ] Na'vi (Avatar)
 - [x] Quenya (High-Elven)
 - [x] Sindarin (Grey-Elven)
-- [ ] Circular Gallifreyan (Doctor Who)
 - [ ] Dothraki (Game of Thrones)
+- [x] Aurebesh
+- [x] Mando'a (Mandalorian)
 
 ### Top 10 Indian Languages
 - [ ] Hindi

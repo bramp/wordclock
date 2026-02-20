@@ -7,6 +7,9 @@ class FontHelper {
     'Noto Sans JP': 'assets/fonts/NotoSansJP-Variable.ttf',
     'KlingonHaSta': 'assets/fonts/Klingon-pIqaD-HaSta.ttf',
     'AlcarinTengwar': 'assets/fonts/AlcarinTengwar.ttf',
+    'ValyrianAdvanced': 'assets/fonts/ValyrianAdvanced.ttf',
+    'Aurebesh': 'assets/fonts/AurebeshAF-Canon.otf',
+    'MandoAF': 'assets/fonts/MandoAF-Regular.otf',
   };
 
   /// Returns the font family name for the given language configuration.
@@ -49,6 +52,21 @@ class FontHelper {
       return 'AlcarinTengwar';
     }
 
+    // High Valyrian
+    if (lang == 'hva') {
+      return 'ValyrianAdvanced';
+    }
+
+    // Aurebesh
+    if (lang == 'aure') {
+      return 'Aurebesh';
+    }
+
+    // Mando'a
+    if (lang == 'mando') {
+      return 'MandoAF';
+    }
+
     return 'Noto Sans';
   }
 
@@ -65,6 +83,8 @@ class FontHelper {
 
     // A heuristic to distinguish script from region
     // ISO 15924 scripts are 4 letters. ISO 3166-1 regions are 2 letters (or 3 digits).
+    // NOTE: Some language codes can be 3 letters (e.g. 'eng', 'hva') or even 4 (e.g. 'aure' unofficial).
+    // The first part is always the language.
     for (var i = 1; i < parts.length; i++) {
       final part = parts[i];
       if (part.length == 4) {

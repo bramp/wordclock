@@ -6,7 +6,7 @@ final sindarinLanguage = WordClockLanguage(
   id: 'SI',
   languageCode: 'sjn',
   displayName: '',
-  englishName: 'Sindarin (Elvish)',
+  englishName: 'Sindarin Elvish',
   description: "Tolkien's Sindarin language",
   isAlternative: false,
   grids: [

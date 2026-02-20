@@ -119,9 +119,20 @@ flutter:
     - family: AlcarinTengwar
       fonts:
         - asset: assets/fonts/AlcarinTengwar.ttf
+    - family: ValyrianAdvanced
+      fonts:
+        - asset: assets/fonts/ValyrianAdvanced.ttf
+    - family: Aurebesh
+      fonts:
+        - asset: assets/fonts/AurebeshAF-Canon.otf
+    - family: MandoAF
+      fonts:
+        - asset: assets/fonts/MandoAF-Regular.otf
 
 
   assets:
     - assets/fonts/OFL_Noto.txt
     - assets/fonts/OFL_HaSta.txt
     - assets/fonts/OFL_AlcarinTengwar.txt
+    - assets/fonts/LICENSE_AurekFonts.txt
+    - assets/fonts/LICENSE_Valyrian.txt

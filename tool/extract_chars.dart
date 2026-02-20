@@ -46,11 +46,15 @@ void main() async {
     'Noto Sans TC': {},
     'KlingonHaSta': {},
     'AlcarinTengwar': {},
+    'ValyrianAdvanced': {},
+    'Aurebesh': {},
+    'MandoAF': {},
   };
 
   // Iterate over all supported languages
   for (final language in WordClockLanguages.all) {
     final fontFamily = FontHelper.getFontFamilyFromTag(language.languageCode);
+    print('Language: ${language.languageCode} -> Font: $fontFamily');
     final chars = fontChars[fontFamily]!;
 
     // Iterate over all grids for the language to get all possible words

@@ -9,9 +9,19 @@ Future<void> loadFonts() async {
   final fonts = FontHelper.familyToAsset;
 
   for (final entry in fonts.entries) {
-    final loader = FontLoader(entry.key);
-    final fontData = File(entry.value).readAsBytesSync();
-    loader.addFont(Future.value(ByteData.view(fontData.buffer)));
-    await loader.load();
+    try {
+      final loader = FontLoader(entry.key);
+      final file = File(entry.value);
+      if (!file.existsSync()) {
+        print('ERROR: Font file not found: ${entry.value}');
+        continue;
+      }
+      final fontData = file.readAsBytesSync();
+      loader.addFont(Future.value(ByteData.view(fontData.buffer)));
+      await loader.load();
+      print('Loaded font: ${entry.key} from ${entry.value}');
+    } catch (e) {
+      print('FAILED to load font: ${entry.key} form ${entry.value}: $e');
+    }
   }
 }

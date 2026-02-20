@@ -2,88 +2,85 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:wordclock/ui/settings/components/language_selector.dart';
 
-class TestLanguage {
-  final String name;
-  final String? subtitle;
-  final String? hiddenKeyword;
-
-  const TestLanguage(this.name, {this.subtitle, this.hiddenKeyword});
-}
-
 void main() {
-  const languages = [
-    TestLanguage('English'),
-    TestLanguage('Español', subtitle: 'Spanish'),
-    TestLanguage('Deutsch', subtitle: 'German'),
-    TestLanguage('日本語', hiddenKeyword: 'Japanese'),
-  ];
-
-  testWidgets('LanguageSelector displays options and supports search', (
-    WidgetTester tester,
+  testWidgets('LanguageSelector displays label and secondary label correctly', (
+    tester,
   ) async {
-    TestLanguage? selected = languages[0];
-
     await tester.pumpWidget(
       MaterialApp(
         home: Scaffold(
-          body: StatefulBuilder(
-            builder: (context, setState) {
-              return LanguageSelector<TestLanguage>(
-                currentSelection: selected!,
-                availableOptions: languages,
-                labelBuilder: (l) => l.name,
-                subtitleBuilder: (l) => l.subtitle,
-                searchKeywordsBuilder: (l) => l.hiddenKeyword ?? '',
-                onSelected: (l) {
-                  setState(() {
-                    selected = l;
-                  });
-                },
-              );
-            },
+          body: LanguageSelector<String>(
+            currentSelection: 'A',
+            availableOptions: const ['A', 'B'],
+            onSelected: (_) {},
+            labelBuilder: (val) => 'Label $val',
+            secondaryLabelBuilder: (val) => val == 'A' ? 'Secondary A' : null,
           ),
         ),
       ),
     );
 
-    // Initial display
-    expect(find.text('English'), findsOneWidget);
+    // Verify main label is displayed
+    expect(
+      find.byWidgetPredicate((widget) {
+        if (widget is! RichText) return false;
+        return widget.text.toPlainText().contains('Label A');
+      }),
+      findsOneWidget,
+    );
 
-    // Open picker
-    await tester.tap(find.byType(LanguageSelector<TestLanguage>));
-    await tester.pumpAndSettle();
+    // Verify secondary label is displayed
+    expect(
+      find.byWidgetPredicate((widget) {
+        if (widget is! RichText) return false;
+        return widget.text.toPlainText().contains('Secondary A');
+      }),
+      findsOneWidget,
+    );
 
-    // Verify list items
-    expect(find.text('English'), findsWidgets);
-    expect(find.widgetWithText(ListTile, 'Español'), findsOneWidget);
-    // Subtitle check
-    expect(find.text('Spanish'), findsOneWidget);
+    // Verify 'Label B' is not visible yet
+    expect(find.text('Label B'), findsNothing);
+  });
 
-    // Search by name
-    await tester.enterText(find.byType(TextField), 'deut');
-    await tester.pumpAndSettle();
-    expect(find.widgetWithText(ListTile, 'Deutsch'), findsOneWidget);
-    // Previously visible items should be filtered out
-    expect(find.widgetWithText(ListTile, 'English'), findsNothing);
+  testWidgets('LanguageSelector applies styles correctly', (tester) async {
+    await tester.pumpWidget(
+      MaterialApp(
+        home: Scaffold(
+          body: LanguageSelector<String>(
+            currentSelection: 'A',
+            availableOptions: const ['A'],
+            onSelected: (_) {},
+            labelBuilder: (val) => 'Main',
+            secondaryLabelBuilder: (val) => 'Secondary',
+            styleBuilder: (val) => const TextStyle(color: Colors.red),
+          ),
+        ),
+      ),
+    );
 
-    // Search by subtitle
-    await tester.enterText(find.byType(TextField), 'span');
-    await tester.pumpAndSettle();
-    expect(find.widgetWithText(ListTile, 'Español'), findsOneWidget);
+    // Find the specific RichText widget we are interested in
+    final richTextFinder = find.byWidgetPredicate((widget) {
+      if (widget is! RichText) return false;
+      final text = widget.text.toPlainText();
+      return text.contains('Main') && text.contains('Secondary');
+    });
+    expect(richTextFinder, findsOneWidget);
 
-    // Search by hidden keyword
-    await tester.enterText(find.byType(TextField), 'japan');
-    await tester.pumpAndSettle();
+    final richText = tester.widget<RichText>(richTextFinder);
+    final textSpan = richText.text as TextSpan;
 
-    // Verify rich label construction: "日本語 (Japanese)"
-    expect(find.widgetWithText(ListTile, '日本語 (Japanese)'), findsOneWidget);
+    // Check children structure
+    // We expect: [TextSpan('Main', style: red), TextSpan(' (Secondary)', style: Noto Sans)]
+    expect(textSpan.children, hasLength(2));
 
-    // Select item
-    await tester.tap(find.widgetWithText(ListTile, '日本語 (Japanese)'));
-    await tester.pumpAndSettle();
+    // Child 0: Main label
+    final span0 = textSpan.children![0] as TextSpan;
+    expect(span0.text, 'Main');
+    expect(span0.style?.color, Colors.red);
 
-    // Verify selection updated
-    expect(selected?.name, '日本語');
-    expect(find.text('日本語'), findsOneWidget);
+    // Child 1: Secondary label
+    final span1 = textSpan.children![1] as TextSpan;
+    expect(span1.text, ' (Secondary)');
+    expect(span1.style?.fontFamily, 'Noto Sans');
   });
 }

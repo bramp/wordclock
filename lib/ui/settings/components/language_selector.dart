@@ -20,7 +20,10 @@ class LanguageSelector<T> extends StatelessWidget {
   /// Returns an optional subtitle for an item description.
   final String? Function(T)? subtitleBuilder;
 
-  /// Returns additional keywords for search (e.g. English name for a language).
+  /// Returns a secondary label to display alongside the main label (e.g. English name).
+  /// This label is NOT styled by [styleBuilder], ensuring it remains readable.
+  final String? Function(T)? secondaryLabelBuilder;
+
   final String Function(T)? searchKeywordsBuilder;
 
   /// Returns a specific [TextStyle] for an item (e.g. to use a specific font).
@@ -39,6 +42,7 @@ class LanguageSelector<T> extends StatelessWidget {
     required this.onSelected,
     required this.labelBuilder,
     this.subtitleBuilder,
+    this.secondaryLabelBuilder,
     this.searchKeywordsBuilder,
     this.styleBuilder,
     this.icon = Icons.language,
@@ -49,6 +53,7 @@ class LanguageSelector<T> extends StatelessWidget {
   Widget build(BuildContext context) {
     final displayName = labelBuilder(currentSelection);
     final description = subtitleBuilder?.call(currentSelection);
+    final secondaryLabel = secondaryLabelBuilder?.call(currentSelection);
 
     return Semantics(
       label: semanticsLabelPrefix != null
@@ -75,8 +80,10 @@ class LanguageSelector<T> extends StatelessWidget {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(
-                      displayName,
+                    _LanguageItemTitle(
+                      label: displayName,
+                      secondaryLabel: secondaryLabel,
+                      isSelected: false,
                       style: const TextStyle(
                         fontWeight: FontWeight.bold,
                       ).merge(styleBuilder?.call(currentSelection)),
@@ -114,6 +121,7 @@ class LanguageSelector<T> extends StatelessWidget {
           availableOptions: availableOptions,
           labelBuilder: labelBuilder,
           subtitleBuilder: subtitleBuilder,
+          secondaryLabelBuilder: secondaryLabelBuilder,
           searchKeywordsBuilder: searchKeywordsBuilder,
           onSelected: onSelected,
           styleBuilder: styleBuilder,
@@ -129,6 +137,7 @@ class _LanguagePickerSheet<T> extends StatefulWidget {
 
   final String Function(T) labelBuilder;
   final String? Function(T)? subtitleBuilder;
+  final String? Function(T)? secondaryLabelBuilder;
   final String Function(T)? searchKeywordsBuilder;
   final void Function(T) onSelected;
   final TextStyle? Function(T)? styleBuilder;
@@ -139,6 +148,7 @@ class _LanguagePickerSheet<T> extends StatefulWidget {
     required this.labelBuilder,
     required this.onSelected,
     this.subtitleBuilder,
+    this.secondaryLabelBuilder,
     this.searchKeywordsBuilder,
     this.styleBuilder,
   });
@@ -157,11 +167,14 @@ class _LanguagePickerSheetState<T> extends State<_LanguagePickerSheet<T>> {
       final query = _searchQuery.toLowerCase();
       final label = widget.labelBuilder(item).toLowerCase();
       final subtitle = widget.subtitleBuilder?.call(item)?.toLowerCase() ?? '';
+      final secondary =
+          widget.secondaryLabelBuilder?.call(item)?.toLowerCase() ?? '';
       final keywords =
           widget.searchKeywordsBuilder?.call(item).toLowerCase() ?? '';
 
       return label.contains(query) ||
           subtitle.contains(query) ||
+          secondary.contains(query) ||
           keywords.contains(query);
     }).toList();
   }
@@ -199,23 +212,15 @@ class _LanguagePickerSheetState<T> extends State<_LanguagePickerSheet<T>> {
     final isSelected = item == widget.currentSelection;
     final label = widget.labelBuilder(item);
     final subtitle = widget.subtitleBuilder?.call(item);
-    final keywords = widget.searchKeywordsBuilder?.call(item);
-
-    // Construct a rich label if keywords are available and distinct
-    // (e.g. "日本語 (Japanese)")
-    final displayLabel =
-        (keywords != null && keywords.isNotEmpty && keywords != label)
-        ? '$label ($keywords)'
-        : label;
+    final secondaryLabel = widget.secondaryLabelBuilder?.call(item);
 
     return ListTile(
       contentPadding: const EdgeInsets.symmetric(horizontal: 24, vertical: 4),
-      title: Text(
-        displayLabel,
-        style: TextStyle(
-          color: isSelected ? Colors.blueAccent : null,
-          fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
-        ).merge(widget.styleBuilder?.call(item)),
+      title: _LanguageItemTitle(
+        label: label,
+        secondaryLabel: secondaryLabel,
+        isSelected: isSelected,
+        style: widget.styleBuilder?.call(item),
       ),
       subtitle: subtitle != null
           ? Text(subtitle, style: Theme.of(context).textTheme.bodySmall)
@@ -227,6 +232,45 @@ class _LanguagePickerSheetState<T> extends State<_LanguagePickerSheet<T>> {
         widget.onSelected(item);
         Navigator.pop(context);
       },
+    );
+  }
+}
+
+/// Displays the language title, potentially split into two parts with different fonts.
+///
+/// This is crucial for Conlangs (like Aurebesh) where the [label] is rendered in
+/// a custom, potentially unreadable font, while the [secondaryLabel] (e.g., English name)
+/// is rendered in a standard readable font (Noto Sans).
+class _LanguageItemTitle extends StatelessWidget {
+  final String label;
+  final String? secondaryLabel;
+  final bool isSelected;
+  final TextStyle? style;
+
+  const _LanguageItemTitle({
+    required this.label,
+    required this.isSelected,
+    this.secondaryLabel,
+    this.style,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return RichText(
+      text: TextSpan(
+        style: DefaultTextStyle.of(context).style.copyWith(
+          color: isSelected ? Colors.blueAccent : null,
+          fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+        ),
+        children: [
+          TextSpan(text: label, style: style),
+          if (secondaryLabel != null)
+            TextSpan(
+              text: ' ($secondaryLabel)',
+              style: const TextStyle(fontFamily: 'Noto Sans'),
+            ),
+        ],
+      ),
     );
   }
 }

@@ -29,6 +29,11 @@ void main() async {
       'assets/fonts/OFL_HaSta.txt',
     );
     yield LicenseEntryWithLineBreaks(['KlingonHaSta'], hastaLicense);
+
+    final valyrianLicense = await rootBundle.loadString(
+      'assets/fonts/LICENSE_Valyrian.txt',
+    );
+    yield LicenseEntryWithLineBreaks(['ValyrianAdvanced'], valyrianLicense);
   });
 
   // Initialize Firebase Analytics

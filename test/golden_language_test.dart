@@ -44,6 +44,10 @@ void main() {
         'KP', // Klingon pIqaD
         'QY', // Quenya
         'SI', // Sindarin
+        'EO', // Esperanto
+        'HVA', // High Valyrian
+        'AURE', // Aurebesh
+        'MANDO', // Mandalorian
       };
 
       final languages = SettingsController.supportedLanguages

@@ -6,7 +6,7 @@ final quenyaLanguage = WordClockLanguage(
   id: 'QY',
   languageCode: 'qya',
   displayName: '',
-  englishName: 'Quenya (Elvish)',
+  englishName: 'Quenya Elvish',
   description: "Tolkien's Quenya language",
   isAlternative: false,
   grids: [

@@ -103,6 +103,13 @@ class SettingsPanel extends StatelessWidget {
                           availableOptions: sortedLanguages,
                           labelBuilder: (l) => l.displayName,
                           subtitleBuilder: (l) => l.description,
+                          secondaryLabelBuilder: (l) {
+                            if (l.languageCode.startsWith("en")) {
+                              return null;
+                            } else {
+                              return l.englishName;
+                            }
+                          },
                           searchKeywordsBuilder: (l) => l.englishName,
                           styleBuilder: (l) => _getLanguageStyle(
                             LocaleHelper.parseLocale(l.languageCode),

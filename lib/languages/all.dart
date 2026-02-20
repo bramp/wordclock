@@ -1,8 +1,12 @@
 import 'package:wordclock/languages/language.dart';
 
+import 'package:wordclock/languages/conlangs/aurebesh.dart';
+import 'package:wordclock/languages/conlangs/esperanto.dart';
+import 'package:wordclock/languages/conlangs/high_valyrian.dart';
+import 'package:wordclock/languages/conlangs/klingon.dart';
+import 'package:wordclock/languages/conlangs/mando.dart';
 import 'package:wordclock/languages/conlangs/quenya.dart';
 import 'package:wordclock/languages/conlangs/sindarin.dart';
-import 'package:wordclock/languages/conlangs/klingon.dart';
 import 'package:wordclock/languages/natural/catalan.dart';
 import 'package:wordclock/languages/natural/chinese.dart';
 import 'package:wordclock/languages/natural/czech.dart';
@@ -28,6 +32,7 @@ import 'package:wordclock/languages/natural/turkish.dart';
 class WordClockLanguages {
   static final List<WordClockLanguage> all = [
     // keep-sorted start
+    aurebeshLanguage,
     berneseGermanLanguage,
     catalanLanguage,
     chineseSimplifiedLanguage,
@@ -38,15 +43,18 @@ class WordClockLanguages {
     eastGermanLanguage,
     englishAlternativeLanguage,
     englishLanguage,
+    esperantoLanguage,
     frenchLanguage,
     germanAlternativeLanguage,
     germanLanguage,
     greekLanguage,
     // hebrewLanguage,
+    highValyrianLanguage,
     italianLanguage,
     japaneseLanguage,
     klingonLanguage,
     klingonPiqadLanguage,
+    mandoLanguage,
     norwegianLanguage,
     // polishLanguage,
     portugueseLanguage,

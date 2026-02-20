@@ -50,6 +50,9 @@ void main() {
         'Noto Sans TC',
         'KlingonHaSta',
         'AlcarinTengwar',
+        'ValyrianAdvanced',
+        'Aurebesh',
+        'MandoAF',
       };
 
       for (final language in WordClockLanguages.all) {
